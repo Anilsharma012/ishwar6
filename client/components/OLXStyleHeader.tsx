@@ -162,7 +162,12 @@ export default function OLXStyleHeader() {
 
             <div className="relative">
               <button
-                onClick={() => (window.location.href = "/notifications")}
+                onClick={() => {
+                  const notificationPath = user?.userType === "seller"
+                    ? "/seller-dashboard/notifications"
+                    : "/notifications";
+                  window.location.href = notificationPath;
+                }}
                 className="relative p-2 hover:bg-red-700 rounded-lg transition-colors text-white"
                 aria-label="Notifications"
               >

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import FooterPackages from "./FooterPackages";
 import CategoryDrawer from "./CategoryDrawer";
+import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
 
 export default function StaticFooter() {
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);

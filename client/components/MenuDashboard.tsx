@@ -323,25 +323,25 @@ export default function MenuDashboard({ onClose }: MenuDashboardProps) {
               color="blue"
               label="Total Listings"
               value={stats.totalProperties}
-              onClick={() => go("/enhanced-seller-dashboard")}
+              onClick={() => go("/seller-dashboard/properties?status=all")}
             />
             <StatBox
               color="green"
               label="Approved"
               value={stats.approved}
-              onClick={() => go("/enhanced-seller-dashboard?filter=approved")}
+              onClick={() => go("/seller-dashboard/properties?status=approved")}
             />
             <StatBox
               color="yellow"
               label="Pending"
               value={stats.pendingApproval}
-              onClick={() => go("/enhanced-seller-dashboard?filter=pending")}
+              onClick={() => go("/seller-dashboard/properties?status=pending")}
             />
             <StatBox
               color="purple"
               label="Total Views"
               value={stats.totalViews}
-              onClick={() => go("/enhanced-seller-dashboard")}
+              onClick={() => go("/seller-dashboard/analytics")}
             />
           </div>
         )}

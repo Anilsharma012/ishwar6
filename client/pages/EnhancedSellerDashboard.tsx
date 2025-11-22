@@ -261,7 +261,9 @@ export default function EnhancedSellerDashboard() {
       setActiveTab("properties");
       setPropStatus(filter);
     } else {
-      navigate(`/seller-dashboard/properties?status=${filter}`);
+      navigate(`/seller-dashboard?filter=${filter}`);
+      setPropStatus(filter);
+      setActiveTab("properties");
     }
   };
 

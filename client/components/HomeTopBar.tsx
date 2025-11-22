@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ASHISH_LOGO_URL } from "../lib/constants";
 
 /**
  * Logo badge for the red header.
@@ -11,6 +12,7 @@ import React, { useEffect, useState } from "react";
 export default function HomeTopBar() {
   const [src, setSrc] = useState<string | null>(null);
   const candidates = [
+    ASHISH_LOGO_URL,
     "/brand/ashishproperties-logo.svg",
     "/brand/ashishproperties-logo.png",
     "/icons/icon-192.png", // last resort (already in public/)

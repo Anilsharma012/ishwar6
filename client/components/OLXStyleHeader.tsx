@@ -12,6 +12,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ROHTAK_AREAS } from "@shared/types";
 import MenuDashboard from "./MenuDashboard";
 import { useNotificationsUnread } from "../hooks/useNotificationsUnread";
+import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
 
 export default function OLXStyleHeader() {
   const { user, token, isAuthenticated } = useAuth();
@@ -129,13 +130,9 @@ export default function OLXStyleHeader() {
 
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets%2F6f3c7108bc7548aba25ee643ded03b4f%2Ff62a9c1217dd43bdaaaf498f94dae337?format=webp&width=200"
-              alt="Ashish Properties"
-              className="h-10 w-auto"
-            />
+            <img src={ASHISH_LOGO_URL} alt={APP_NAME} className="h-10 w-auto" />
             <span className="text-xl font-bold text-white hidden md:inline">
-              AshishProperties
+              {APP_NAME}
             </span>
           </div>
 

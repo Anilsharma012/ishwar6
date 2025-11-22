@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import FooterPackages from "./FooterPackages";
 import CategoryDrawer from "./CategoryDrawer";
+import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
 
 export default function StaticFooter() {
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
@@ -30,10 +31,12 @@ export default function StaticFooter() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-[#C70000] font-bold text-xl">AP</span>
-              </div>
-              <h3 className="text-2xl font-bold">Ashish Properties</h3>
+              <img
+                src={ASHISH_LOGO_URL}
+                alt={APP_NAME}
+                className="h-12 w-auto"
+              />
+              <h3 className="text-2xl font-bold">{APP_NAME}</h3>
             </div>
 
             <p className="text-red-100 text-sm leading-relaxed">

@@ -261,7 +261,9 @@ export default function EnhancedSellerDashboard() {
       setActiveTab("properties");
       setPropStatus(filter);
     } else {
-      navigate(`/seller-dashboard/properties?status=${filter}`);
+      navigate(`/seller-dashboard?filter=${filter}`);
+      setPropStatus(filter);
+      setActiveTab("properties");
     }
   };
 
@@ -1296,18 +1298,16 @@ export default function EnhancedSellerDashboard() {
                                     <Eye className="h-3 w-3" />
                                   </Button>
                                 </Link>
-                                {(property.approvalStatus === "pending" ||
-                                  property.approvalStatus === "rejected") && (
-                                  <Link to={`/post-property?edit=${id}`}>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="bg-blue-50 hover:bg-blue-100 border-blue-200"
-                                    >
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
-                                  </Link>
-                                )}
+                                <Link to={`/post-property?id=${id}`}>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+                                    title="Edit this property"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </Link>
                                 <Button
                                   size="sm"
                                   variant="outline"

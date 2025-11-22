@@ -834,6 +834,7 @@ export function createServer() {
   app.post("/api/auth/email/verify-otp", verifyEmailOtp);
 
   // Property routes
+  console.log("📍 Registering property routes");
   app.get("/api/properties", getProperties);
   app.get("/api/properties/featured", getFeaturedProperties);
   app.get("/api/properties/:id", getPropertyById);
@@ -843,6 +844,7 @@ export function createServer() {
     upload.array("images", 10),
     createProperty,
   );
+  console.log("✅ Property routes registered");
   app.put(
     "/api/properties/:id",
     authenticateToken,

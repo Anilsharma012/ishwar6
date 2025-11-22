@@ -2760,7 +2760,7 @@ export function createServer() {
   }
 
   // SPA fallback: serve index.html for non-API routes (React Router will handle them)
-  // This must be BEFORE the 404 handler, but only for production
+  // Production only: In dev mode, Vite's middleware handles this
   if (process.env.NODE_ENV === "production") {
     app.get("*", (req, res) => {
       // For SPA, serve index.html which will let React Router handle the routing
@@ -2777,17 +2777,8 @@ export function createServer() {
         });
       }
     });
-  } else {
-    // In dev mode, Vite middleware handles SPA routing. Just log unmatched routes.
-    app.get("*", (req, res) => {
-      console.log(`📨 Dev mode: Vite should handle SPA routing for: ${req.path}`);
-      // Don't respond - let Vite's middleware handle it
-      res.status(404).json({
-        success: false,
-        error: `Route ${req.method} ${req.path} not found (dev mode)`,
-      });
-    });
   }
+  // In dev mode, DON'T register a catch-all route - let Vite's middleware handle it
 
   return app;
 }

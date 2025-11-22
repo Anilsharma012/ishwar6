@@ -108,7 +108,7 @@ export const getProperties: RequestHandler = async (req, res) => {
     const category = norm(qCategory);
     let propertyType = norm(qPropertyType);
 
-    // Map UI aliases → canonical DB values
+    // Map UI aliases �� canonical DB values
     const TYPE_ALIASES: Record<string, string> = {
       // PG / Co-living
       "co-living": "pg",
@@ -152,7 +152,7 @@ export const getProperties: RequestHandler = async (req, res) => {
       ],
     };
 
-    // --- 3) “Buy/Rent” top tabs logic (broad groupings) ---
+    // --- 3) "Buy/Rent" top tabs logic (broad groupings) ---
     // If the page is one of the top tabs, prefer this grouping,
     // but keep normalized propertyType if it was explicitly sent.
     switch (category) {
@@ -825,5 +825,168 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     res
       .status(500)
       .json({ success: false, error: "Failed to update property approval" });
+  }
+};
+
+/* =========================================================================
+   USER: Edit/Update Property
+   ========================================================================= */
+export const updateProperty: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const userId = (req as any).userId;
+    const { id } = req.params;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
+    }
+
+    if (!ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
+    }
+
+    const propertyId = new ObjectId(id);
+
+    // Check if property exists and is owned by user
+    const property = await db
+      .collection("properties")
+      .findOne({ _id: propertyId });
+
+    if (!property) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
+    }
+
+    const propertyOwnerId = String(property.ownerId);
+    const requestUserId = String(userId);
+
+    if (propertyOwnerId !== requestUserId) {
+      return res
+        .status(403)
+        .json({ success: false, error: "You can only edit your own properties" });
+    }
+
+    // Handle images
+    const images: string[] = [];
+    if (Array.isArray((req as any).files)) {
+      (req as any).files.forEach((file: any) => {
+        images.push(`/uploads/properties/${file.filename}`);
+      });
+    }
+
+    // Keep existing images if not uploading new ones
+    const finalImages = images.length > 0 ? images : (property.images || []);
+
+    // Safe parse
+    const safeParse = <T = any>(v: any, fallback: any = {}): T => {
+      if (typeof v === "string") {
+        try {
+          return JSON.parse(v);
+        } catch {
+          return fallback;
+        }
+      }
+      return (v ?? fallback) as T;
+    };
+
+    const location = safeParse(req.body.location, property.location || {});
+    const specifications = safeParse(
+      req.body.specifications,
+      property.specifications || {}
+    );
+    const amenities = safeParse(req.body.amenities, property.amenities || []);
+    const contactInfo = safeParse(
+      req.body.contactInfo,
+      property.contactInfo || {}
+    );
+
+    // Normalize property type
+    const TYPE_ALIASES: Record<string, string> = {
+      "co-living": "pg",
+      coliving: "pg",
+      pg: "pg",
+      "agricultural-land": "agricultural",
+      agri: "agricultural",
+      agricultural: "agricultural",
+      commercial: "commercial",
+      showroom: "commercial",
+      office: "commercial",
+      residential: "residential",
+      flat: "flat",
+      apartment: "flat",
+      plot: "plot",
+    };
+
+    const normSlugLocal = (v: any): string => {
+      return String(v || "")
+        .trim()
+        .toLowerCase();
+    };
+
+    let normalizedPropertyType = normSlugLocal(req.body.propertyType || property.propertyType);
+    if (TYPE_ALIASES[normalizedPropertyType]) {
+      normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
+    }
+
+    // Prepare update data
+    const updateData: any = {
+      title: req.body.title || property.title,
+      description: req.body.description || property.description,
+      price: Number(req.body.price) || property.price,
+      priceType: req.body.priceType || property.priceType,
+      propertyType: normalizedPropertyType,
+      subCategory: normSlugLocal(req.body.subCategory || property.subCategory),
+      location,
+      specifications: {
+        ...specifications,
+        bedrooms: Number(specifications.bedrooms) || property.specifications?.bedrooms,
+        bathrooms: Number(specifications.bathrooms) || property.specifications?.bathrooms,
+        area: Number(specifications.area) || property.specifications?.area,
+        floor: Number(specifications.floor) || property.specifications?.floor,
+        totalFloors: Number(specifications.totalFloors) || property.specifications?.totalFloors,
+      },
+      images: finalImages,
+      amenities: Array.isArray(amenities) ? amenities : [],
+      contactInfo,
+      updatedAt: new Date(),
+    };
+
+    // If property was approved, reset it to pending for re-approval
+    if (property.approvalStatus === "approved" || property.status === "active") {
+      updateData.approvalStatus = "pending";
+      updateData.status = "inactive";
+      updateData.isApproved = false;
+    }
+
+    // Update the property
+    await db
+      .collection("properties")
+      .updateOne({ _id: propertyId }, { $set: updateData });
+
+    console.log("📝 PROPERTY UPDATED → reset to pending", {
+      propertyId: id,
+      title: updateData.title,
+      newApprovalStatus: updateData.approvalStatus,
+      newStatus: updateData.status,
+    });
+
+    const response: ApiResponse<{ message: string; approvalStatus: string }> = {
+      success: true,
+      data: {
+        message: "Property updated and set to pending review",
+        approvalStatus: updateData.approvalStatus || "pending",
+      },
+    };
+    res.json(response);
+  } catch (error) {
+    console.error("Error updating property:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update property" });
   }
 };

@@ -89,7 +89,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (newToken: string, newUser: User) => {
     try { clearToasts(); } catch {}
+    // Store token under multiple keys for compatibility with different parts of the app
     localStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem("token", newToken); // Generic key for legacy code
+
+    // Store role-specific tokens for seller/admin/user flows
+    if (newUser.userType === "seller") {
+      localStorage.setItem("sellerToken", newToken);
+    } else if (newUser.userType === "admin") {
+      localStorage.setItem("adminToken", newToken);
+    } else if (newUser.userType === "user") {
+      localStorage.setItem("userToken", newToken);
+    }
+
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);

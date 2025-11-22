@@ -80,20 +80,43 @@ export const createBlog: RequestHandler = async (req, res) => {
       ? `/uploads/blogs/${req.file.filename}`
       : undefined;
 
+    let parsedKeywords: string[] = [];
+    let parsedTags: string[] = [];
+
+    try {
+      parsedKeywords = metaKeywords
+        ? Array.isArray(metaKeywords)
+          ? metaKeywords
+          : JSON.parse(metaKeywords)
+        : [];
+    } catch (error) {
+      console.warn("Invalid metaKeywords JSON, using empty array");
+    }
+
+    try {
+      parsedTags = tags
+        ? Array.isArray(tags)
+          ? tags
+          : JSON.parse(tags)
+        : [];
+    } catch (error) {
+      console.warn("Invalid tags JSON, using empty array");
+    }
+
     const blog: Blog = {
       title,
       slug,
       content,
       excerpt: excerpt || content.substring(0, 200),
       metaDescription: metaDescription || content.substring(0, 160),
-      metaKeywords: metaKeywords ? JSON.parse(metaKeywords) : [],
+      metaKeywords: parsedKeywords,
       featuredImage,
       authorId: user._id,
       authorName: user.name,
       publishStatus: publishStatus || "draft",
       publishedAt:
         publishStatus === "published" ? new Date() : undefined,
-      tags: tags ? JSON.parse(tags) : [],
+      tags: parsedTags,
       views: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -227,8 +250,25 @@ export const updateBlog: RequestHandler = async (req, res) => {
     if (content) updateData.content = content;
     if (excerpt) updateData.excerpt = excerpt;
     if (metaDescription) updateData.metaDescription = metaDescription;
-    if (metaKeywords) updateData.metaKeywords = JSON.parse(metaKeywords);
-    if (tags) updateData.tags = JSON.parse(tags);
+    
+    if (metaKeywords) {
+      try {
+        updateData.metaKeywords = Array.isArray(metaKeywords)
+          ? metaKeywords
+          : JSON.parse(metaKeywords);
+      } catch (error) {
+        console.warn("Invalid metaKeywords JSON in update, skipping");
+      }
+    }
+    
+    if (tags) {
+      try {
+        updateData.tags = Array.isArray(tags) ? tags : JSON.parse(tags);
+      } catch (error) {
+        console.warn("Invalid tags JSON in update, skipping");
+      }
+    }
+    
     if (slug) updateData.slug = slug;
 
     if (req.file) {

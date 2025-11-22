@@ -260,7 +260,6 @@ export default function EnhancedSellerDashboard() {
     navigate(`/seller-dashboard/properties?status=${filter}`);
   };
 
-
   // Profile
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
@@ -910,7 +909,9 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => navigate("/seller-dashboard/properties?status=all")}
+                    onClick={() =>
+                      navigate("/seller-dashboard/properties?status=all")
+                    }
                   >
                     <Home className="h-4 w-4 mr-2" /> Manage Properties
                   </Button>
@@ -939,7 +940,9 @@ export default function EnhancedSellerDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/seller-dashboard/properties?status=all")}
+                  onClick={() =>
+                    navigate("/seller-dashboard/properties?status=all")
+                  }
                 >
                   View All
                 </Button>

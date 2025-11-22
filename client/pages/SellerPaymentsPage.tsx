@@ -18,11 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import {
-  CreditCard,
-  ArrowLeft,
-  Download,
-} from "lucide-react";
+import { CreditCard, ArrowLeft, Download } from "lucide-react";
 import OLXStyleHeader from "../components/OLXStyleHeader";
 import BottomNavigation from "../components/BottomNavigation";
 
@@ -134,7 +130,9 @@ export default function SellerPaymentsPage() {
               <CreditCard className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹{totalAmount.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                ₹{totalAmount.toLocaleString()}
+              </div>
               <p className="text-xs text-gray-500 mt-1">
                 {payments.length} transaction{payments.length !== 1 ? "s" : ""}
               </p>
@@ -178,11 +176,7 @@ export default function SellerPaymentsPage() {
                 <CreditCard className="h-5 w-5" />
                 <span>Payment History</span>
               </CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchPayments}
-              >
+              <Button variant="outline" size="sm" onClick={fetchPayments}>
                 Refresh
               </Button>
             </div>
@@ -215,7 +209,10 @@ export default function SellerPaymentsPage() {
                   <TableBody>
                     {payments.map((payment: any, idx) => {
                       const id = payment._id || payment.id;
-                      const dateStr = payment.date || payment.createdAt || new Date().toISOString();
+                      const dateStr =
+                        payment.date ||
+                        payment.createdAt ||
+                        new Date().toISOString();
                       return (
                         <TableRow key={id || idx}>
                           <TableCell className="font-mono text-sm">

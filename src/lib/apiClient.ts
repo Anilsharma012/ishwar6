@@ -7,13 +7,7 @@ const BASE_URL =
 
 /** Try multiple common keys so seller/user/admin ALL work */
 function readAnyToken(): string {
-  const keys = [
-    "adminToken",
-    "sellerToken",
-    "userToken",
-    "authToken",
-    "token",
-  ];
+  const keys = ["adminToken", "sellerToken", "userToken", "authToken", "token"];
   try {
     for (const k of keys) {
       const v = localStorage.getItem(k) || sessionStorage.getItem(k);
@@ -26,13 +20,7 @@ function readAnyToken(): string {
 }
 
 function clearAllTokens() {
-  const keys = [
-    "adminToken",
-    "sellerToken",
-    "userToken",
-    "authToken",
-    "token",
-  ];
+  const keys = ["adminToken", "sellerToken", "userToken", "authToken", "token"];
   try {
     for (const k of keys) {
       localStorage.removeItem(k);
@@ -75,8 +63,8 @@ function redirectToLogin() {
   const to = path.includes("/seller")
     ? "/seller-login?reason=expired"
     : path.includes("/admin")
-    ? "/admin/login?reason=expired"
-    : "/login?reason=expired";
+      ? "/admin/login?reason=expired"
+      : "/login?reason=expired";
   window.location.replace(to);
 }
 
@@ -149,14 +137,16 @@ export const apiClient = {
           res.status === 403 ||
           (typeof data === "object" &&
             data &&
-            /invalid|expired token/i.test(String(data.message || data.error || "")))
+            /invalid|expired token/i.test(
+              String(data.message || data.error || ""),
+            ))
         ) {
           clearAllTokens();
           redirectToLogin();
         }
 
         const err: any = new Error(
-          (data && (data.message || data.error)) || `HTTP ${res.status}`
+          (data && (data.message || data.error)) || `HTTP ${res.status}`,
         );
         err.status = res.status;
         err.data = data;
@@ -175,40 +165,37 @@ export const apiClient = {
     }
   },
 
-get<T = any>(input: string) {
-  return this.request<T>(input, { method: "GET" });
-},
+  get<T = any>(input: string) {
+    return this.request<T>(input, { method: "GET" });
+  },
 
-post<T = any>(input: string, body?: Json | FormData) {
-  const isForm =
-    typeof FormData !== "undefined" && body instanceof FormData;
-  return this.request<T>(input, {
-    method: "POST",
-    body: isForm
-      ? (body as FormData)
-      : body
-      ? JSON.stringify(body)
-      : undefined,
-  });
-},
+  post<T = any>(input: string, body?: Json | FormData) {
+    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+    return this.request<T>(input, {
+      method: "POST",
+      body: isForm
+        ? (body as FormData)
+        : body
+          ? JSON.stringify(body)
+          : undefined,
+    });
+  },
 
-put<T = any>(input: string, body?: Json | FormData) {
-  const isForm =
-    typeof FormData !== "undefined" && body instanceof FormData;
-  return this.request<T>(input, {
-    method: "PUT",
-    body: isForm
-      ? (body as FormData)
-      : body
-      ? JSON.stringify(body)
-      : undefined,
-  });
-},
+  put<T = any>(input: string, body?: Json | FormData) {
+    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+    return this.request<T>(input, {
+      method: "PUT",
+      body: isForm
+        ? (body as FormData)
+        : body
+          ? JSON.stringify(body)
+          : undefined,
+    });
+  },
 
-delete<T = any>(input: string) {
-  return this.request<T>(input, { method: "DELETE" });
-},
-
+  delete<T = any>(input: string) {
+    return this.request<T>(input, { method: "DELETE" });
+  },
 
   // optional helpers
   setToken(token: string) {

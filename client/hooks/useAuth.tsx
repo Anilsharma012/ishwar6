@@ -88,7 +88,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (newToken: string, newUser: User) => {
-    try { clearToasts(); } catch {}
+    try {
+      clearToasts();
+    } catch {}
     // Store token under multiple keys for compatibility with different parts of the app
     localStorage.setItem(TOKEN_KEY, newToken);
     localStorage.setItem("token", newToken); // Generic key for legacy code
@@ -109,8 +111,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    try { clearToasts(); } catch {}
-    const keysToRemove = [TOKEN_KEY, USER_KEY, "token", "user", "adminToken", "adminUser", "sellerToken", "userToken", "authToken"];
+    try {
+      clearToasts();
+    } catch {}
+    const keysToRemove = [
+      TOKEN_KEY,
+      USER_KEY,
+      "token",
+      "user",
+      "adminToken",
+      "adminUser",
+      "sellerToken",
+      "userToken",
+      "authToken",
+    ];
     for (const key of keysToRemove) {
       try {
         localStorage.removeItem(key);

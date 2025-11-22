@@ -3,7 +3,12 @@ import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import {
   Bell,
@@ -38,7 +43,9 @@ export default function SellerNotificationsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
+  const [filteredNotifications, setFilteredNotifications] = useState<
+    Notification[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filterType, setFilterType] = useState<"all" | "unread">("all");
@@ -76,7 +83,7 @@ export default function SellerNotificationsPage() {
     let filtered = [...notifications];
 
     if (filterType === "unread") {
-      filtered = filtered.filter(n => !n.isRead);
+      filtered = filtered.filter((n) => !n.isRead);
     }
 
     setFilteredNotifications(filtered);
@@ -86,9 +93,9 @@ export default function SellerNotificationsPage() {
     try {
       await api.patch(`/api/seller/notifications/${notificationId}/read`);
       setNotifications(
-        notifications.map(n =>
-          ((n._id || n.id) === notificationId) ? { ...n, isRead: true } : n
-        )
+        notifications.map((n) =>
+          (n._id || n.id) === notificationId ? { ...n, isRead: true } : n,
+        ),
       );
       toast.success("Marked as read");
     } catch (err: any) {
@@ -97,13 +104,18 @@ export default function SellerNotificationsPage() {
     }
   };
 
-  const deleteNotification = async (notificationId: string, source?: string) => {
+  const deleteNotification = async (
+    notificationId: string,
+    source?: string,
+  ) => {
     try {
       const endpoint = source
         ? `/api/seller/notifications/${notificationId}?source=${source}`
         : `/api/seller/notifications/${notificationId}`;
       await api.delete(endpoint);
-      setNotifications(notifications.filter(n => ((n._id || n.id) !== notificationId)));
+      setNotifications(
+        notifications.filter((n) => (n._id || n.id) !== notificationId),
+      );
       toast.success("Notification deleted");
     } catch (err: any) {
       console.error("Error deleting notification:", err);
@@ -140,7 +152,7 @@ export default function SellerNotificationsPage() {
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div
@@ -193,7 +205,9 @@ export default function SellerNotificationsPage() {
               <AlertCircle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{unreadCount}</div>
+              <div className="text-2xl font-bold text-red-600">
+                {unreadCount}
+              </div>
             </CardContent>
           </Card>
 
@@ -204,7 +218,7 @@ export default function SellerNotificationsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {notifications.filter(n => n.isRead).length}
+                {notifications.filter((n) => n.isRead).length}
               </div>
             </CardContent>
           </Card>
@@ -259,7 +273,8 @@ export default function SellerNotificationsPage() {
             ) : (
               <div className="space-y-3">
                 {filteredNotifications.map((notification, idx) => {
-                  const id = (notification as any)._id || (notification as any).id;
+                  const id =
+                    (notification as any)._id || (notification as any).id;
                   return (
                     <div
                       key={id || idx}
@@ -292,7 +307,9 @@ export default function SellerNotificationsPage() {
                               </p>
                             )}
                             <p className="text-xs text-gray-400 mt-2">
-                              {new Date(notification.createdAt).toLocaleString()}
+                              {new Date(
+                                notification.createdAt,
+                              ).toLocaleString()}
                             </p>
                           </div>
                         </div>
@@ -304,7 +321,7 @@ export default function SellerNotificationsPage() {
                               variant="outline"
                               onClick={() =>
                                 navigate(
-                                  `/seller-dashboard/messages?id=${notification.conversationId}`
+                                  `/seller-dashboard/messages?id=${notification.conversationId}`,
                                 )
                               }
                             >

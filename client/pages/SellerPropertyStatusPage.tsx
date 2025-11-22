@@ -4,7 +4,12 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Property } from "@shared/types";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import {
@@ -44,9 +49,16 @@ export default function SellerPropertyStatusPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
-  const statusFromUrl = (searchParams.get("status") as "pending" | "approved" | "rejected" | "all") || "pending";
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "all">(statusFromUrl);
+
+  const statusFromUrl =
+    (searchParams.get("status") as
+      | "pending"
+      | "approved"
+      | "rejected"
+      | "all") || "pending";
+  const [status, setStatus] = useState<
+    "pending" | "approved" | "rejected" | "all"
+  >(statusFromUrl);
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [search, setSearch] = useState("");
@@ -84,9 +96,12 @@ export default function SellerPropertyStatusPage() {
 
       const counts: PropertyStats = {
         total: properties.length,
-        pending: properties.filter(p => p.approvalStatus === "pending").length,
-        approved: properties.filter(p => p.approvalStatus === "approved").length,
-        rejected: properties.filter(p => p.approvalStatus === "rejected").length,
+        pending: properties.filter((p) => p.approvalStatus === "pending")
+          .length,
+        approved: properties.filter((p) => p.approvalStatus === "approved")
+          .length,
+        rejected: properties.filter((p) => p.approvalStatus === "rejected")
+          .length,
       };
       setStats(counts);
     } catch (err: any) {
@@ -98,14 +113,16 @@ export default function SellerPropertyStatusPage() {
   };
 
   useEffect(() => {
-    let filtered = status === "all"
-      ? properties
-      : properties.filter((p) => p.approvalStatus === status);
+    let filtered =
+      status === "all"
+        ? properties
+        : properties.filter((p) => p.approvalStatus === status);
 
     if (search.trim()) {
-      filtered = filtered.filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase()) ||
-        p.location?.address?.toLowerCase().includes(search.toLowerCase())
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(search.toLowerCase()) ||
+          p.location?.address?.toLowerCase().includes(search.toLowerCase()),
       );
     }
 
@@ -119,7 +136,7 @@ export default function SellerPropertyStatusPage() {
 
     try {
       await api.delete(`/api/seller/properties/${propertyId}`);
-      setProperties(properties.filter(p => (p._id || p.id) !== propertyId));
+      setProperties(properties.filter((p) => (p._id || p.id) !== propertyId));
       toast.success("Property deleted successfully");
     } catch (err: any) {
       console.error("Error deleting property:", err);
@@ -207,11 +224,11 @@ export default function SellerPropertyStatusPage() {
               {getStatusTitle()}
             </h1>
             <p className="text-gray-600 mt-1">
-              {filteredProperties.length} of {stats[status] || 0} {status} properties
+              {filteredProperties.length} of {stats[status] || 0} {status}{" "}
+              properties
             </p>
           </div>
         </div>
-
 
         {/* Error message */}
         {error && (
@@ -283,10 +300,14 @@ export default function SellerPropertyStatusPage() {
                         <TableRow key={id || idx}>
                           <TableCell>
                             <div>
-                              <div className="font-medium">{property.title}</div>
+                              <div className="font-medium">
+                                {property.title}
+                              </div>
                               <div className="text-sm text-gray-500">
                                 Posted{" "}
-                                {new Date(property.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  property.createdAt,
+                                ).toLocaleDateString()}
                               </div>
                             </div>
                           </TableCell>
@@ -301,7 +322,9 @@ export default function SellerPropertyStatusPage() {
                               <span>{property.location?.address}</span>
                             </div>
                           </TableCell>
-                          <TableCell>{getStatusBadge(property.approvalStatus)}</TableCell>
+                          <TableCell>
+                            {getStatusBadge(property.approvalStatus)}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-1">
                               <Eye className="h-3 w-3" />

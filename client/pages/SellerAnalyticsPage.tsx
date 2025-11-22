@@ -4,7 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { Property } from "@shared/types";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import {
   Eye,
@@ -71,7 +76,7 @@ export default function SellerAnalyticsPage() {
       const totalViews = properties.reduce((sum, p) => sum + (p.views || 0), 0);
       const totalInquiries = properties.reduce(
         (sum, p) => sum + (p.inquiries || 0),
-        0
+        0,
       );
       const avgViews =
         properties.length > 0 ? totalViews / properties.length : 0;
@@ -161,9 +166,7 @@ export default function SellerAnalyticsPage() {
                   <div className="text-2xl font-bold text-green-600">
                     {stats.totalInquiries}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Buyer interest
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Buyer interest</p>
                 </CardContent>
               </Card>
 
@@ -178,9 +181,7 @@ export default function SellerAnalyticsPage() {
                   <div className="text-2xl font-bold text-purple-600">
                     {stats.avgViewsPerProperty}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Per property
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Per property</p>
                 </CardContent>
               </Card>
 
@@ -195,9 +196,7 @@ export default function SellerAnalyticsPage() {
                   <div className="text-2xl font-bold text-orange-600">
                     {properties.length}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Total properties
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">Total properties</p>
                 </CardContent>
               </Card>
             </div>
@@ -313,7 +312,8 @@ export default function SellerAnalyticsPage() {
                                       <Badge className="bg-green-100 text-green-800">
                                         Live
                                       </Badge>
-                                    ) : property.approvalStatus === "pending" ? (
+                                    ) : property.approvalStatus ===
+                                      "pending" ? (
                                       <Badge className="bg-yellow-100 text-yellow-800">
                                         Pending
                                       </Badge>

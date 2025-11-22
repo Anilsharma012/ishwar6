@@ -1267,11 +1267,12 @@ export default function EnhancedSellerDashboard() {
                                         </p>
                                       </div>
                                     )}
-                                    {!property.rejectionReason && !property.adminComments && (
-                                      <p className="text-xs text-red-700">
-                                        Property rejected by admin
-                                      </p>
-                                    )}
+                                    {!property.rejectionReason &&
+                                      !property.adminComments && (
+                                        <p className="text-xs text-red-700">
+                                          Property rejected by admin
+                                        </p>
+                                      )}
                                   </div>
                                 )}
                               </div>
@@ -1298,7 +1299,11 @@ export default function EnhancedSellerDashboard() {
                                 {(property.approvalStatus === "pending" ||
                                   property.approvalStatus === "rejected") && (
                                   <Link to={`/post-property?edit=${id}`}>
-                                    <Button size="sm" variant="outline" className="bg-blue-50 hover:bg-blue-100 border-blue-200">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+                                    >
                                       <Edit className="h-3 w-3" />
                                     </Button>
                                   </Link>

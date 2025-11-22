@@ -150,7 +150,7 @@ export default function OLXStyleHeader() {
             </button>
 
             {/* Buy Packages button next to wishlist */}
-      {/*}      <button
+            {/*}      <button
               onClick={() => (window.location.href = "/packages")}
               className="p-2 hover:bg-red-700 rounded-lg transition-colors text-white hidden md:inline-flex items-center gap-1"
               aria-label="Buy Packages"
@@ -163,9 +163,10 @@ export default function OLXStyleHeader() {
             <div className="relative">
               <button
                 onClick={() => {
-                  const notificationPath = user?.userType === "seller"
-                    ? "/seller-dashboard/notifications"
-                    : "/notifications";
+                  const notificationPath =
+                    user?.userType === "seller"
+                      ? "/seller-dashboard/notifications"
+                      : "/notifications";
                   window.location.href = notificationPath;
                 }}
                 className="relative p-2 hover:bg-red-700 rounded-lg transition-colors text-white"

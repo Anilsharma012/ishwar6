@@ -12,6 +12,7 @@ import { useAuth } from "../hooks/useAuth";
 import { ROHTAK_AREAS } from "@shared/types";
 import MenuDashboard from "./MenuDashboard";
 import { useNotificationsUnread } from "../hooks/useNotificationsUnread";
+import { ASHISH_LOGO_URL, APP_NAME } from "../lib/constants";
 
 export default function OLXStyleHeader() {
   const { user, token, isAuthenticated } = useAuth();

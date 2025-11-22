@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
 import { Property } from "@shared/types";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
@@ -159,6 +159,7 @@ async function getAuthToken(): Promise<string | null> {
 export default function EnhancedSellerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // UI state
   const [activeTab, setActiveTab] = useState("overview");
@@ -239,19 +240,7 @@ export default function EnhancedSellerDashboard() {
   const [propSearch, setPropSearch] = useState("");
   const [propStatus, setPropStatus] = useState<
     "all" | "pending" | "approved" | "rejected"
-  >(() => {
-    // Initialize from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get("filter");
-    if (
-      tabParam === "pending" ||
-      tabParam === "approved" ||
-      tabParam === "rejected"
-    ) {
-      return tabParam;
-    }
-    return "all";
-  });
+  >("all");
 
   // Handler for clicking KPI cards to navigate to property status page
   const handleKPIFilter = (
@@ -261,9 +250,9 @@ export default function EnhancedSellerDashboard() {
     navigate(`/seller-dashboard/properties?status=${filter}`);
   };
 
-  // Auto-switch to properties tab if URL has filter parameter
+  // Redirect old URL pattern to new dedicated page for backward compatibility
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(location.search);
     const filterParam = urlParams.get("filter");
     if (
       filterParam &&
@@ -271,30 +260,12 @@ export default function EnhancedSellerDashboard() {
         filterParam === "approved" ||
         filterParam === "rejected")
     ) {
-      setActiveTab("properties");
+      // Redirect to dedicated properties page with status parameter
+      navigate(`/seller-dashboard/properties?status=${filterParam}`, {
+        replace: true,
+      });
     }
-  }, []);
-
-  // Sync filter state with URL on browser navigation (Back/Forward)
-  useEffect(() => {
-    const handlePopState = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const filterParam = urlParams.get("filter");
-      if (
-        filterParam === "pending" ||
-        filterParam === "approved" ||
-        filterParam === "rejected"
-      ) {
-        setPropStatus(filterParam);
-        setActiveTab("properties");
-      } else {
-        setPropStatus("all");
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [location.search, navigate]);
 
   // Profile
   const [profileData, setProfileData] = useState({

@@ -339,7 +339,10 @@ export const createProperty: RequestHandler = async (req, res) => {
   console.log("Request URL:", req.url);
   console.log("Request headers:", req.headers);
   console.log("User ID:", (req as any).userId);
-  console.log("Files:", (req as any).files ? (req as any).files.length : "none");
+  console.log(
+    "Files:",
+    (req as any).files ? (req as any).files.length : "none",
+  );
 
   try {
     const db = getDatabase();
@@ -873,12 +876,10 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const requestUserId = String(userId);
 
     if (propertyOwnerId !== requestUserId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: "You can only edit your own properties",
-        });
+      return res.status(403).json({
+        success: false,
+        error: "You can only edit your own properties",
+      });
     }
 
     // Handle images

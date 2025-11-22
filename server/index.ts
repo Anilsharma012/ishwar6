@@ -2764,13 +2764,20 @@ export function createServer() {
   if (process.env.NODE_ENV === "production") {
     app.get("*", (req, res) => {
       // For SPA, serve index.html which will let React Router handle the routing
-      const indexPath = path.join(process.cwd(), "client", "dist", "index.html");
+      const indexPath = path.join(
+        process.cwd(),
+        "client",
+        "dist",
+        "index.html",
+      );
 
       if (fs.existsSync(indexPath)) {
         console.log(`📄 Serving SPA fallback for: ${req.path}`);
         res.sendFile(indexPath);
       } else {
-        console.log(`❌ SPA fallback failed: index.html not found at ${indexPath}`);
+        console.log(
+          `❌ SPA fallback failed: index.html not found at ${indexPath}`,
+        );
         res.status(404).json({
           success: false,
           error: `SPA fallback not available - index.html not found`,

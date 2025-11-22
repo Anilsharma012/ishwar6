@@ -257,14 +257,8 @@ export default function EnhancedSellerDashboard() {
   const handleKPIFilter = (
     filter: "all" | "pending" | "approved" | "rejected",
   ) => {
-    if (filter === "all") {
-      setActiveTab("properties");
-      setPropStatus(filter);
-    } else {
-      navigate(`/seller-dashboard?filter=${filter}`);
-      setPropStatus(filter);
-      setActiveTab("properties");
-    }
+    // Navigate to dedicated SellerPropertyStatusPage with status filter
+    navigate(`/seller-dashboard/properties?status=${filter}`);
   };
 
   // Auto-switch to properties tab if URL has filter parameter

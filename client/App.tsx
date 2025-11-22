@@ -273,6 +273,14 @@ function App() {
                       </SellerProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/seller-dashboard/payments"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerPaymentsPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
                   <Route path="/support/:action" element={<Support />} />
                   <Route
                     path="/support/ticket/:ticketId"

@@ -122,6 +122,16 @@ import {
   getPublicPageBySlug,
 } from "./routes/cms";
 
+// Blog routes
+import {
+  createBlog,
+  getAllBlogs,
+  getBlogBySlug,
+  updateBlog,
+  deleteBlog,
+  uploadBlogImage,
+} from "./routes/blogs";
+
 // Authentication routes
 import {
   registerUser,
@@ -2107,6 +2117,33 @@ export function createServer() {
     deleteContentPage,
   );
   app.post("/api/content/initialize", initializeContentPages);
+
+  // Blog routes - Public
+  app.get("/api/blogs", getAllBlogs);
+  app.get("/api/blogs/:slug", getBlogBySlug);
+
+  // Blog routes - Admin
+  app.post(
+    "/api/admin/blogs",
+    authenticateToken,
+    requireAdmin,
+    uploadBlogImage.single("featuredImage"),
+    createBlog,
+  );
+  app.get("/api/admin/blogs", authenticateToken, requireAdmin, getAllBlogs);
+  app.put(
+    "/api/admin/blogs/:id",
+    authenticateToken,
+    requireAdmin,
+    uploadBlogImage.single("featuredImage"),
+    updateBlog,
+  );
+  app.delete(
+    "/api/admin/blogs/:id",
+    authenticateToken,
+    requireAdmin,
+    deleteBlog,
+  );
 
   // Database test routes (for debugging)
   app.get("/api/test/database", testDatabase);

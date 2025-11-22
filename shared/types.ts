@@ -417,3 +417,22 @@ export const ROHTAK_AREAS = [
 ] as const;
 
 export type RohtakArea = (typeof ROHTAK_AREAS)[number];
+
+export interface Blog {
+  _id?: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
+  featuredImage?: string;
+  authorId: string;
+  authorName: string;
+  publishStatus: "draft" | "published";
+  publishedAt?: Date;
+  tags?: string[];
+  views: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

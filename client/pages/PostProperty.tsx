@@ -701,10 +701,13 @@ export default function PostProperty() {
       }
 
       if (!response.ok) {
+        let errorText = "";
         try {
-          const txt = await response.clone().text();
-          console.log("POST /api/property failed:", response.status, txt);
-        } catch {}
+          errorText = await response.clone().text();
+          console.log("POST /api/properties failed:", response.status, errorText);
+        } catch (e) {
+          console.log("Failed to read response text:", e);
+        }
         if (response.status === 401 || response.status === 403) {
           alert("Your session has expired. Please login again.");
           [
@@ -719,7 +722,7 @@ export default function PostProperty() {
           window.location.href = "/user-login";
           return;
         }
-        throw new Error(`HTTP ${response.status}: Failed to create property`);
+        throw new Error(`HTTP ${response.status}: Failed to create property. Response: ${errorText}`);
       }
 
       const data = await response.json();

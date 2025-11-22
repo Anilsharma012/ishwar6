@@ -45,8 +45,8 @@ export default function SellerPropertyStatusPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  const statusFromUrl = searchParams.get("status") as "pending" | "approved" | "rejected" || "pending";
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected">(statusFromUrl);
+  const statusFromUrl = (searchParams.get("status") as "pending" | "approved" | "rejected" | "all") || "pending";
+  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "all">(statusFromUrl);
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [search, setSearch] = useState("");
@@ -98,9 +98,9 @@ export default function SellerPropertyStatusPage() {
   };
 
   useEffect(() => {
-    let filtered = properties.filter(
-      (p) => p.approvalStatus === status
-    );
+    let filtered = status === "all"
+      ? properties
+      : properties.filter((p) => p.approvalStatus === status);
 
     if (search.trim()) {
       filtered = filtered.filter((p) =>
@@ -157,6 +157,8 @@ export default function SellerPropertyStatusPage() {
 
   const getStatusTitle = () => {
     switch (status) {
+      case "all":
+        return "All Properties";
       case "pending":
         return "Pending Properties";
       case "approved":
@@ -170,6 +172,8 @@ export default function SellerPropertyStatusPage() {
 
   const getStatusColor = () => {
     switch (status) {
+      case "all":
+        return "text-blue-600";
       case "pending":
         return "text-yellow-600";
       case "approved":

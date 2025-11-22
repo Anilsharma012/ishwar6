@@ -670,6 +670,12 @@ export function createServer() {
   app.use(express.json({ limit: "1gb" }));
   app.use(express.urlencoded({ extended: true, limit: "1gb" }));
 
+  // Debug middleware: log all requests
+  app.use((req, res, next) => {
+    console.log(`📨 ${req.method} ${req.path}`);
+    next();
+  });
+
   // Mount CSV import routes under protected admin path
   app.use("/api/admin", authenticateToken, requireAdmin, osImportRoutes);
   app.use("/api/payments/phonepe", phonepeRoutes);

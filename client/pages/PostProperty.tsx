@@ -429,7 +429,7 @@ export default function PostProperty() {
   /* ===== Load property data for editing ===== */
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const editId = searchParams.get("edit");
+    const editId = searchParams.get("edit") || searchParams.get("id");
 
     if (editId && isAuthenticated) {
       setIsEditMode(true);
@@ -827,7 +827,7 @@ export default function PostProperty() {
       localStorage.removeItem("post_property_draft");
     } catch {}
     alert(
-      "✅ Payment Successful!\n\n⏳ Status: Waiting for Admin Approval\n\nYour property will be live once approved by admin."
+      "��� Payment Successful!\n\n⏳ Status: Waiting for Admin Approval\n\nYour property will be live once approved by admin."
     );
     window.location.href = "/seller-dashboard";
   };

@@ -69,7 +69,7 @@ export default function BlogManagement() {
     metaDescription: "",
     metaKeywords: "",
     tags: "",
-    publishStatus: "draft" as "draft" | "published",
+    publishStatus: "published" as "draft" | "published",
   });
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -240,7 +240,7 @@ export default function BlogManagement() {
       metaDescription: "",
       metaKeywords: "",
       tags: "",
-      publishStatus: "draft",
+      publishStatus: "published",
     });
     setFeaturedImage(null);
     setImagePreview("");

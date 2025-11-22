@@ -60,8 +60,10 @@ export default function SellerNotificationsPage() {
       setLoading(true);
       setError("");
       const response = await api.get("/api/seller/notifications");
-      const data = response.data.notifications || response.data || [];
-      setNotifications(data);
+      const notifications = Array.isArray(response.data)
+        ? response.data
+        : response.data?.data || response.data?.notifications || [];
+      setNotifications(notifications);
     } catch (err: any) {
       console.error("Error fetching notifications:", err);
       setError(err?.response?.data?.message || "Failed to load notifications");

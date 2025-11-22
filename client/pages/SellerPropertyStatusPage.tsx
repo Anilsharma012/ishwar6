@@ -76,14 +76,17 @@ export default function SellerPropertyStatusPage() {
       setLoading(true);
       setError("");
       const response = await api.get("/api/seller/properties");
-      const data = response.data as Property[];
-      setProperties(data);
-      
+      const properties = Array.isArray(response.data)
+        ? response.data
+        : response.data?.data || [];
+
+      setProperties(properties);
+
       const counts: PropertyStats = {
-        total: data.length,
-        pending: data.filter(p => p.approvalStatus === "pending").length,
-        approved: data.filter(p => p.approvalStatus === "approved").length,
-        rejected: data.filter(p => p.approvalStatus === "rejected").length,
+        total: properties.length,
+        pending: properties.filter(p => p.approvalStatus === "pending").length,
+        approved: properties.filter(p => p.approvalStatus === "approved").length,
+        rejected: properties.filter(p => p.approvalStatus === "rejected").length,
       };
       setStats(counts);
     } catch (err: any) {

@@ -19,6 +19,7 @@ import {
   getProperties,
   getPropertyById,
   createProperty,
+  updateProperty,
   getFeaturedProperties,
   getUserProperties,
   getUserNotifications,

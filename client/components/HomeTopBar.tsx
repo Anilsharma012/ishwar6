@@ -57,7 +57,6 @@ export default function HomeTopBar() {
           </span>
         )}
 
-
         <span className="sr-only">ashishproperties.in</span>
       </a>
     </>

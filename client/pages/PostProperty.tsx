@@ -202,7 +202,9 @@ async function fetchDynamicCategories(): Promise<NormalizedCategory[]> {
       if (hasSectionProperty) {
         filtered = filtered.filter((c) => {
           const sec = String(c.section || "").toLowerCase();
-          return ["property", "properties", "listing", "listings"].includes(sec);
+          return ["property", "properties", "listing", "listings"].includes(
+            sec,
+          );
         });
       }
 
@@ -328,17 +330,18 @@ export default function PostProperty() {
 
   // Derivations
   const selectedCategory = categories.find(
-    (c) => c.slug === formData.propertyType
+    (c) => c.slug === formData.propertyType,
   );
 
   // Only show active subs of the selected category
   const availableSubcats =
     (selectedCategory?.subcategories || []).filter(
-      (sc) => sc.isActive !== false
+      (sc) => sc.isActive !== false,
     ) ?? [];
 
   const categoryLabel =
-    selectedCategory?.name || (formData.propertyType ? formData.propertyType : "");
+    selectedCategory?.name ||
+    (formData.propertyType ? formData.propertyType : "");
   const subCategoryLabel =
     availableSubcats.find((s) => s.slug === formData.subCategory)?.name ||
     (formData.subCategory ? formData.subCategory : "");
@@ -348,7 +351,7 @@ export default function PostProperty() {
     const setVhVars = () => {
       const dvh = Math.max(
         window.innerHeight,
-        document.documentElement.clientHeight
+        document.documentElement.clientHeight,
       );
       document.documentElement.style.setProperty("--app-dvh", dvh + "px");
     };
@@ -406,7 +409,7 @@ export default function PostProperty() {
 
     if (!isAuthenticated) {
       const returnTo = encodeURIComponent(
-        window.location.pathname + window.location.search
+        window.location.pathname + window.location.search,
       );
       window.location.href = `/auth?returnTo=${returnTo}`;
       return;
@@ -500,7 +503,7 @@ export default function PostProperty() {
               ...(prev as any)[parent],
               [child]: value,
             },
-          }) as any
+          }) as any,
       );
     } else {
       setFormData((prev) => ({
@@ -590,7 +593,7 @@ export default function PostProperty() {
       alert(
         missing.length
           ? `Please fill the following required fields: ${missing.join(", ")}`
-          : "Please fill all required fields"
+          : "Please fill all required fields",
       );
     }
   };
@@ -668,7 +671,7 @@ export default function PostProperty() {
       submitData.append("location", JSON.stringify(formData.location));
       submitData.append(
         "specifications",
-        JSON.stringify(formData.specifications)
+        JSON.stringify(formData.specifications),
       );
       submitData.append("amenities", JSON.stringify(formData.amenities));
       submitData.append("contactInfo", JSON.stringify(formData.contactInfo));
@@ -729,7 +732,7 @@ export default function PostProperty() {
             const resubmitResponse = await api.post(
               `/seller/properties/${editPropertyId}/resubmit`,
               {},
-              (await getAuthToken())!
+              (await getAuthToken())!,
             );
 
             if (resubmitResponse.data.success) {
@@ -740,16 +743,18 @@ export default function PostProperty() {
                 window.dispatchEvent(new Event("properties:updated"));
               } catch {}
               alert(
-                "✅ Property updated and resubmitted successfully!\n\n⏳ Status: Pending Admin Review"
+                "✅ Property updated and resubmitted successfully!\n\n⏳ Status: Pending Admin Review",
               );
               navigate("/my-properties");
             } else {
-              alert(resubmitResponse.data.error || "Failed to resubmit property");
+              alert(
+                resubmitResponse.data.error || "Failed to resubmit property",
+              );
             }
           } catch (error) {
             console.error("Error resubmitting property:", error);
             alert(
-              "Property updated but failed to resubmit. Please try resubmitting from My Properties page."
+              "Property updated but failed to resubmit. Please try resubmitting from My Properties page.",
             );
             navigate("/my-properties");
           }
@@ -766,7 +771,7 @@ export default function PostProperty() {
             window.dispatchEvent(new Event("properties:updated"));
           } catch {}
           alert(
-            "✅ Property submitted!\n\n⏳ Status: Pending Admin Approval.\n\nAapki listing admin verify hone ke baad hi live hogi."
+            "✅ Property submitted!\n\n⏳ Status: Pending Admin Approval.\n\nAapki listing admin verify hone ke baad hi live hogi.",
           );
           window.location.href = "/seller-dashboard";
         }
@@ -781,53 +786,52 @@ export default function PostProperty() {
     }
   };
 
- const handlePackageSelect = async (packageId: string) => {
-  try {
-    const token = await getAuthToken();
+  const handlePackageSelect = async (packageId: string) => {
+    try {
+      const token = await getAuthToken();
 
-    const headers: Record<string, string> = {
-      "Accept": "application/json",
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const response = await fetch(`/api/packages/${packageId}`, {
-      method: "GET",
-      headers,
-      credentials: "include", // important if backend also checks session cookie
-    });
+      const response = await fetch(`/api/packages/${packageId}`, {
+        method: "GET",
+        headers,
+        credentials: "include", // important if backend also checks session cookie
+      });
 
-    if (response.status === 401 || response.status === 403) {
-      alert("Session expired. Please login again.");
-      return (window.location.href = "/user-login");
+      if (response.status === 401 || response.status === 403) {
+        alert("Session expired. Please login again.");
+        return (window.location.href = "/user-login");
+      }
+
+      if (!response.ok) {
+        const t = await response.text().catch(() => "");
+        throw new Error(`HTTP ${response.status} ${t}`);
+      }
+
+      const data = await response.json();
+      if (data?.success && data?.data) {
+        setSelectedPackage(packageId);
+        setSelectedPackagePrice(Number(data.data.price || 0));
+        setShowPackageSelection(false);
+        setShowPaymentForm(true);
+      } else {
+        alert(data?.error || "Failed to load package details.");
+      }
+    } catch (error) {
+      console.error("Error fetching package details:", error);
+      alert("Failed to load package details.");
     }
-
-    if (!response.ok) {
-      const t = await response.text().catch(() => "");
-      throw new Error(`HTTP ${response.status} ${t}`);
-    }
-
-    const data = await response.json();
-    if (data?.success && data?.data) {
-      setSelectedPackage(packageId);
-      setSelectedPackagePrice(Number(data.data.price || 0));
-      setShowPackageSelection(false);
-      setShowPaymentForm(true);
-    } else {
-      alert(data?.error || "Failed to load package details.");
-    }
-  } catch (error) {
-    console.error("Error fetching package details:", error);
-    alert("Failed to load package details.");
-  }
-};
-
+  };
 
   const handlePaymentComplete = (_transactionId: string) => {
     try {
       localStorage.removeItem("post_property_draft");
     } catch {}
     alert(
-      "��� Payment Successful!\n\n⏳ Status: Waiting for Admin Approval\n\nYour property will be live once approved by admin."
+      "��� Payment Successful!\n\n⏳ Status: Waiting for Admin Approval\n\nYour property will be live once approved by admin.",
     );
     window.location.href = "/seller-dashboard";
   };
@@ -837,7 +841,7 @@ export default function PostProperty() {
       localStorage.removeItem("post_property_draft");
     } catch {}
     alert(
-      "✅ Property submitted!\n\n⏳ Status: Pending Admin Approval.\n\nAapki listing admin verify hone ke baad hi live hogi."
+      "✅ Property submitted!\n\n⏳ Status: Pending Admin Approval.\n\nAapki listing admin verify hone ke baad hi live hogi.",
     );
     window.location.href = "/seller-dashboard";
   };
@@ -913,7 +917,9 @@ export default function PostProperty() {
                 </div>
 
                 <div className="text-center mb-4">
-                  <p className="text-sm text-gray-600">Requires admin approval</p>
+                  <p className="text-sm text-gray-600">
+                    Requires admin approval
+                  </p>
                 </div>
 
                 <Button
@@ -969,7 +975,8 @@ export default function PostProperty() {
               <Button
                 onClick={() => {
                   setTimeout(() => {
-                    const packageEl = document.getElementById("packages-section");
+                    const packageEl =
+                      document.getElementById("packages-section");
                     packageEl?.scrollIntoView({ behavior: "smooth" });
                   }, 100);
                 }}
@@ -1144,16 +1151,22 @@ export default function PostProperty() {
                   }}
                 >
                   <SelectTrigger
-                    className={!has(formData.propertyType) ? "border-red-300" : ""}
+                    className={
+                      !has(formData.propertyType) ? "border-red-300" : ""
+                    }
                   >
                     <SelectValue
-                      placeholder={catLoading ? "Loading..." : "Select property type"}
+                      placeholder={
+                        catLoading ? "Loading..." : "Select property type"
+                      }
                     />
                   </SelectTrigger>
 
                   <SelectContent className="z-[10050] max-h-[60vh] overscroll-contain z-raise">
                     {catError && (
-                      <div className="px-3 py-2 text-red-600 text-sm">{catError}</div>
+                      <div className="px-3 py-2 text-red-600 text-sm">
+                        {catError}
+                      </div>
                     )}
                     {!catLoading &&
                       categories.map((cat) => (
@@ -1169,22 +1182,28 @@ export default function PostProperty() {
               {formData.propertyType && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sub Category {availableSubcats.length > 0 ? "*" : "(optional)"}
+                    Sub Category{" "}
+                    {availableSubcats.length > 0 ? "*" : "(optional)"}
                   </label>
                   <Select
                     value={formData.subCategory}
-                    onValueChange={(value) => handleInputChange("subCategory", value)}
+                    onValueChange={(value) =>
+                      handleInputChange("subCategory", value)
+                    }
                   >
                     <SelectTrigger
                       className={
-                        !has(formData.subCategory) && availableSubcats.length > 0
+                        !has(formData.subCategory) &&
+                        availableSubcats.length > 0
                           ? "border-red-300"
                           : ""
                       }
                     >
                       <SelectValue
                         placeholder={
-                          availableSubcats.length ? "Select sub category" : "No subcategories"
+                          availableSubcats.length
+                            ? "Select sub category"
+                            : "No subcategories"
                         }
                       />
                     </SelectTrigger>
@@ -1196,11 +1215,12 @@ export default function PostProperty() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {!has(formData.subCategory) && availableSubcats.length > 0 && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Please select a sub category
-                    </p>
-                  )}
+                  {!has(formData.subCategory) &&
+                    availableSubcats.length > 0 && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Please select a sub category
+                      </p>
+                    )}
                 </div>
               )}
 
@@ -1210,7 +1230,9 @@ export default function PostProperty() {
                 </label>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   placeholder="Describe your property in detail..."
                   className={`${!has(formData.description) ? "border-red-300" : ""} compact-textarea`}
                   rows={4}
@@ -1431,7 +1453,9 @@ export default function PostProperty() {
                     </SelectTrigger>
                     <SelectContent className="z-[10050] max-h-[60vh] overscroll-contain z-raise">
                       <SelectItem value="furnished">Furnished</SelectItem>
-                      <SelectItem value="semi-furnished">Semi-Furnished</SelectItem>
+                      <SelectItem value="semi-furnished">
+                        Semi-Furnished
+                      </SelectItem>
                       <SelectItem value="unfurnished">Unfurnished</SelectItem>
                     </SelectContent>
                   </Select>
@@ -1458,7 +1482,10 @@ export default function PostProperty() {
                   <Input
                     value={formData.specifications.totalFloors}
                     onChange={(e) =>
-                      handleInputChange("specifications.totalFloors", e.target.value)
+                      handleInputChange(
+                        "specifications.totalFloors",
+                        e.target.value,
+                      )
                     }
                     placeholder="e.g., 5"
                   />
@@ -1620,7 +1647,7 @@ export default function PostProperty() {
                   onChange={(e) =>
                     handleInputChange(
                       "contactInfo.alternativePhone",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   placeholder="Enter alternative mobile number"
@@ -1636,7 +1663,7 @@ export default function PostProperty() {
                   onChange={(e) =>
                     handleInputChange(
                       "contactInfo.whatsappNumber",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   placeholder="Enter WhatsApp number"
@@ -1769,7 +1796,9 @@ export default function PostProperty() {
             data-action="next"
             data-testid="next-step"
             onClick={handleNextStep}
-            disabled={currentStep >= stepTitles.length || !validateStep(currentStep)}
+            disabled={
+              currentStep >= stepTitles.length || !validateStep(currentStep)
+            }
             style={{
               padding: "8px 16px",
               backgroundColor:

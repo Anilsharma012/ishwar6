@@ -868,7 +868,10 @@ export const updateProperty: RequestHandler = async (req, res) => {
     if (propertyOwnerId !== requestUserId) {
       return res
         .status(403)
-        .json({ success: false, error: "You can only edit your own properties" });
+        .json({
+          success: false,
+          error: "You can only edit your own properties",
+        });
     }
 
     // Handle images
@@ -880,7 +883,7 @@ export const updateProperty: RequestHandler = async (req, res) => {
     }
 
     // Keep existing images if not uploading new ones
-    const finalImages = images.length > 0 ? images : (property.images || []);
+    const finalImages = images.length > 0 ? images : property.images || [];
 
     // Safe parse
     const safeParse = <T = any>(v: any, fallback: any = {}): T => {
@@ -897,12 +900,12 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const location = safeParse(req.body.location, property.location || {});
     const specifications = safeParse(
       req.body.specifications,
-      property.specifications || {}
+      property.specifications || {},
     );
     const amenities = safeParse(req.body.amenities, property.amenities || []);
     const contactInfo = safeParse(
       req.body.contactInfo,
-      property.contactInfo || {}
+      property.contactInfo || {},
     );
 
     // Normalize property type
@@ -928,7 +931,9 @@ export const updateProperty: RequestHandler = async (req, res) => {
         .toLowerCase();
     };
 
-    let normalizedPropertyType = normSlugLocal(req.body.propertyType || property.propertyType);
+    let normalizedPropertyType = normSlugLocal(
+      req.body.propertyType || property.propertyType,
+    );
     if (TYPE_ALIASES[normalizedPropertyType]) {
       normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
     }
@@ -944,11 +949,16 @@ export const updateProperty: RequestHandler = async (req, res) => {
       location,
       specifications: {
         ...specifications,
-        bedrooms: Number(specifications.bedrooms) || property.specifications?.bedrooms,
-        bathrooms: Number(specifications.bathrooms) || property.specifications?.bathrooms,
+        bedrooms:
+          Number(specifications.bedrooms) || property.specifications?.bedrooms,
+        bathrooms:
+          Number(specifications.bathrooms) ||
+          property.specifications?.bathrooms,
         area: Number(specifications.area) || property.specifications?.area,
         floor: Number(specifications.floor) || property.specifications?.floor,
-        totalFloors: Number(specifications.totalFloors) || property.specifications?.totalFloors,
+        totalFloors:
+          Number(specifications.totalFloors) ||
+          property.specifications?.totalFloors,
       },
       images: finalImages,
       amenities: Array.isArray(amenities) ? amenities : [],
@@ -957,7 +967,10 @@ export const updateProperty: RequestHandler = async (req, res) => {
     };
 
     // If property was approved, reset it to pending for re-approval
-    if (property.approvalStatus === "approved" || property.status === "active") {
+    if (
+      property.approvalStatus === "approved" ||
+      property.status === "active"
+    ) {
       updateData.approvalStatus = "pending";
       updateData.status = "inactive";
       updateData.isApproved = false;

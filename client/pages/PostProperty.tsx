@@ -701,13 +701,14 @@ export default function PostProperty() {
       }
 
       if (!response.ok) {
-        let errorText = "";
+        let errorData = { error: "Unknown error" };
         try {
-          errorText = await response.clone().text();
-          console.log("POST /api/properties failed:", response.status, errorText);
+          errorData = await response.json();
         } catch (e) {
-          console.log("Failed to read response text:", e);
+          console.log("Failed to parse error response:", e);
         }
+        console.error("POST /api/properties failed:", response.status, errorData);
+
         if (response.status === 401 || response.status === 403) {
           alert("Your session has expired. Please login again.");
           [
@@ -722,7 +723,7 @@ export default function PostProperty() {
           window.location.href = "/user-login";
           return;
         }
-        throw new Error(`HTTP ${response.status}: Failed to create property. Response: ${errorText}`);
+        throw new Error(`HTTP ${response.status}: Failed to create property. ${errorData.error || "Unknown error"}`);
       }
 
       const data = await response.json();

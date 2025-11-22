@@ -110,8 +110,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     try { clearToasts(); } catch {}
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    const keysToRemove = [TOKEN_KEY, USER_KEY, "token", "user", "adminToken", "adminUser", "sellerToken", "userToken", "authToken"];
+    for (const key of keysToRemove) {
+      try {
+        localStorage.removeItem(key);
+      } catch {}
+    }
     setToken(null);
     setUser(null);
     apiClient.clearToken?.(); // optional helper in apiClient

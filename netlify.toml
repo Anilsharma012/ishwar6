@@ -2,6 +2,13 @@
   command = "npm run build:client"
   publish = "client/dist" # ✅ Because client/ is source, dist/ is output
 
+# Exclude API routes from SPA redirect
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# SPA redirect for all other routes
 [[redirects]]
   from = "/*"
   to = "/index.html"

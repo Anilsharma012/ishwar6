@@ -334,6 +334,13 @@ export const getPropertyById: RequestHandler = async (req, res) => {
    CREATE: FREE / pre-PAID (ALWAYS pending)
    ========================================================================= */
 export const createProperty: RequestHandler = async (req, res) => {
+  console.log("🔵 createProperty handler called");
+  console.log("Request method:", req.method);
+  console.log("Request URL:", req.url);
+  console.log("Request headers:", req.headers);
+  console.log("User ID:", (req as any).userId);
+  console.log("Files:", (req as any).files ? (req as any).files.length : "none");
+
   try {
     const db = getDatabase();
     const userId = (req as any).userId;

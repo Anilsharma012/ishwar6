@@ -66,6 +66,7 @@ import EnhancedSellerDashboard from "./pages/EnhancedSellerDashboard";
 import SellerPropertyStatusPage from "./pages/SellerPropertyStatusPage";
 import SellerNotificationsPage from "./pages/SellerNotificationsPage";
 import SellerAnalyticsPage from "./pages/SellerAnalyticsPage";
+import SellerPaymentsPage from "./pages/SellerPaymentsPage";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import MyProperties from "./pages/MyProperties";

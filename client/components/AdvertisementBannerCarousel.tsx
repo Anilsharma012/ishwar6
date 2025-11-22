@@ -210,7 +210,7 @@ const AdvertisementBannerCarousel: React.FC<
   }
 
   return (
-    <div className="advertisement-carousel relative w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-black">
+    <div className="advertisement-carousel relative w-full overflow-hidden bg-black" style={{ height: 'clamp(16rem, 40vw, 28rem)' }}>
       <Carousel
         opts={{ align: "start", loop: true }}
         setApi={setApi}
@@ -238,15 +238,15 @@ const AdvertisementBannerCarousel: React.FC<
                       FALLBACKS[i % FALLBACKS.length] || "/placeholder.svg";
                   }}
                 />
-                {/* Overlay */}
-                <div className="pointer-events-none absolute inset-0 bg-black/40" />
-                <div className="absolute inset-0 z-10 flex items-center justify-center px-4">
-                  <div className="text-center text-white max-w-3xl mx-auto">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 drop-shadow">
+                {/* Enhanced Overlay for better text visibility */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/65 via-black/50 to-black/65" />
+                <div className="absolute inset-0 z-10 flex items-center justify-center px-4 md:px-8">
+                  <div className="text-center text-white max-w-4xl mx-auto">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-4 drop-shadow-2xl" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
                       {b.title || "Advertise Your Project"}
                     </h2>
                     {b.description && (
-                      <p className="text-sm sm:text-base text-white/90 drop-shadow">
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/95 drop-shadow-xl" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
                         {b.description}
                       </p>
                     )}

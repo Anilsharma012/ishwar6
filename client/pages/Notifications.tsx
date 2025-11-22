@@ -18,10 +18,13 @@ export default function Notifications() {
   const [items, setItems] = useState<UserNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthError, setIsAuthError] = useState(false);
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
+      setError(null);
+      setIsAuthError(false);
       const token = localStorage.getItem("token");
       const res = await fetch("/api/user/notifications", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -31,9 +34,11 @@ export default function Notifications() {
         setItems(data.data || []);
       } else {
         setError(data.error || "Failed to load notifications");
+        setIsAuthError(res.status === 401 || res.status === 403);
       }
     } catch (e) {
       setError("Network error loading notifications");
+      setIsAuthError(false);
     } finally {
       setLoading(false);
     }
@@ -89,10 +94,36 @@ export default function Notifications() {
             <div className="animate-spin w-8 h-8 border-2 border-[#C70000] border-t-transparent rounded-full mx-auto mb-4" />
             <p className="text-gray-600">Loading notifications...</p>
           </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <Bell className="mx-auto h-12 w-12 text-red-400 mb-4" />
+            <p className="text-gray-900 font-medium mb-2">Unable to load notifications</p>
+            <p className="text-gray-600 text-sm mb-4">{error}</p>
+            <div className="flex gap-3 justify-center">
+              {isAuthError ? (
+                <a
+                  href="/login"
+                  className="inline-block bg-[#C70000] text-white px-6 py-2 rounded-lg hover:bg-[#A60000] transition-colors"
+                >
+                  Login to view notifications
+                </a>
+              ) : (
+                <button
+                  onClick={fetchNotifications}
+                  className="inline-block bg-[#C70000] text-white px-6 py-2 rounded-lg hover:bg-[#A60000] transition-colors"
+                >
+                  Try Again
+                </button>
+              )}
+            </div>
+          </div>
         ) : items.length === 0 ? (
           <div className="text-center py-16">
             <Bell className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-600">No notifications yet</p>
+            <p className="text-gray-900 font-medium mb-2">No notifications yet</p>
+            <p className="text-gray-600 text-sm">
+              You'll see important updates and messages here when they arrive
+            </p>
           </div>
         ) : (
           <div className="space-y-3">

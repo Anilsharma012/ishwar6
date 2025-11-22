@@ -479,9 +479,18 @@ export default function PostProperty() {
                 whatsappNumber: property.contactInfo?.whatsappNumber || "",
               },
             });
+          } else {
+            setIsEditMode(false);
+            setEditPropertyId(null);
+            alert("Property not found or you don't have permission to edit it. Starting fresh property creation.");
+            navigate("/post-property");
           }
         } catch (error) {
           console.error("Error fetching property for edit:", error);
+          setIsEditMode(false);
+          setEditPropertyId(null);
+          alert("Failed to load property for editing. The property may have been deleted. Starting fresh property creation.");
+          navigate("/post-property");
         }
       };
 

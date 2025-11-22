@@ -2758,6 +2758,17 @@ export function createServer() {
     });
   }
 
+  // 404 handler: catch all unmatched routes
+  app.use((req, res) => {
+    console.log(`❌ 404 NOT FOUND: ${req.method} ${req.path}`);
+    console.log("  Headers:", req.headers);
+    console.log("  Query:", req.query);
+    res.status(404).json({
+      success: false,
+      error: `Route ${req.method} ${req.path} not found`,
+    });
+  });
+
   return app;
 }
 

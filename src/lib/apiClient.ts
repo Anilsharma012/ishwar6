@@ -45,8 +45,11 @@ function clearAllTokens() {
 
 function setPrimaryToken(tok: string | null) {
   try {
-    if (tok) localStorage.setItem("adminToken", tok);
-    else clearAllTokens();
+    if (tok) {
+      localStorage.setItem("adminToken", tok);
+      localStorage.setItem("token", tok);
+      localStorage.setItem("authToken", tok);
+    } else clearAllTokens();
   } catch {
     /* ignore */
   }

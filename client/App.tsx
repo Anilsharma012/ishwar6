@@ -97,6 +97,8 @@ import AdminSubcategoriesPage from "./pages/AdminSubcategoriesPage";
 import Checkout from "./pages/Checkout";
 import PaymentStatus from "./pages/PaymentStatus";
 import PackagesPage from "./pages/Packages";
+import BlogListing from "./pages/BlogListing";
+import BlogDetail from "./pages/BlogDetail";
 
 // PWA install UI ko hata diya (hum APK route use kar rahe)
 // import PWAInstallButton from "./components/PWAInstallButton";
@@ -334,7 +336,9 @@ function App() {
 
                   <Route path="/account/my-ads" element={<MyProperties />} />
                   <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:slug" element={<BlogPost />} />
+                  <Route path="/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/blogs" element={<BlogListing />} />
+                  <Route path="/blogs/:id" element={<BlogPost />} />
                   <Route path="/maps" element={<Maps />} />
                   <Route path="/new-projects" element={<NewProjects />} />
                   <Route path="/recent-views" element={<RecentViews />} />

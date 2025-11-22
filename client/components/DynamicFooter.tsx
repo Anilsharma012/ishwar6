@@ -630,6 +630,14 @@ export default function DynamicFooter() {
                       Contact Us
                     </Link>
                   </li>
+                  <li>
+                    <Link
+                      to="/blogs"
+                      className="text-red-200 hover:text-white transition-colors duration-200 text-sm"
+                    >
+                      Blog
+                    </Link>
+                  </li>
                 </>
               )}
             </ul>

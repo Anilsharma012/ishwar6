@@ -72,6 +72,7 @@ import PendingPropertiesApproval from "../components/admin/PendingPropertiesAppr
 import OtherServicesManagement from "../components/admin/OtherServicesManagement";
 import SupportInbox from "../components/admin/SupportInbox";
 import AdvertisementSubmissionsManagement from "../components/admin/AdvertisementSubmissionsManagement";
+import BlogManagement from "../components/admin/BlogManagement";
 import {
   Table,
   TableBody,
@@ -1191,9 +1192,9 @@ export default function Admin() {
         case "staff-management":
           return <StaffManagement />;
         case "blog-management":
-          return <FAQManagement />;
+          return <BlogManagement />;
         case "blogs":
-          return <FAQManagement />;
+          return <BlogManagement />;
         case "faq":
           return <FAQManagement />;
         case "faqs":

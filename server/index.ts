@@ -627,7 +627,7 @@ export function createServer() {
         // If allow-all is enabled (useful for staging/demo), allow and log a warning
         if (allowAllOrigins) {
           console.warn(
-            "⚠️ CORS_ALLOW_ALL=true - allowing request from:",
+            "⚠�� CORS_ALLOW_ALL=true - allowing request from:",
             origin,
           );
           return callback(null, true);
@@ -842,6 +842,12 @@ export function createServer() {
     authenticateToken,
     upload.array("images", 10),
     createProperty,
+  );
+  app.put(
+    "/api/properties/:id",
+    authenticateToken,
+    upload.array("images", 10),
+    updateProperty,
   );
   app.use("/api/reviews", reviewsRouter);
 

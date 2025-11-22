@@ -253,20 +253,16 @@ export default function EnhancedSellerDashboard() {
     return "all";
   });
 
-  // Handler for clicking KPI cards to filter
+  // Handler for clicking KPI cards to navigate to property status page
   const handleKPIFilter = (
     filter: "all" | "pending" | "approved" | "rejected",
   ) => {
-    setPropStatus(filter);
-    setActiveTab("properties"); // Switch to properties tab
-    // Update URL
-    const url = new URL(window.location.href);
     if (filter === "all") {
-      url.searchParams.delete("filter");
+      setActiveTab("properties");
+      setPropStatus(filter);
     } else {
-      url.searchParams.set("filter", filter);
+      navigate(`/seller-dashboard/properties?status=${filter}`);
     }
-    window.history.pushState({}, "", url.toString());
   };
 
   // Auto-switch to properties tab if URL has filter parameter
@@ -718,7 +714,7 @@ export default function EnhancedSellerDashboard() {
                 variant="outline"
                 size="sm"
                 className="w-full md:w-auto"
-                onClick={() => setActiveTab("notifications")}
+                onClick={() => navigate("/seller-dashboard/notifications")}
               >
                 <Bell className="h-4 w-4" />
               </Button>

@@ -944,14 +944,14 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("properties")}
+                    onClick={() => navigate("/seller-dashboard/properties?status=all")}
                   >
                     <Home className="h-4 w-4 mr-2" /> Manage Properties
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("messages")}
+                    onClick={() => navigate("/seller-dashboard/notifications")}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" /> View Messages (
                     {stats.unreadMessages})
@@ -959,7 +959,7 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("payments")}
+                    onClick={() => navigate("/seller-dashboard/payments")}
                   >
                     <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                   </Button>
@@ -973,7 +973,7 @@ export default function EnhancedSellerDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setActiveTab("properties")}
+                  onClick={() => navigate("/seller-dashboard/properties?status=all")}
                 >
                   View All
                 </Button>

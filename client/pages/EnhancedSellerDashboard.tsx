@@ -260,40 +260,6 @@ export default function EnhancedSellerDashboard() {
     navigate(`/seller-dashboard/properties?status=${filter}`);
   };
 
-  // Auto-switch to properties tab if URL has filter parameter
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const filterParam = urlParams.get("filter");
-    if (
-      filterParam &&
-      (filterParam === "pending" ||
-        filterParam === "approved" ||
-        filterParam === "rejected")
-    ) {
-      setActiveTab("properties");
-    }
-  }, []);
-
-  // Sync filter state with URL on browser navigation (Back/Forward)
-  useEffect(() => {
-    const handlePopState = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const filterParam = urlParams.get("filter");
-      if (
-        filterParam === "pending" ||
-        filterParam === "approved" ||
-        filterParam === "rejected"
-      ) {
-        setPropStatus(filterParam);
-        setActiveTab("properties");
-      } else {
-        setPropStatus("all");
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   // Profile
   const [profileData, setProfileData] = useState({

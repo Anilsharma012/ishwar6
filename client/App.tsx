@@ -63,6 +63,9 @@ import StaffDashboard from "./pages/StaffDashboard";
 import StaffAdmin from "./pages/StaffAdmin";
 import AdminReviewsModeration from "./pages/AdminReviewsModeration";
 import EnhancedSellerDashboard from "./pages/EnhancedSellerDashboard";
+import SellerPropertyStatusPage from "./pages/SellerPropertyStatusPage";
+import SellerNotificationsPage from "./pages/SellerNotificationsPage";
+import SellerAnalyticsPage from "./pages/SellerAnalyticsPage";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import MyProperties from "./pages/MyProperties";
@@ -242,6 +245,30 @@ function App() {
                     element={
                       <SellerProtectedRoute>
                         <EnhancedSellerDashboard />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/properties"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerPropertyStatusPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/notifications"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerNotificationsPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/analytics"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerAnalyticsPage />
                       </SellerProtectedRoute>
                     }
                   />

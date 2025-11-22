@@ -339,7 +339,7 @@ export const adminApi = {
 // ---------------- General purpose API (get/post/put/delete) ----------------
 export const api = {
   get: async (endpoint: string, token?: string) => {
-    const authToken = token ?? getStoredToken();
+    const authToken = token && String(token).trim() ? token : getStoredToken();
     const headers: Record<string, string> = authToken
       ? { Authorization: `Bearer ${authToken}` }
       : {};
@@ -351,6 +351,9 @@ export const api = {
             localStorage.removeItem("token");
             localStorage.removeItem("adminToken");
             localStorage.removeItem("user");
+            localStorage.removeItem("userToken");
+            localStorage.removeItem("sellerToken");
+            localStorage.removeItem("authToken");
           } catch {}
           console.warn("api.get: authorization failed, redirecting to /auth");
           if (typeof window !== "undefined")
@@ -372,7 +375,7 @@ export const api = {
   },
 
   post: async (endpoint: string, data?: any, token?: string) => {
-    const authToken = token ?? getStoredToken();
+    const authToken = token && String(token).trim() ? token : getStoredToken();
     const headers: Record<string, string> = authToken
       ? { Authorization: `Bearer ${authToken}` }
       : {};
@@ -396,7 +399,7 @@ export const api = {
   },
 
   put: async (endpoint: string, data?: any, token?: string) => {
-    const authToken = token ?? getStoredToken();
+    const authToken = token && String(token).trim() ? token : getStoredToken();
     const headers: Record<string, string> = authToken
       ? { Authorization: `Bearer ${authToken}` }
       : {};
@@ -416,7 +419,7 @@ export const api = {
   },
 
   delete: async (endpoint: string, token?: string, data?: any) => {
-    const authToken = token ?? getStoredToken();
+    const authToken = token && String(token).trim() ? token : getStoredToken();
     const headers: Record<string, string> = authToken
       ? { Authorization: `Bearer ${authToken}` }
       : {};

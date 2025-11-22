@@ -257,50 +257,8 @@ export default function EnhancedSellerDashboard() {
   const handleKPIFilter = (
     filter: "all" | "pending" | "approved" | "rejected",
   ) => {
-    if (filter === "all") {
-      setActiveTab("properties");
-      setPropStatus(filter);
-    } else {
-      navigate(`/seller-dashboard?filter=${filter}`);
-      setPropStatus(filter);
-      setActiveTab("properties");
-    }
+    navigate(`/seller-dashboard/properties?status=${filter}`);
   };
-
-  // Auto-switch to properties tab if URL has filter parameter
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const filterParam = urlParams.get("filter");
-    if (
-      filterParam &&
-      (filterParam === "pending" ||
-        filterParam === "approved" ||
-        filterParam === "rejected")
-    ) {
-      setActiveTab("properties");
-    }
-  }, []);
-
-  // Sync filter state with URL on browser navigation (Back/Forward)
-  useEffect(() => {
-    const handlePopState = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const filterParam = urlParams.get("filter");
-      if (
-        filterParam === "pending" ||
-        filterParam === "approved" ||
-        filterParam === "rejected"
-      ) {
-        setPropStatus(filterParam);
-        setActiveTab("properties");
-      } else {
-        setPropStatus("all");
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   // Profile
   const [profileData, setProfileData] = useState({
@@ -951,14 +909,16 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("properties")}
+                    onClick={() =>
+                      navigate("/seller-dashboard/properties?status=all")
+                    }
                   >
                     <Home className="h-4 w-4 mr-2" /> Manage Properties
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("messages")}
+                    onClick={() => navigate("/seller-dashboard/notifications")}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" /> View Messages (
                     {stats.unreadMessages})
@@ -966,7 +926,7 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("payments")}
+                    onClick={() => navigate("/seller-dashboard/payments")}
                   >
                     <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                   </Button>
@@ -980,7 +940,9 @@ export default function EnhancedSellerDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setActiveTab("properties")}
+                  onClick={() =>
+                    navigate("/seller-dashboard/properties?status=all")
+                  }
                 >
                   View All
                 </Button>
@@ -1513,7 +1475,7 @@ export default function EnhancedSellerDashboard() {
                     </div>
                     <Button
                       className="w-full bg-amber-500 hover:bg-amber-600"
-                      onClick={() => setActiveTab("payments")}
+                      onClick={() => navigate("/seller-dashboard/payments")}
                     >
                       <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                     </Button>

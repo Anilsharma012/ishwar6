@@ -108,6 +108,7 @@ export const createBlog: RequestHandler = async (req, res) => {
       _id: new ObjectId(userId) 
     });
 
+    const finalPublishStatus = publishStatus || "published";
     const blog: Blog = {
       title,
       slug,
@@ -118,9 +119,9 @@ export const createBlog: RequestHandler = async (req, res) => {
       featuredImage,
       authorId: userId,
       authorName: author?.name || "Admin",
-      publishStatus: publishStatus || "draft",
+      publishStatus: finalPublishStatus,
       publishedAt:
-        publishStatus === "published" ? new Date() : undefined,
+        finalPublishStatus === "published" ? new Date() : undefined,
       tags: parsedTags,
       views: 0,
       createdAt: new Date(),

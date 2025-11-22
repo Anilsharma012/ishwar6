@@ -43,9 +43,10 @@ function generateSlug(title: string): string {
 export const createBlog: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    const user = (req as any).user;
+    const userId = (req as any).userId;
+    const userType = (req as any).userType;
 
-    if (!user || user.userType !== "admin") {
+    if (!userId || userType !== "admin") {
       return res.status(403).json({
         success: false,
         error: "Only admins can create blogs",
@@ -103,6 +104,10 @@ export const createBlog: RequestHandler = async (req, res) => {
       console.warn("Invalid tags JSON, using empty array");
     }
 
+    const author = await db.collection("users").findOne({ 
+      _id: new ObjectId(userId) 
+    });
+
     const blog: Blog = {
       title,
       slug,
@@ -111,8 +116,8 @@ export const createBlog: RequestHandler = async (req, res) => {
       metaDescription: metaDescription || content.substring(0, 160),
       metaKeywords: parsedKeywords,
       featuredImage,
-      authorId: user._id,
-      authorName: user.name,
+      authorId: userId,
+      authorName: author?.name || "Admin",
       publishStatus: publishStatus || "draft",
       publishedAt:
         publishStatus === "published" ? new Date() : undefined,
@@ -140,8 +145,8 @@ export const createBlog: RequestHandler = async (req, res) => {
 export const getAllBlogs: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    const user = (req as any).user;
-    const isAdmin = user?.userType === "admin";
+    const userType = (req as any).userType;
+    const isAdmin = userType === "admin";
 
     const filter: any = isAdmin
       ? {}
@@ -184,8 +189,8 @@ export const getBlogBySlug: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const { slug } = req.params;
-    const user = (req as any).user;
-    const isAdmin = user?.userType === "admin";
+    const userType = (req as any).userType;
+    const isAdmin = userType === "admin";
 
     const filter: any = { slug };
     if (!isAdmin) {
@@ -221,10 +226,11 @@ export const getBlogBySlug: RequestHandler = async (req, res) => {
 export const updateBlog: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    const user = (req as any).user;
+    const userId = (req as any).userId;
+    const userType = (req as any).userType;
     const { id } = req.params;
 
-    if (!user || user.userType !== "admin") {
+    if (!userId || userType !== "admin") {
       return res.status(403).json({
         success: false,
         error: "Only admins can update blogs",
@@ -313,10 +319,11 @@ export const updateBlog: RequestHandler = async (req, res) => {
 export const deleteBlog: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
-    const user = (req as any).user;
+    const userId = (req as any).userId;
+    const userType = (req as any).userType;
     const { id } = req.params;
 
-    if (!user || user.userType !== "admin") {
+    if (!userId || userType !== "admin") {
       return res.status(403).json({
         success: false,
         error: "Only admins can delete blogs",

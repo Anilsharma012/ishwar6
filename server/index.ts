@@ -2760,24 +2760,34 @@ export function createServer() {
   }
 
   // SPA fallback: serve index.html for non-API routes (React Router will handle them)
-  // This must be BEFORE the 404 handler
-  app.get("*", (req, res) => {
-    // For SPA, serve index.html which will let React Router handle the routing
-    // Client dist should be available if this is production build
-    const indexPath = path.join(process.cwd(), "client", "dist", "index.html");
+  // This must be BEFORE the 404 handler, but only for production
+  if (process.env.NODE_ENV === "production") {
+    app.get("*", (req, res) => {
+      // For SPA, serve index.html which will let React Router handle the routing
+      const indexPath = path.join(process.cwd(), "client", "dist", "index.html");
 
-    if (fs.existsSync(indexPath)) {
-      console.log(`📄 Serving SPA fallback for: ${req.path}`);
-      res.sendFile(indexPath);
-    } else {
-      // In dev mode, Vite handles this. In production, return error.
-      console.log(`❌ SPA fallback failed: index.html not found at ${indexPath}`);
+      if (fs.existsSync(indexPath)) {
+        console.log(`📄 Serving SPA fallback for: ${req.path}`);
+        res.sendFile(indexPath);
+      } else {
+        console.log(`❌ SPA fallback failed: index.html not found at ${indexPath}`);
+        res.status(404).json({
+          success: false,
+          error: `SPA fallback not available - index.html not found`,
+        });
+      }
+    });
+  } else {
+    // In dev mode, Vite middleware handles SPA routing. Just log unmatched routes.
+    app.get("*", (req, res) => {
+      console.log(`📨 Dev mode: Vite should handle SPA routing for: ${req.path}`);
+      // Don't respond - let Vite's middleware handle it
       res.status(404).json({
         success: false,
-        error: `SPA fallback not available - index.html not found`,
+        error: `Route ${req.method} ${req.path} not found (dev mode)`,
       });
-    }
-  });
+    });
+  }
 
   return app;
 }

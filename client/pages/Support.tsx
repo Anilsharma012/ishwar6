@@ -58,19 +58,20 @@ export default function Support() {
   const [creating, setCreating] = useState(false);
 
   const isNewTicket = action === "new";
+  const isHelpCenter = action === "help";
 
   useEffect(() => {
-    if (!user) {
+    if (!user && !isHelpCenter) {
       navigate("/login");
       return;
     }
 
-    if (!isNewTicket && ticketId) {
+    if (!isNewTicket && !isHelpCenter && ticketId) {
       fetchTicketMessages();
     } else {
       setLoading(false);
     }
-  }, [user, ticketId, isNewTicket, navigate]);
+  }, [user, ticketId, isNewTicket, isHelpCenter, navigate]);
 
   const fetchTicketMessages = async () => {
     try {
@@ -208,6 +209,162 @@ export default function Support() {
             <p className="text-gray-600">Loading...</p>
           </div>
         </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  // Help Center
+  if (isHelpCenter) {
+    const faqs = [
+      {
+        category: "Getting Started",
+        items: [
+          {
+            question: "How do I post a property?",
+            answer: "Login to your account, go to 'Post Property' from the menu, fill in all property details including images, location, and pricing. Submit for admin approval."
+          },
+          {
+            question: "How long does property approval take?",
+            answer: "Property approvals typically take 24-48 hours. You'll receive a notification once your property is approved or if any changes are needed."
+          },
+          {
+            question: "What are the requirements for property images?",
+            answer: "Upload clear, high-quality images (minimum 800x600px). Include exterior, interior, and amenity photos. Maximum 10 images per property."
+          }
+        ]
+      },
+      {
+        category: "Packages & Payments",
+        items: [
+          {
+            question: "What packages are available?",
+            answer: "We offer Basic, Premium, and Elite packages. Each package offers different visibility levels, featured placements, and listing durations. Visit the Advertise page for details."
+          },
+          {
+            question: "How do I purchase a package?",
+            answer: "Go to Dashboard → Payments → View Available Packages, select your desired package, and complete the payment through our secure gateway."
+          },
+          {
+            question: "Can I get a refund?",
+            answer: "Refunds are available within 7 days of purchase if no services have been used. Contact support for refund requests."
+          }
+        ]
+      },
+      {
+        category: "Account & Profile",
+        items: [
+          {
+            question: "How do I reset my password?",
+            answer: "Click 'Forgot Password' on the login page, enter your registered email, and follow the reset link sent to your email."
+          },
+          {
+            question: "How do I update my contact information?",
+            answer: "Go to Dashboard → Settings → Profile Settings to update your name, email, phone, and address."
+          },
+          {
+            question: "Can I have multiple accounts?",
+            answer: "Each person/business should maintain only one account. Multiple accounts may result in suspension."
+          }
+        ]
+      },
+      {
+        category: "Property Management",
+        items: [
+          {
+            question: "How do I edit my property listing?",
+            answer: "Go to 'My Properties', find your listing, and click 'Edit'. Make changes and submit for re-approval if required."
+          },
+          {
+            question: "Why was my property rejected?",
+            answer: "Check the rejection reason in your property details. Common reasons include incomplete information, poor image quality, or policy violations. Fix the issues and resubmit."
+          },
+          {
+            question: "How do I delete a property?",
+            answer: "Go to 'My Properties', find the listing you want to remove, and click 'Delete'. This action cannot be undone."
+          }
+        ]
+      }
+    ];
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <OLXStyleHeader />
+
+        <main className="pb-16">
+          <div className="px-4 py-6 max-w-4xl mx-auto">
+            <div className="flex items-center mb-6">
+              <Button
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                className="mr-4 p-2"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Button>
+              <h1 className="text-2xl font-bold text-gray-900">Help Center</h1>
+            </div>
+
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
+                  <MessageSquare className="h-8 w-8 text-[#C70000] mt-1" />
+                  <div>
+                    <h2 className="text-lg font-semibold mb-2">Need More Help?</h2>
+                    <p className="text-gray-600 mb-4">
+                      Can't find what you're looking for? Create a support ticket and our team will assist you.
+                    </p>
+                    <Button
+                      onClick={() => navigate("/support/new")}
+                      className="bg-[#C70000] hover:bg-[#A60000]"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Create Support Ticket
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              {faqs.map((section, idx) => (
+                <Card key={idx}>
+                  <CardHeader>
+                    <CardTitle className="text-[#C70000]">{section.category}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {section.items.map((faq, faqIdx) => (
+                      <div key={faqIdx} className="border-b last:border-b-0 pb-4 last:pb-0">
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {faq.question}
+                        </h3>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card className="mt-6">
+              <CardContent className="p-6 text-center">
+                <h3 className="font-semibold mb-2">Still have questions?</h3>
+                <p className="text-gray-600 mb-4">
+                  Contact us at{" "}
+                  <a href="mailto:sales@ashishproperties.in" className="text-[#C70000] hover:underline">
+                    sales@ashishproperties.in
+                  </a>{" "}
+                  or call{" "}
+                  <a href="tel:9896095599" className="text-[#C70000] hover:underline">
+                    9896095599
+                  </a>
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+
         <BottomNavigation />
       </div>
     );

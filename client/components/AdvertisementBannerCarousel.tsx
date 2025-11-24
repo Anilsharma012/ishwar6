@@ -29,10 +29,10 @@ interface AdvertisementBannerCarouselProps {
 }
 
 const FALLBACKS = [
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=1600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?q=80&w=1600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1920&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1582407947304-fd86f028f716?q=80&w=1920&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1920&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1920&auto=format&fit=crop",
 ];
 
 const readImgKey = (b: any): string | null =>
@@ -102,12 +102,20 @@ const AdvertisementBannerCarousel: React.FC<
         _id: `ad-default-${i + 1}`,
         title:
           i === 0
-            ? "Advertise Your New Residential Project in Rohtak"
+            ? "Find Your Dream Home in Rohtak"
             : i === 1
-              ? "Advertise Your New Commercial Project in Rohtak"
+              ? "Premium Properties for Sale & Rent"
               : i === 2
-                ? "Advertise Your Real Estate Investment Project in Rohtak"
-                : "Advertise Your Industrial Property in Rohtak",
+                ? "Verified Listings - Trusted Real Estate"
+                : "Your Property Partner in Rohtak",
+        description:
+          i === 0
+            ? "Residential • Commercial • Plots - All in One Place"
+            : i === 1
+              ? "1BHK, 2BHK, 3BHK, 4BHK+ Apartments & Villas"
+              : i === 2
+                ? "Expert Guidance • Best Deals • Hassle-Free Experience"
+                : "9896095599 - Contact Us Today!",
         imageUrl: src,
         link: "",
         sortOrder: i + 1,

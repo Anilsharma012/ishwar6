@@ -482,11 +482,11 @@ export default function DynamicFooter() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-[#C70000] font-bold text-xl">
-                  {footerSettings.companyLogo}
-                </span>
-              </div>
+              <img
+                src="/ashish-logo.png"
+                alt={footerSettings.companyName}
+                className="h-12 w-auto"
+              />
               <h3 className="text-2xl font-bold">
                 {footerSettings.companyName}
               </h3>

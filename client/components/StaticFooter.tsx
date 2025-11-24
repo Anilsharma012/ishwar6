@@ -34,7 +34,7 @@ export default function StaticFooter() {
               <img
                 src={ASHISH_LOGO_URL}
                 alt={APP_NAME}
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
               <h3 className="text-2xl font-bold">{APP_NAME}</h3>
             </div>

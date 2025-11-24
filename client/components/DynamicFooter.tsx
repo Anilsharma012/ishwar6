@@ -485,7 +485,7 @@ export default function DynamicFooter() {
               <img
                 src="/ashish-logo.png"
                 alt={footerSettings.companyName}
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
               <h3 className="text-2xl font-bold">
                 {footerSettings.companyName}

@@ -119,21 +119,16 @@ export default function OLXStyleHeader() {
     <header className="bg-[#C70000] border-b border-red-800 sticky top-0 z-40">
       <div className="px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen((v) => !v)}
-            className="p-2 hover:bg-red-700 rounded-lg transition-colors"
-            aria-label="Open menu"
-          >
-            <Menu className="h-6 w-6 text-white" />
-          </button>
-
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <img src={ASHISH_LOGO_URL} alt={APP_NAME} className="h-16 w-auto" />
-            <span className="text-xl font-bold text-white hidden md:inline">
-              {APP_NAME}
-            </span>
+          {/* Menu Button + Logo (Left side) */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsMenuOpen((v) => !v)}
+              className="p-2 hover:bg-red-700 rounded-lg transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="h-6 w-6 text-white" />
+            </button>
+            <img src={ASHISH_LOGO_URL} alt={APP_NAME} className="h-20 w-auto" />
           </div>
 
           {/* Actions: Heart (wishlist) to the LEFT of Bell (notifications) */}

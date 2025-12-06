@@ -110,7 +110,7 @@ export default function Listings() {
     try {
       setLoading(true);
 
-      let url = "/api/properties?status=active";
+      let url = "/api/properties";
 
       if (category) {
         url += `&category=${encodeURIComponent(category)}`;

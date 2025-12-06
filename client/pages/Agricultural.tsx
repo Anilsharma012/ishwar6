@@ -32,6 +32,9 @@ export default function Agricultural() {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
+  const [currentSubcategorySlug, setCurrentSubcategorySlug] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     fetchData();
@@ -61,6 +64,7 @@ export default function Agricultural() {
           ) {
             const firstSubcategory = category.subcategories[0];
             setSubcategories(category.subcategories);
+            setCurrentSubcategorySlug(firstSubcategory.slug);
 
             // Now fetch mini-subcategories for the first subcategory
             if (firstSubcategory._id || firstSubcategory.id) {

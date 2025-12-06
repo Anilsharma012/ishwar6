@@ -167,6 +167,7 @@ function App() {
                     element={<CategoryProperties />}
                   />
                   <Route path="/properties" element={<Properties />} />
+                  <Route path="/listings" element={<Listings />} />
                   {/* New Category Routes */}
                   <Route path="/buy" element={<Buy />} />
                   <Route path="/sale" element={<Sale />} />

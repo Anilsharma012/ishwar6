@@ -152,7 +152,7 @@ export default function Listings() {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setProperties(Array.isArray(data.data) ? data.data : []);
+        setProperties(Array.isArray(data.data?.properties) ? data.data.properties : []);
       } else {
         setProperties([]);
       }

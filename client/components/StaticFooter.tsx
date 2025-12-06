@@ -34,7 +34,7 @@ export default function StaticFooter() {
               <img
                 src={ASHISH_LOGO_URL}
                 alt={APP_NAME}
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
               <h3 className="text-2xl font-bold">{APP_NAME}</h3>
             </div>
@@ -47,7 +47,7 @@ export default function StaticFooter() {
             {/* Social Links */}
             <div className="flex space-x-4">
               <a
-                href="https://facebook.com/aashishproperties"
+                // href="https://facebook.com/aashishproperties"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all"
@@ -55,7 +55,7 @@ export default function StaticFooter() {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://twitter.com/aashishproperties"
+                // href="https://twitter.com/aashishproperties"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all"
@@ -63,7 +63,7 @@ export default function StaticFooter() {
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="https://instagram.com/aashishproperties"
+                // href="https://instagram.com/aashishproperties"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all"
@@ -71,7 +71,7 @@ export default function StaticFooter() {
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="https://youtube.com/aashishproperties"
+                // href="https://youtube.com/aashishproperties"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition-all"
@@ -176,7 +176,7 @@ export default function StaticFooter() {
               </li>
               <li>
                 <Link
-                  to="/blog"
+                  to="/blogs"
                   className="text-red-200 hover:text-white transition-colors duration-200 text-sm"
                 >
                   Blog

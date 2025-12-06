@@ -19,7 +19,7 @@ import {
   getProperties,
   getPropertyById,
   createProperty,
-  updateProperty,
+  updateProperty as userUpdateProperty,
   getFeaturedProperties,
   getUserProperties,
   getUserNotifications,
@@ -39,7 +39,7 @@ import {
 // Category routes (new system)
 import {
   getCategories,
-  getCategoryBySlug,
+//   getCategoryBySlug,
   getSubcategoriesByCategory,
   getAllCategories,
   createCategory,
@@ -63,6 +63,17 @@ import {
   handleSubcategoryIconUpload,
   getSubcategoriesByCategory as getSubcategoriesByCategoryAdmin,
 } from "./routes/subcategories-new";
+
+// Mini-subcategory routes (new system)
+import {
+  getAllMiniSubcategories,
+  getMiniSubcategoriesBySubcategoryId,
+  createMiniSubcategory,
+  updateMiniSubcategory,
+  deleteMiniSubcategory,
+  toggleMiniSubcategoryActive,
+  getMiniSubcategoriesWithCounts,
+} from "./routes/mini-subcategories";
 
 // Service listings routes
 import {
@@ -122,6 +133,16 @@ import {
   getPublicPageBySlug,
 } from "./routes/cms";
 
+// Blog routes
+import {
+  createBlog,
+  getAllBlogs,
+  getBlogBySlug,
+  updateBlog,
+  deleteBlog,
+  uploadBlogImage,
+} from "./routes/blogs";
+
 // Authentication routes
 import {
   registerUser,
@@ -133,6 +154,16 @@ import {
   updateUserProfile,
   firebaseLogin, // <-- ADD THIS
 } from "./routes/auth";
+
+// Free listing limits routes
+import {
+  getUsersWithListingStats,
+  updateUserFreeListingLimit,
+  getAdminFreeListingSettings,
+  updateAdminFreeListingSettings,
+  getUserListingStats,
+  getCurrentUserListingStats,
+} from "./routes/free-listing-limits";
 
 // Admin routes
 import {
@@ -149,7 +180,7 @@ import {
   createCategory as adminCreateCategory,
   updateCategory as adminUpdateCategory,
   deleteCategory as adminDeleteCategory,
-  updateProperty,
+  updateProperty as adminUpdateProperty,
   deleteProperty,
   createProperty as adminCreateProperty,
   getPremiumProperties,
@@ -206,6 +237,9 @@ import {
   debugCategories,
   reinitializeCategories,
 } from "./routes/init";
+
+// 3-level category initialization
+import { initializeCategoriesWithMinis } from "./routes/init-3level-categories";
 import {
   getAdminSettings,
   updateAdminSettings,
@@ -809,6 +843,12 @@ export function createServer() {
   app.post("/api/init", initializeSystem);
   app.get("/api/debug/categories", debugCategories);
   app.post("/api/debug/reinitialize-categories", reinitializeCategories);
+  app.post(
+    "/api/admin/init-3level-categories",
+    authenticateToken,
+    requireAdmin,
+    initializeCategoriesWithMinis,
+  );
 
   // Authentication routes
   app.post("/api/auth/register", registerUser);
@@ -847,7 +887,7 @@ export function createServer() {
     "/api/properties/:id",
     authenticateToken,
     upload.array("images", 10),
-    updateProperty,
+    userUpdateProperty,
   );
   app.use("/api/reviews", reviewsRouter);
 
@@ -918,7 +958,7 @@ export function createServer() {
 
   // PUBLIC Category routes
   app.get("/api/categories", getCategories); // ?active=true&withSub=true
-  app.get("/api/categories/:slug", getCategoryBySlug);
+//   app.get("/api/categories/:slug", getCategoryBySlug);
   app.get(
     "/api/categories/:categorySlug/subcategories",
     getSubcategoriesByCategory,
@@ -1018,6 +1058,55 @@ export function createServer() {
     requireAdmin,
     uploadSubcategoryIcon,
     handleSubcategoryIconUpload,
+  );
+
+  // ADMIN Mini-subcategory routes
+  app.get(
+    "/api/admin/mini-subcategories",
+    authenticateToken,
+    requireAdmin,
+    getAllMiniSubcategories,
+  );
+  app.get(
+    "/api/admin/mini-subcategories/by-subcategory/:subcategoryId",
+    authenticateToken,
+    requireAdmin,
+    getMiniSubcategoriesBySubcategoryId,
+  );
+  app.get(
+    "/api/admin/mini-subcategories/:subcategoryId/with-counts",
+    authenticateToken,
+    requireAdmin,
+    getMiniSubcategoriesWithCounts,
+  );
+  // Public endpoint for getting mini-subcategories with counts (for property posting forms)
+  app.get(
+    "/api/mini-subcategories/:subcategoryId/with-counts",
+    getMiniSubcategoriesWithCounts,
+  );
+  app.post(
+    "/api/admin/mini-subcategories",
+    authenticateToken,
+    requireAdmin,
+    createMiniSubcategory,
+  );
+  app.put(
+    "/api/admin/mini-subcategories/:miniSubcategoryId",
+    authenticateToken,
+    requireAdmin,
+    updateMiniSubcategory,
+  );
+  app.delete(
+    "/api/admin/mini-subcategories/:miniSubcategoryId",
+    authenticateToken,
+    requireAdmin,
+    deleteMiniSubcategory,
+  );
+  app.put(
+    "/api/admin/mini-subcategories/:miniSubcategoryId/toggle",
+    authenticateToken,
+    requireAdmin,
+    toggleMiniSubcategoryActive,
   );
 
   // Service listings routes (public)
@@ -1216,6 +1305,46 @@ export function createServer() {
     requireAdmin,
     bulkDeleteUsers,
   );
+
+  // User-facing free listing stats endpoint
+  app.get(
+    "/api/user/listing-stats",
+    authenticateToken,
+    getCurrentUserListingStats,
+  );
+
+  // Free listing limits management routes
+  app.get(
+    "/api/admin/users/listing-stats",
+    authenticateToken,
+    requireAdmin,
+    getUsersWithListingStats,
+  );
+  app.get(
+    "/api/admin/users/:userId/listing-stats",
+    authenticateToken,
+    requireAdmin,
+    getUserListingStats,
+  );
+  app.put(
+    "/api/admin/users/:userId/free-listing-limit",
+    authenticateToken,
+    requireAdmin,
+    updateUserFreeListingLimit,
+  );
+  app.get(
+    "/api/admin/free-listing-settings",
+    authenticateToken,
+    requireAdmin,
+    getAdminFreeListingSettings,
+  );
+  app.put(
+    "/api/admin/free-listing-settings",
+    authenticateToken,
+    requireAdmin,
+    updateAdminFreeListingSettings,
+  );
+
   app.get(
     "/api/admin/properties",
     authenticateToken,
@@ -1234,7 +1363,7 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     upload.array("images", 10),
-    updateProperty,
+    adminUpdateProperty,
   );
   app.delete(
     "/api/admin/properties/:propertyId",
@@ -1346,7 +1475,7 @@ export function createServer() {
   app.put("/api/test-property-approval/:propertyId", async (req, res) => {
     try {
       console.log("🧪 TEST: Property approval request received:");
-      console.log("📋 URL path:", req.path);
+      console.log("��� URL path:", req.path);
       console.log("📋 Route params:", req.params);
       console.log("📋 Property ID:", req.params.propertyId);
       console.log("📋 Request body:", req.body);
@@ -2107,6 +2236,33 @@ export function createServer() {
     deleteContentPage,
   );
   app.post("/api/content/initialize", initializeContentPages);
+
+  // Blog routes - Public
+  app.get("/api/blogs", getAllBlogs);
+  app.get("/api/blogs/:slug", getBlogBySlug);
+
+  // Blog routes - Admin
+  app.post(
+    "/api/admin/blogs",
+    authenticateToken,
+    requireAdmin,
+    uploadBlogImage.single("featuredImage"),
+    createBlog,
+  );
+  app.get("/api/admin/blogs", authenticateToken, requireAdmin, getAllBlogs);
+  app.put(
+    "/api/admin/blogs/:id",
+    authenticateToken,
+    requireAdmin,
+    uploadBlogImage.single("featuredImage"),
+    updateBlog,
+  );
+  app.delete(
+    "/api/admin/blogs/:id",
+    authenticateToken,
+    requireAdmin,
+    deleteBlog,
+  );
 
   // Database test routes (for debugging)
   app.get("/api/test/database", testDatabase);

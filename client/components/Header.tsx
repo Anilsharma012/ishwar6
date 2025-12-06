@@ -128,10 +128,10 @@ export default function Header() {
       {/* Top Bar */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-white flex items-center justify-center rounded">
-            <span className="text-[#C70000] font-bold text-lg">A</span>
+          <div className="w-10 h-10 md:w-8 md:h-8 bg-white flex items-center justify-center rounded">
+            <span className="text-[#C70000] font-bold text-xl md:text-lg">A</span>
           </div>
-        <span className="text-xl font-bold tracking-wide">ASHISH PROPERTIES</span>
+        <span className="text-lg md:text-xl font-bold tracking-wide">ASHISH PROPERTIES</span>
         </div>
 
         {/* Right actions: MapPin | Heart (wishlist) | Bell (notifications) | Menu */}

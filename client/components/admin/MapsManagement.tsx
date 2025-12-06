@@ -6,7 +6,7 @@ import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Switch } from "../ui/switch";
 import { useToast } from "../ui/use-toast";
-import { Upload, Trash2, Save, MapPin, Image as ImageIcon } from "lucide-react";
+import { Upload, Trash2, Save, MapPin, Image as ImageIcon, Edit3, X } from "lucide-react";
 
 interface AreaMapItem {
   _id?: string;
@@ -23,6 +23,10 @@ export default function MapsManagement() {
   const { toast } = useToast();
   const [items, setItems] = useState<AreaMapItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 👉 NEW: editing state
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const [form, setForm] = useState<AreaMapItem>({
     title: "",
     area: "",
@@ -32,6 +36,18 @@ export default function MapsManagement() {
     sortOrder: 1,
   });
   const [uploading, setUploading] = useState(false);
+
+  const resetForm = () => {
+    setForm({
+      title: "",
+      area: "",
+      description: "",
+      imageUrl: "",
+      isActive: true,
+      sortOrder: 1,
+    });
+    setEditingId(null);
+  };
 
   const fetchItems = async () => {
     if (!token) return;
@@ -109,14 +125,7 @@ export default function MapsManagement() {
       const data = await res.json();
       if (!res.ok || !data?.success)
         throw new Error(data?.error || "Create failed");
-      setForm({
-        title: "",
-        area: "",
-        description: "",
-        imageUrl: "",
-        isActive: true,
-        sortOrder: 1,
-      });
+      resetForm();
       await fetchItems();
       try {
         window.dispatchEvent(new Event("areaMapsUpdated"));
@@ -154,6 +163,7 @@ export default function MapsManagement() {
         description: e?.message || "Update failed",
         variant: "destructive",
       });
+      throw e;
     }
   };
 
@@ -170,6 +180,10 @@ export default function MapsManagement() {
       try {
         window.dispatchEvent(new Event("areaMapsUpdated"));
       } catch {}
+      // agar delete karte time wahi item edit ho raha tha to form reset
+      if (editingId === id) {
+        resetForm();
+      }
     } catch (e: any) {
       toast({
         title: "Error",
@@ -177,6 +191,53 @@ export default function MapsManagement() {
         variant: "destructive",
       });
     }
+  };
+
+  // 👉 NEW: ek hi save handler, create + update dono ke liye
+  const handleSave = async () => {
+    if (!form.imageUrl) {
+      toast({
+        title: "Image required",
+        description: "Please upload or paste an image URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (editingId) {
+        // UPDATE
+        await updateItem(editingId, {
+          title: form.title,
+          area: form.area,
+          description: form.description,
+          imageUrl: form.imageUrl,
+          isActive: form.isActive,
+          sortOrder: form.sortOrder,
+        });
+        toast({ title: "Updated", description: "Map updated successfully" });
+      } else {
+        // CREATE
+        await createItem();
+        return; // createItem already handles toast + reset
+      }
+      resetForm();
+    } catch {
+      // error toast already handled in updateItem/createItem
+    }
+  };
+
+  // 👉 NEW: when clicking Edit on a card
+  const startEdit = (item: AreaMapItem) => {
+    setEditingId(item._id || null);
+    setForm({
+      title: item.title || "",
+      area: item.area || "",
+      description: item.description || "",
+      imageUrl: item.imageUrl,
+      isActive: item.isActive,
+      sortOrder: typeof item.sortOrder === "number" ? item.sortOrder : 1,
+    });
   };
 
   return (
@@ -187,8 +248,26 @@ export default function MapsManagement() {
       </p>
 
       <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Add Map</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>{editingId ? "Edit Map" : "Add Map"}</CardTitle>
+            {editingId && (
+              <p className="text-xs text-orange-600 mt-1">
+                You are editing an existing map. Update fields and click Update.
+              </p>
+            )}
+          </div>
+          {editingId && (
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={resetForm}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Cancel Edit
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid md:grid-cols-2 gap-3">
@@ -250,7 +329,7 @@ export default function MapsManagement() {
                 disabled={uploading}
                 className="w-full"
               >
-                <Upload className="mr-2 h-4 w-4" />{" "}
+                <Upload className="mr-2 h-4 w-4" />
                 {uploading ? "Uploading..." : "Upload"}
               </Button>
             </div>
@@ -277,8 +356,9 @@ export default function MapsManagement() {
               />
             </div>
             <div>
-              <Button onClick={createItem} className="w-full">
-                <Save className="mr-2 h-4 w-4" /> Save
+              <Button onClick={handleSave} className="w-full">
+                <Save className="mr-2 h-4 w-4" />
+                {editingId ? "Update" : "Save"}
               </Button>
             </div>
           </div>
@@ -305,10 +385,18 @@ export default function MapsManagement() {
         )}
         {items.map((it) => (
           <Card key={it._id}>
-            <CardHeader>
+            <CardHeader className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold">
                 {it.title || it.area || "Map"}
               </CardTitle>
+              <Button
+                variant="outline"
+                size="icon"
+                type="button"
+                onClick={() => startEdit(it)}
+              >
+                <Edit3 className="h-4 w-4" />
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2">
               <img

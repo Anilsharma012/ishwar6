@@ -87,7 +87,7 @@ export default function SellerPropertyStatusPage() {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get("/api/seller/properties");
+      const response = await api.get("seller/properties");
       const properties = Array.isArray(response.data)
         ? response.data
         : response.data?.data || [];

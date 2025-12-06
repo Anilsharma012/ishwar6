@@ -705,12 +705,13 @@ export default function MyProperties() {
                                 </Link>
                               </DropdownMenuItem>
 
-                              <DropdownMenuItem asChild>
-                                <Link to={`/property/${property._id}/edit`}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit Property
-                                </Link>
-                              </DropdownMenuItem>
+                             <DropdownMenuItem asChild>
+  <Link to={`/post-property?edit=${property._id}`}>
+    <Edit className="h-4 w-4 mr-2" />
+    Edit Property
+  </Link>
+</DropdownMenuItem>
+
 
                               {property.approvalStatus === "rejected" && (
                                 <DropdownMenuItem

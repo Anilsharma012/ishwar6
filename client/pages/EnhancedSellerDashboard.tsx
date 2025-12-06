@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
 import { Property } from "@shared/types";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
+import { FreeListingStatsCard } from "../components/FreeListingStatsCard";
 import {
   Table,
   TableBody,
@@ -159,6 +160,7 @@ async function getAuthToken(): Promise<string | null> {
 export default function EnhancedSellerDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // UI state
   const [activeTab, setActiveTab] = useState("overview");
@@ -239,26 +241,37 @@ export default function EnhancedSellerDashboard() {
   const [propSearch, setPropSearch] = useState("");
   const [propStatus, setPropStatus] = useState<
     "all" | "pending" | "approved" | "rejected"
-  >(() => {
-    // Initialize from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get("filter");
-    if (
-      tabParam === "pending" ||
-      tabParam === "approved" ||
-      tabParam === "rejected"
-    ) {
-      return tabParam;
-    }
-    return "all";
-  });
+  >("all");
 
   // Handler for clicking KPI cards to navigate to property status page
   const handleKPIFilter = (
     filter: "all" | "pending" | "approved" | "rejected",
   ) => {
+
     navigate(`/seller-dashboard/properties?status=${filter}`);
   };
+
+    // Navigate to dedicated SellerPropertyStatusPage with status filter
+    navigate(`/seller-dashboard/properties?status=${filter}`);
+  };
+
+  // Redirect old URL pattern to new dedicated page for backward compatibility
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const filterParam = urlParams.get("filter");
+    if (
+      filterParam &&
+      (filterParam === "pending" ||
+        filterParam === "approved" ||
+        filterParam === "rejected")
+    ) {
+      // Redirect to dedicated properties page with status parameter
+      navigate(`/seller-dashboard/properties?status=${filterParam}`, {
+        replace: true,
+      });
+    }
+  }, [location.search, navigate]);
+
 
   // Profile
   const [profileData, setProfileData] = useState({
@@ -934,6 +947,8 @@ export default function EnhancedSellerDashboard() {
               </CardContent>
             </Card>
 
+            <FreeListingStatsCard />
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Recent Properties</CardTitle>
@@ -1508,78 +1523,44 @@ export default function EnhancedSellerDashboard() {
 
           {/* Payments */}
           <TabsContent value="payments" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Package className="h-5 w-5" />
-                    <span>Available Packages</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {packages.map((pkg, idx) => (
-                      <div
-                        key={(pkg as any)._id || pkg.name || idx}
-                        className="border rounded-lg p-4"
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-bold text-lg">{pkg.name}</h3>
-                          <Badge
-                            className={
-                              pkg.type === "elite"
-                                ? "bg-purple-100 text-purple-800"
-                                : pkg.type === "premium"
-                                  ? "bg-amber-100 text-amber-800"
-                                  : "bg-blue-100 text-blue-800"
-                            }
-                          >
-                            {pkg.type.toUpperCase()}
-                          </Badge>
-                        </div>
-                        <div className="text-2xl font-bold text-[#C70000] mb-3">
-                          ₹{pkg.price.toLocaleString()}{" "}
-                          <span className="text-sm text-gray-500">
-                            /{pkg.duration} days
-                          </span>
-                        </div>
-                        <div className="space-y-1 mb-4">
-                          {pkg.features.map((feature, i) => (
-                            <div
-                              key={`${pkg._id}-${feature}-${i}`}
-                              className="flex items-center space-x-2"
-                            >
-                              <CheckCircle className="h-3 w-3 text-green-500" />
-                              <span className="text-sm">{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <Button
-                          className="w-full bg-[#C70000] hover:bg-[#A60000]"
-                          onClick={() => navigate("/advertise")}
-                        >
-                          Purchase Package
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start space-x-3">
+                <Package className="h-5 w-5 text-blue-600 mt-1" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900 mb-1">
+                    Need to purchase a package?
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Upgrade your properties with premium packages for better visibility and more leads.
+                  </p>
+                  <Button
+                    onClick={() => navigate("/advertise")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    size="sm"
+                  >
+                    View Available Packages
+                  </Button>
+                </div>
+              </div>
+            </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <CreditCard className="h-5 w-5" />
-                    <span>Payment History</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {payments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <CreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <p className="text-gray-500">No payments yet</p>
-                    </div>
-                  ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5" />
+                  <span>My Purchased Packages & Payment History</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {payments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <CreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-gray-500 mb-2">No payment history yet</p>
+                    <p className="text-sm text-gray-400">
+                      Your purchased packages will appear here
+                    </p>
+                  </div>
+                ) : (
                     <div className="space-y-3">
                       {payments.map((p, idx) => (
                         <div
@@ -1629,7 +1610,6 @@ export default function EnhancedSellerDashboard() {
                   )}
                 </CardContent>
               </Card>
-            </div>
           </TabsContent>
 
           {/* Settings */}

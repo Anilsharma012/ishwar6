@@ -482,11 +482,11 @@ export default function DynamicFooter() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-[#C70000] font-bold text-xl">
-                  {footerSettings.companyLogo}
-                </span>
-              </div>
+              <img
+                src="/ashish-logo.png"
+                alt={footerSettings.companyName}
+                className="h-16 w-auto"
+              />
               <h3 className="text-2xl font-bold">
                 {footerSettings.companyName}
               </h3>
@@ -628,6 +628,14 @@ export default function DynamicFooter() {
                       className="text-red-200 hover:text-white transition-colors duration-200 text-sm"
                     >
                       Contact Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/blogs"
+                      className="text-red-200 hover:text-white transition-colors duration-200 text-sm"
+                    >
+                      Blog
                     </Link>
                   </li>
                 </>

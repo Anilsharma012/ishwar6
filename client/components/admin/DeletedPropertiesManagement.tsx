@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { RefreshCw, Trash2, CheckSquare, Square } from "lucide-react";
+import { RefreshCw, Trash2, CheckSquare } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -99,6 +99,7 @@ export default function DeletedPropertiesManagement() {
     }
   };
 
+  // ✅ Permanent delete (bulk + single) – reuses single delete endpoint for all ids
   const handleBulkPermanentDelete = async () => {
     if (selectedIds.size === 0) {
       toast.error("Please select properties to delete permanently");
@@ -109,18 +110,22 @@ export default function DeletedPropertiesManagement() {
       setActionLoading(true);
       const token = localStorage.getItem("token");
       const { api } = await import("../../lib/api");
-      const response = await api.delete(
-        "admin/properties/bulk/permanent",
-        token,
-        { propertyIds: Array.from(selectedIds) },
+
+      // har selected id ke liye DELETE /admin/properties/:id/permanent
+      await Promise.all(
+        Array.from(selectedIds).map((id) =>
+          api.delete(`admin/properties/${id}/permanent`, token),
+        ),
       );
 
-      if (response.data?.success) {
-        toast.success(response.data.data.message);
-        setSelectedIds(new Set());
-        setDeleteDialogOpen(false);
-        fetchDeletedProperties();
-      }
+      toast.success(
+        `${selectedIds.size} ${
+          selectedIds.size === 1 ? "property" : "properties"
+        } permanently deleted`,
+      );
+      setSelectedIds(new Set());
+      setDeleteDialogOpen(false);
+      fetchDeletedProperties();
     } catch (error) {
       console.error("Error permanently deleting properties:", error);
       toast.error("Failed to permanently delete properties");
@@ -129,6 +134,7 @@ export default function DeletedPropertiesManagement() {
     }
   };
 
+  // Single restore same hi rahega
   const handleRestoreSingle = async (propertyId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -146,25 +152,6 @@ export default function DeletedPropertiesManagement() {
     } catch (error) {
       console.error("Error restoring property:", error);
       toast.error("Failed to restore property");
-    }
-  };
-
-  const handlePermanentDeleteSingle = async (propertyId: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const { api } = await import("../../lib/api");
-      const response = await api.delete(
-        `admin/properties/${propertyId}/permanent`,
-        token,
-      );
-
-      if (response.data?.success) {
-        toast.success("Property permanently deleted");
-        fetchDeletedProperties();
-      }
-    } catch (error) {
-      console.error("Error permanently deleting property:", error);
-      toast.error("Failed to permanently delete property");
     }
   };
 
@@ -299,6 +286,7 @@ export default function DeletedPropertiesManagement() {
                       </Button>
                       <Button
                         onClick={() => {
+                          // sirf ye row select karke dialog open
                           setSelectedIds(new Set([property._id!]));
                           setDeleteDialogOpen(true);
                         }}

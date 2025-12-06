@@ -66,7 +66,7 @@ export default function SellerNotificationsPage() {
     try {
       setLoading(true);
       setError("");
-      const response = await api.get("/api/seller/notifications");
+      const response = await api.get("/seller/notifications");
       const notifications = Array.isArray(response.data)
         ? response.data
         : response.data?.data || response.data?.notifications || [];
@@ -90,19 +90,20 @@ export default function SellerNotificationsPage() {
   }, [notifications, filterType]);
 
   const markAsRead = async (notificationId: string) => {
-    try {
-      await api.patch(`/api/seller/notifications/${notificationId}/read`);
-      setNotifications(
-        notifications.map((n) =>
-          (n._id || n.id) === notificationId ? { ...n, isRead: true } : n,
-        ),
-      );
-      toast.success("Marked as read");
-    } catch (err: any) {
-      console.error("Error marking notification as read:", err);
-      toast.error("Failed to mark as read");
-    }
-  };
+  try {
+    await api.put(`/seller/notifications/${notificationId}/read`);
+    setNotifications(
+      notifications.map((n) =>
+        (n._id || n.id) === notificationId ? { ...n, isRead: true } : n,
+      ),
+    );
+    toast.success("Marked as read");
+  } catch (err: any) {
+    console.error("Error marking as read:", err);
+    toast.error("Failed to mark as read");
+  }
+};
+
 
   const deleteNotification = async (
     notificationId: string,
@@ -110,9 +111,10 @@ export default function SellerNotificationsPage() {
   ) => {
     try {
       const endpoint = source
-        ? `/api/seller/notifications/${notificationId}?source=${source}`
-        : `/api/seller/notifications/${notificationId}`;
-      await api.delete(endpoint);
+  ? `/seller/notifications/${notificationId}?source=${source}`
+  : `/seller/notifications/${notificationId}`;
+await api.delete(endpoint);
+
       setNotifications(
         notifications.filter((n) => (n._id || n.id) !== notificationId),
       );

@@ -71,6 +71,8 @@ interface PropertyFormData {
   priceType: "sale" | "rent";
   propertyType: string; // slug
   subCategory: string; // slug
+  miniSubcategorySlug?: string; // slug for mini-subcategory (optional)
+  miniSubcategoryId?: string; // ID for mini-subcategory (optional)
   location: {
     area: string;
     address: string;
@@ -97,7 +99,12 @@ interface PropertyFormData {
   };
 }
 
-type NormalizedSubcat = { name: string; slug: string; isActive?: boolean };
+type NormalizedSubcat = {
+  _id?: string;
+  name: string;
+  slug: string;
+  isActive?: boolean;
+};
 type NormalizedCategory = {
   _id?: string;
   name: string;
@@ -157,6 +164,7 @@ async function fetchDynamicCategories(): Promise<NormalizedCategory[]> {
               .map((sc: any) => {
                 if (typeof sc === "string") return { name: sc, slug: sc };
                 return {
+                  _id: sc?._id,
                   name: sc?.name ?? sc?.label ?? "",
                   slug: sc?.slug ?? sc?.value ?? "",
                   isActive: sc?.isActive,
@@ -166,6 +174,7 @@ async function fetchDynamicCategories(): Promise<NormalizedCategory[]> {
           } else if (Array.isArray(item?.children)) {
             subs = item.children
               .map((sc: any) => ({
+                _id: sc?._id,
                 name: sc?.name ?? sc?.label ?? "",
                 slug: sc?.slug ?? sc?.value ?? "",
                 isActive: sc?.isActive,
@@ -271,6 +280,20 @@ export default function PostProperty() {
   const [categories, setCategories] = useState<NormalizedCategory[]>([]);
   const [catLoading, setCatLoading] = useState(false);
   const [catError, setCatError] = useState<string | null>(null);
+  const [miniSubcategories, setMiniSubcategories] = useState<
+    Array<{ _id?: string; name: string; slug: string }>
+  >([]);
+  const [miniLoading, setMiniLoading] = useState(false);
+
+  // Fresh recommendations by area
+  const [recommendedProperties, setRecommendedProperties] = useState<any[]>([]);
+  const [recommendLoading, setRecommendLoading] = useState(false);
+
+  // Properties from selected mini-subcategory
+  const [miniSubcategoryProperties, setMiniSubcategoryProperties] = useState<
+    any[]
+  >([]);
+  const [miniPropertiesLoading, setMiniPropertiesLoading] = useState(false);
 
   const [formData, setFormData] = useState<PropertyFormData>({
     title: "",
@@ -279,6 +302,8 @@ export default function PostProperty() {
     priceType: "sale",
     propertyType: "",
     subCategory: "",
+    miniSubcategorySlug: "",
+    miniSubcategoryId: "",
     location: {
       area: "",
       address: "",
@@ -328,7 +353,7 @@ export default function PostProperty() {
     };
   }, []);
 
-  // Derivations
+  // Derivations (computed early, before useEffect hooks that depend on them)
   const selectedCategory = categories.find(
     (c) => c.slug === formData.propertyType,
   );
@@ -339,6 +364,220 @@ export default function PostProperty() {
       (sc) => sc.isActive !== false,
     ) ?? [];
 
+  // Fetch mini-subcategories when subcategory changes
+  useEffect(() => {
+    if (!formData.subCategory) {
+      setMiniSubcategories([]);
+      return;
+    }
+
+    // Find the subcategory _id from available subcategories
+    let selectedSubcat = availableSubcats.find(
+      (sc) => sc.slug === formData.subCategory,
+    );
+
+    // Helper function to fetch mini-subcategories by ID
+    const doFetchMiniSubcategories = async (subcatId: string) => {
+      try {
+        setMiniLoading(true);
+
+        // Fetch mini-subcategories using public endpoint (no auth required)
+        const response = await fetch(
+          `/api/mini-subcategories/${subcatId}/with-counts`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data?.data && Array.isArray(data.data)) {
+            // Map mini-subcategories to simple format
+            const minis = data.data.map((m: any) => ({
+              _id: m._id,
+              name: m.name,
+              slug: m.slug,
+            }));
+            setMiniSubcategories(minis);
+          } else {
+            setMiniSubcategories([]);
+          }
+        } else {
+          setMiniSubcategories([]);
+        }
+      } catch (error) {
+        setMiniSubcategories([]);
+      } finally {
+        setMiniLoading(false);
+      }
+    };
+
+    // Helper function to fetch subcategory with full details including _id
+    const fetchSubcategoryDetails = async (
+      categorySlug: string,
+      subcatSlug: string,
+    ): Promise<string | null> => {
+      try {
+        const response = await fetch(
+          `/api/categories/${categorySlug}?withSub=true`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (response.ok) {
+          const categoryData = await response.json();
+          const data = categoryData?.data || categoryData;
+
+          if (data && Array.isArray(data.subcategories)) {
+            const foundSubcat = data.subcategories.find(
+              (sc: any) => sc.slug === subcatSlug,
+            );
+            if (foundSubcat && foundSubcat._id) {
+              return foundSubcat._id;
+            }
+          }
+        }
+      } catch (error) {
+        // Silently fail - will retry on next attempt
+      }
+      return null;
+    };
+
+    const fetchMiniSubcategories = async () => {
+      let subcatId = selectedSubcat?._id;
+
+      // If _id is missing, try to fetch it
+      if (!subcatId && selectedSubcat) {
+        subcatId = await fetchSubcategoryDetails(
+          formData.propertyType,
+          formData.subCategory,
+        );
+
+        if (subcatId) {
+          // Update selectedSubcat with the fetched _id
+          selectedSubcat = { ...selectedSubcat, _id: subcatId };
+        }
+      }
+
+      // If we have a valid _id, fetch mini-subcategories
+      if (subcatId) {
+        await doFetchMiniSubcategories(subcatId);
+      } else {
+        setMiniSubcategories([]);
+      }
+    };
+
+    fetchMiniSubcategories();
+  }, [formData.subCategory, formData.propertyType]);
+
+  // Fetch recommended properties by area
+  useEffect(() => {
+    if (!formData.location.area) {
+      setRecommendedProperties([]);
+      return;
+    }
+
+    const fetchPropertiesByArea = async () => {
+      try {
+        setRecommendLoading(true);
+        const response = await fetch(
+          `/api/properties?location.area=${encodeURIComponent(formData.location.area)}&limit=6&status=active`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            setRecommendedProperties(data.data);
+          } else if (Array.isArray(data)) {
+            setRecommendedProperties(data);
+          } else {
+            setRecommendedProperties([]);
+          }
+        } else {
+          setRecommendedProperties([]);
+        }
+      } catch (error) {
+        console.warn("Failed to fetch recommended properties:", error);
+        setRecommendedProperties([]);
+      } finally {
+        setRecommendLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchPropertiesByArea, 300);
+    return () => clearTimeout(timeoutId);
+  }, [formData.location.area]);
+
+  // Fetch properties from selected mini-subcategory
+  useEffect(() => {
+    if (!formData.miniSubcategorySlug) {
+      setMiniSubcategoryProperties([]);
+      return;
+    }
+
+    // Find the _id for the selected mini-subcategory slug
+    const selectedMini = miniSubcategories.find(
+      (m) => m.slug === formData.miniSubcategorySlug,
+    );
+
+    if (!selectedMini || !selectedMini._id) {
+      setMiniSubcategoryProperties([]);
+      return;
+    }
+
+    const fetchMiniSubcategoryProperties = async () => {
+      try {
+        setMiniPropertiesLoading(true);
+        const response = await fetch(
+          `/api/properties?miniSubcategoryId=${encodeURIComponent(selectedMini._id)}&limit=8&status=active`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (
+            data.success &&
+            data.data?.properties &&
+            Array.isArray(data.data.properties)
+          ) {
+            setMiniSubcategoryProperties(data.data.properties);
+          } else {
+            setMiniSubcategoryProperties([]);
+          }
+        } else {
+          setMiniSubcategoryProperties([]);
+        }
+      } catch (error) {
+        console.warn("Failed to fetch mini-subcategory properties:", error);
+        setMiniSubcategoryProperties([]);
+      } finally {
+        setMiniPropertiesLoading(false);
+      }
+    };
+
+    fetchMiniSubcategoryProperties();
+  }, [formData.miniSubcategorySlug, miniSubcategories]);
+
+  // Additional derivations
   const categoryLabel =
     selectedCategory?.name ||
     (formData.propertyType ? formData.propertyType : "");
@@ -479,9 +718,22 @@ export default function PostProperty() {
                 whatsappNumber: property.contactInfo?.whatsappNumber || "",
               },
             });
+          } else {
+            setIsEditMode(false);
+            setEditPropertyId(null);
+            alert(
+              "Property not found or you don't have permission to edit it. Starting fresh property creation.",
+            );
+            navigate("/post-property");
           }
         } catch (error) {
           console.error("Error fetching property for edit:", error);
+          setIsEditMode(false);
+          setEditPropertyId(null);
+          alert(
+            "Failed to load property for editing. The property may have been deleted. Starting fresh property creation.",
+          );
+          navigate("/post-property");
         }
       };
 
@@ -553,7 +805,11 @@ export default function PostProperty() {
         if (!hasBasic) return false;
 
         const needSub = availableSubcats.length > 0;
-        if (needSub) return has(formData.subCategory);
+        if (needSub && !has(formData.subCategory)) return false;
+
+        // If mini-subcategories are available for this subcategory, they must be selected too
+        if (miniSubcategories.length > 0 && !has(formData.miniSubcategorySlug))
+          return false;
 
         return true;
       }
@@ -589,6 +845,18 @@ export default function PostProperty() {
         if (!has(formData.propertyType)) missing.push("Property Type");
         if (availableSubcats.length > 0 && !has(formData.subCategory))
           missing.push("Sub Category");
+        if (
+          miniSubcategories.length > 0 &&
+          !has(formData.miniSubcategorySlug)
+        ) {
+          const typeLabel =
+            formData.subCategory === "commercial"
+              ? "Commercial Type"
+              : formData.subCategory === "agricultural"
+                ? "Agricultural Type"
+                : "Property Type";
+          missing.push(typeLabel);
+        }
       }
       alert(
         missing.length
@@ -668,6 +936,9 @@ export default function PostProperty() {
       submitData.append("priceType", formData.priceType);
       submitData.append("propertyType", formData.propertyType); // slug
       submitData.append("subCategory", formData.subCategory); // slug
+      if (formData.miniSubcategorySlug) {
+        submitData.append("miniSubcategorySlug", formData.miniSubcategorySlug);
+      }
       submitData.append("location", JSON.stringify(formData.location));
       submitData.append(
         "specifications",
@@ -1148,6 +1419,7 @@ export default function PostProperty() {
                   onValueChange={(value) => {
                     handleInputChange("propertyType", value);
                     handleInputChange("subCategory", "");
+                    handleInputChange("miniSubcategorySlug", "");
                   }}
                 >
                   <SelectTrigger
@@ -1187,9 +1459,10 @@ export default function PostProperty() {
                   </label>
                   <Select
                     value={formData.subCategory}
-                    onValueChange={(value) =>
-                      handleInputChange("subCategory", value)
-                    }
+                    onValueChange={(value) => {
+                      handleInputChange("subCategory", value);
+                      handleInputChange("miniSubcategorySlug", "");
+                    }}
                   >
                     <SelectTrigger
                       className={
@@ -1223,6 +1496,119 @@ export default function PostProperty() {
                     )}
                 </div>
               )}
+
+              {/* Mini Sub Category (Dynamic - for any subcategory with mini-subcategories) */}
+              {miniSubcategories.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {formData.subCategory === "commercial"
+                      ? "Commercial Type"
+                      : formData.subCategory === "agricultural"
+                        ? "Agricultural Type"
+                        : "Property Type"}{" "}
+                    *
+                  </label>
+                  <Select
+                    value={formData.miniSubcategorySlug || ""}
+                    onValueChange={(value) => {
+                      handleInputChange("miniSubcategorySlug", value);
+                      // Also find and set the ID
+                      const selectedMini = miniSubcategories.find(
+                        (m) => m.slug === value,
+                      );
+                      if (selectedMini?._id) {
+                        handleInputChange(
+                          "miniSubcategoryId",
+                          selectedMini._id,
+                        );
+                      }
+                    }}
+                    disabled={miniLoading}
+                  >
+                    <SelectTrigger
+                      className={
+                        !has(formData.miniSubcategorySlug) &&
+                        miniSubcategories.length > 0
+                          ? "border-red-300"
+                          : ""
+                      }
+                    >
+                      <SelectValue
+                        placeholder={
+                          miniLoading
+                            ? "Loading types..."
+                            : miniSubcategories.length
+                              ? `Select ${formData.subCategory === "commercial" ? "commercial" : formData.subCategory === "agricultural" ? "agricultural" : "property"} type`
+                              : "No types available"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="z-[10050] max-h-[60vh] overscroll-contain z-raise">
+                      {miniSubcategories.map((mini) => (
+                        <SelectItem key={mini.slug} value={mini.slug}>
+                          {mini.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!has(formData.miniSubcategorySlug) &&
+                    miniSubcategories.length > 0 && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Please select a{" "}
+                        {formData.subCategory === "commercial"
+                          ? "commercial"
+                          : formData.subCategory === "agricultural"
+                            ? "agricultural"
+                            : "property"}{" "}
+                        type
+                      </p>
+                    )}
+                </div>
+              )}
+
+              {/* Properties from selected mini-subcategory */}
+              {has(formData.miniSubcategorySlug) &&
+                miniSubcategoryProperties.length > 0 && (
+                  <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                      Sample Properties in This Category
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3">
+                      {miniSubcategoryProperties.map((property) => (
+                        <div
+                          key={property._id}
+                          className="bg-white border border-gray-200 rounded p-3 hover:border-[#C70000] transition-colors"
+                        >
+                          <div className="flex gap-3">
+                            {property.images && property.images.length > 0 && (
+                              <img
+                                src={property.images[0]}
+                                alt={property.title}
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-gray-900 text-sm truncate">
+                                {property.title}
+                              </h4>
+                              <p className="text-xs text-gray-600 mt-1">
+                                {property.specifications?.bedrooms &&
+                                  `${property.specifications.bedrooms} BHK`}
+                                {property.specifications?.area &&
+                                  ` • ${property.specifications.area} sq ft`}
+                              </p>
+                              <p className="text-sm font-semibold text-[#C70000] mt-1">
+                                ₹
+                                {property.price?.toLocaleString?.() ||
+                                  property.price}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1344,6 +1730,78 @@ export default function PostProperty() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Fresh Recommendations by Area */}
+              {formData.location.area && (
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">
+                    Fresh Recommendations in {formData.location.area}
+                  </h3>
+
+                  {recommendLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div
+                          key={i}
+                          className="h-24 bg-gray-200 rounded-lg animate-pulse"
+                        ></div>
+                      ))}
+                    </div>
+                  ) : recommendedProperties.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {recommendedProperties.map((property: any, idx) => {
+                        const propId = property._id || property.id;
+                        return (
+                          <div
+                            key={propId || idx}
+                            className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                          >
+                            {property.images && property.images[0] && (
+                              <img
+                                src={property.images[0]}
+                                alt={property.title}
+                                className="w-full h-32 object-cover"
+                              />
+                            )}
+                            <div className="p-4">
+                              <h4 className="font-semibold text-gray-900 line-clamp-2">
+                                {property.title}
+                              </h4>
+                              <p className="text-lg font-bold text-[#C70000] mt-2">
+                                ₹{Number(property.price).toLocaleString()}
+                                {property.priceType === "rent" && "/month"}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                📍 {property.location?.area || "Rohtak"}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {property.specifications?.area} sq ft
+                              </p>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full mt-3"
+                                onClick={() => navigate(`/property/${propId}`)}
+                              >
+                                View Details
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                      <p className="text-gray-600">
+                        No properties found in {formData.location.area}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Be the first to post in this area!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

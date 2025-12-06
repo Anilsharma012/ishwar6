@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "./ui/button";
@@ -184,37 +182,48 @@ export default function ImageModal({
       <div className="flex-1 flex items-center justify-center relative overflow-hidden">
         <div
           ref={imageRef}
-          className="relative w-full h-full flex items-center justify-center"
+          className="relative flex items-center justify-center"
           onMouseDown={handleMouseDown}
           style={{
             cursor:
               zoomLevel > 1 ? (isDragging ? "grabbing" : "grab") : "pointer",
+            width: "100%",
+            height: "100%",
           }}
         >
-          <img
-            src={currentImage}
-            alt={title}
-            onClick={handleToggleZoom}
-            className="max-w-full max-h-full object-contain transition-transform"
+          <div
+            className="relative inline-flex items-center justify-center"
             style={{
               transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
               transformOrigin: "center",
+              transition: zoomLevel === 1 ? "transform 0.2s ease" : "none",
             }}
-            draggable={false}
-          />
-
-          {/* Watermark */}
-          <div className="absolute inset-0 pointer-events-none opacity-40 flex items-center justify-center">
-            <div
-              className="text-4xl font-bold text-white select-none"
+          >
+            <img
+              src={currentImage}
+              alt={title}
+              onClick={handleToggleZoom}
+              className="max-w-full max-h-full object-contain"
               style={{
-                textShadow: "2px 2px 6px rgba(0,0,0,0.7)",
-                transform: "rotate(-45deg)",
-                whiteSpace: "nowrap",
-                letterSpacing: "1px",
+                maxWidth: "90vw",
+                maxHeight: "90vh",
               }}
-            >
-              ashishproperties.in
+              draggable={false}
+            />
+
+            {/* Watermark - only on image */}
+            <div className="absolute inset-0 pointer-events-none opacity-35 flex items-center justify-center">
+              <div
+                className="text-4xl font-bold text-white select-none"
+                style={{
+                  textShadow: "2px 2px 6px rgba(0,0,0,0.7)",
+                  transform: "rotate(-45deg)",
+                  whiteSpace: "nowrap",
+                  letterSpacing: "1px",
+                }}
+              >
+                ashishproperties.in
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { useAdminNotifications } from "../hooks/useAdminNotifications";
 import {
   LayoutDashboard,
   Megaphone,
@@ -140,6 +141,11 @@ const menuItems: MenuItem[] = [
     icon: Users,
     children: [
       { id: "seller-management", label: "Seller Management", icon: Users },
+      {
+        id: "free-listing-limits",
+        label: "Free Listing Limits",
+        icon: Sliders,
+      },
       { id: "verification-fields", label: "Verification Fields", icon: Shield },
       {
         id: "seller-verification",
@@ -283,6 +289,7 @@ export default function AdminLayout({
   onSectionChange,
 }: AdminLayoutProps) {
   const { user, logout } = useAuth();
+  const { counts } = useAdminNotifications();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([
@@ -308,6 +315,45 @@ export default function AdminLayout({
     );
   };
 
+  const getBadgeForItem = (itemId: string): string | undefined => {
+    switch (itemId) {
+      case "pending-approval":
+        return counts.pendingCount > 0 ? String(counts.pendingCount) : undefined;
+      case "manual-payment-approval":
+        return counts.bankTransfersPending > 0
+          ? String(counts.bankTransfersPending)
+          : undefined;
+      case "seller-verification":
+        return counts.resubmittedCount > 0
+          ? String(counts.resubmittedCount)
+          : undefined;
+      case "user-reports":
+        return counts.reportsPending > 0
+          ? String(counts.reportsPending)
+          : undefined;
+      // Parent sections - show total of children notifications
+      case "advertisements":
+        const adCount =
+          (counts.pendingCount > 0 ? counts.pendingCount : 0) +
+          (counts.resubmittedCount > 0 ? counts.resubmittedCount : 0);
+        return adCount > 0 ? String(adCount) : undefined;
+      case "payments":
+        return counts.bankTransfersPending > 0
+          ? String(counts.bankTransfersPending)
+          : undefined;
+      case "reports":
+        return counts.reportsPending > 0
+          ? String(counts.reportsPending)
+          : undefined;
+      case "sellers":
+        return counts.resubmittedCount > 0
+          ? String(counts.resubmittedCount)
+          : undefined;
+      default:
+        return undefined;
+    }
+  };
+
   const handleLogout = () => {
     logout();
     window.location.href = "/";
@@ -326,6 +372,9 @@ export default function AdminLayout({
         : item.id === "countries"
           ? "/admin/locations/countries"
           : undefined;
+
+    const dynamicBadge = getBadgeForItem(item.id);
+    const badge = dynamicBadge || item.badge;
 
     return (
       <div key={item.id}>
@@ -356,9 +405,12 @@ export default function AdminLayout({
             </div>
             {!sidebarCollapsed && (
               <div className="flex items-center space-x-2">
-                {item.badge && (
-                  <Badge variant="destructive" className="h-5 px-1.5 text-xs">
-                    {item.badge}
+                {badge && (
+                  <Badge
+                    variant="destructive"
+                    className="h-5 px-1.5 text-xs notification-badge-pulse"
+                  >
+                    {badge}
                   </Badge>
                 )}
                 {hasChildren && (
@@ -406,9 +458,12 @@ export default function AdminLayout({
             </div>
             {!sidebarCollapsed && (
               <div className="flex items-center space-x-2">
-                {item.badge && (
-                  <Badge variant="destructive" className="h-5 px-1.5 text-xs">
-                    {item.badge}
+                {badge && (
+                  <Badge
+                    variant="destructive"
+                    className="h-5 px-1.5 text-xs notification-badge-pulse"
+                  >
+                    {badge}
                   </Badge>
                 )}
                 {hasChildren && (

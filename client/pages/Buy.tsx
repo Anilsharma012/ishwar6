@@ -193,11 +193,31 @@ export default function Buy() {
       description: "Commercial properties",
       count: 0,
     },
+    {
+      id: "agricultural",
+      name: "Agricultural",
+      slug: "agricultural",
+      description: "Agricultural lands and farming properties",
+      count: 0,
+    },
   ];
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    // Navigate to /{category}/{subcategory} with category filter
-    navigate(`/buy/${subcategory.slug}?category=buy`);
+    // For special categories that have their own dedicated pages with mini-subcategories
+    const specialCategories: Record<string, string> = {
+      commercial: "/commercial",
+      agricultural: "/agricultural",
+      agriculture: "/agricultural",
+      "co-living": "/co-living",
+      "pg-co-living": "/pg-co-living",
+    };
+
+    if (specialCategories[subcategory.slug]) {
+      navigate(specialCategories[subcategory.slug]);
+    } else {
+      // Navigate to /{category}/{subcategory} with category filter for regular subcategories
+      navigate(`/buy/${subcategory.slug}?category=buy`);
+    }
   };
 
   if (loading) {

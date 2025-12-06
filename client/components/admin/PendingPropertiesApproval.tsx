@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Property } from "@shared/types";
 import { api } from "../../lib/api";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
@@ -59,18 +59,41 @@ const PendingPropertiesApproval = () => {
 
   const fetchPendingProperties = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("adminToken");
       if (!token) {
         setError("Authentication required");
+        setLoading(false);
         return;
       }
-      const response = await api.get("admin/properties/pending", token);
-      if (response.data.success) {
-        setProperties(response.data.data);
+
+      const { createApiUrl } = await import("../../lib/api");
+      const url = createApiUrl("admin/properties/pending");
+      console.log("📥 Fetching pending properties from:", url);
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error("❌ Response status:", response.status);
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
       }
-    } catch (error) {
-      console.error("Error fetching pending properties:", error);
-      setError("Failed to fetch pending properties");
+
+      const data = await response.json();
+      console.log("✅ Pending properties response:", data);
+
+      if (data.success) {
+        setProperties(data.data || []);
+        setError("");
+      } else {
+        setError(data.error || "Failed to fetch pending properties");
+      }
+    } catch (err: any) {
+      console.error("❌ Error fetching pending properties:", err);
+      setError(err.message || "Failed to fetch pending properties");
     } finally {
       setLoading(false);
     }
@@ -80,34 +103,55 @@ const PendingPropertiesApproval = () => {
     propertyId: string,
     approvalStatus: "approved" | "rejected",
   ) => {
-    if (!selectedProperty) return;
+    if (!propertyId) {
+      setError("Invalid property id");
+      return;
+    }
 
     setProcessing(propertyId);
     setError("");
     setSuccess("");
 
     try {
+      // 🔐 ADMIN TOKEN use karo, normal token nahi
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        setError("Authentication required");
+        setProcessing(null);
+        return;
+      }
+
       const payload: any = {
         approvalStatus,
-        adminComments: adminComments.trim() || undefined,
       };
+
+      // Comments sirf tab bhejo jab modal se review ho raha ho
+      if (
+        adminComments.trim() &&
+        selectedProperty &&
+        selectedProperty._id === propertyId
+      ) {
+        payload.adminComments = adminComments.trim();
+      }
 
       if (approvalStatus === "rejected") {
         if (!rejectionRegion || !rejectionReason.trim()) {
-          setError("Please select a problem region and provide a specific reason for rejection");
+          setError(
+            "Please select a problem region and provide a specific reason for rejection",
+          );
+          setProcessing(null);
           return;
         }
-        const regionLabel = REJECTION_REGIONS.find(r => r.value === rejectionRegion)?.label || "General";
-        payload.rejectionReason = `${regionLabel}: ${rejectionReason.trim()}`;
+
+        const regionLabel =
+          REJECTION_REGIONS.find((r) => r.value === rejectionRegion)?.label ||
+          "General";
+
         payload.rejectionRegion = rejectionRegion;
+        payload.rejectionReason = `${regionLabel}: ${rejectionReason.trim()}`;
       }
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Authentication required");
-        return;
-      }
-      console.log(`📤 Sending approval request:`, { propertyId, payload });
+      console.log("📤 Sending approval request:", { propertyId, payload });
 
       const response = await api.put(
         `admin/properties/${propertyId}/approval`,
@@ -115,20 +159,25 @@ const PendingPropertiesApproval = () => {
         token,
       );
 
-      console.log(`📨 Approval response received:`, response);
+      console.log("📨 Approval response received:", response);
 
       if (response.data.success) {
         setSuccess(`Property ${approvalStatus} successfully`);
-        setProperties(properties.filter((p) => p._id !== propertyId));
+
+        // List se remove kar do
+        setProperties((prev) => prev.filter((p) => p._id !== propertyId));
+
+        // Modal + form reset
         setSelectedProperty(null);
         setAdminComments("");
+        setRejectionRegion("");
         setRejectionReason("");
       } else {
         setError(response.data.error || "Failed to update property status");
       }
-    } catch (error: any) {
-      console.error(`❌ Approval error:`, error);
-      setError(error.message || "Network error occurred");
+    } catch (err: any) {
+      console.error("❌ Approval error:", err);
+      setError(err.message || "Network error occurred");
     } finally {
       setProcessing(null);
     }
@@ -170,7 +219,9 @@ const PendingPropertiesApproval = () => {
 
       {error && (
         <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-800">{error}</AlertDescription>
+          <AlertDescription className="text-red-800">
+            {error}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -270,20 +321,22 @@ const PendingPropertiesApproval = () => {
 
                     {/* Property Specifications */}
                     <div className="flex flex-wrap gap-3 text-sm">
-                      {property.specifications.bedrooms && (
+                      {property.specifications?.bedrooms && (
                         <Badge variant="outline">
                           {property.specifications.bedrooms} Bedrooms
                         </Badge>
                       )}
-                      {property.specifications.bathrooms && (
+                      {property.specifications?.bathrooms && (
                         <Badge variant="outline">
                           {property.specifications.bathrooms} Bathrooms
                         </Badge>
                       )}
-                      <Badge variant="outline">
-                        {property.specifications.area} sq ft
-                      </Badge>
-                      {property.specifications.furnished && (
+                      {property.specifications?.area && (
+                        <Badge variant="outline">
+                          {property.specifications.area} sq ft
+                        </Badge>
+                      )}
+                      {property.specifications?.furnished && (
                         <Badge variant="outline">
                           {property.specifications.furnished}
                         </Badge>
@@ -301,9 +354,11 @@ const PendingPropertiesApproval = () => {
                           <span className="font-medium">
                             {property.contactInfo.name}
                           </span>
-                          <Badge variant="secondary">
-                            {property.ownerType}
-                          </Badge>
+                          {property.ownerType && (
+                            <Badge variant="secondary">
+                              {property.ownerType}
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="h-4 w-4 text-gray-500" />
@@ -329,6 +384,7 @@ const PendingPropertiesApproval = () => {
                         Review
                       </Button>
 
+                      {/* Card se direct approve */}
                       <Button
                         onClick={() =>
                           handleApproval(property._id!, "approved")
@@ -342,6 +398,7 @@ const PendingPropertiesApproval = () => {
                           : "Approve"}
                       </Button>
 
+                      {/* Card ka Reject sirf modal open karega */}
                       <Button
                         onClick={() => openPropertyDetails(property)}
                         variant="destructive"
@@ -415,7 +472,9 @@ const PendingPropertiesApproval = () => {
                     💬 Comments for Seller (Optional)
                   </label>
                   <p className="text-xs text-blue-700 mb-3">
-                    These comments will be visible to the seller in their dashboard. Use this to provide helpful feedback or guidance for fixing issues.
+                    These comments will be visible to the seller in their
+                    dashboard. Use this to provide helpful feedback or guidance
+                    for fixing issues.
                   </p>
                   <Textarea
                     value={adminComments}
@@ -434,7 +493,10 @@ const PendingPropertiesApproval = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Problem Region/Section
                     </label>
-                    <Select value={rejectionRegion} onValueChange={setRejectionRegion}>
+                    <Select
+                      value={rejectionRegion}
+                      onValueChange={setRejectionRegion}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select the section with issues..." />
                       </SelectTrigger>
@@ -447,7 +509,7 @@ const PendingPropertiesApproval = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Specific Rejection Reason

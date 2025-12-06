@@ -367,7 +367,9 @@ export default function CategoryProperties() {
     const currentCategory = getCurrentCategory();
 
     if (slug) {
-      const subcategoryName = slug
+      // Normalize "agriculture" to "Agricultural" (handle both variants)
+      let displaySlug = slug === "agriculture" ? "agricultural" : slug;
+      const subcategoryName = displaySlug
         .replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
       const categoryName = currentCategory?.replace(/\b\w/g, (l) =>

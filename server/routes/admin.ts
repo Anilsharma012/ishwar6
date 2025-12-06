@@ -260,7 +260,9 @@ export const getAdminNotificationCounts: RequestHandler = async (req, res) => {
 
     const pendingCount = await db
       .collection("properties")
-      .countDocuments({ approvalStatus: "pending" });
+      .countDocuments({
+        approvalStatus: { $in: ["pending", "pending_approval"] },
+      });
 
     // Approximate resubmitted: pending properties that have been updated after creation
     const resubmittedCount = await db.collection("properties").countDocuments({

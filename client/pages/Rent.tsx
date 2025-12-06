@@ -126,7 +126,7 @@ export default function Rent() {
 
   /**
    * Fallback subcategories for rent page
-   * Residential properties for rent
+   * Residential and agricultural properties for rent
    */
   const getFallbackSubcategories = (): Subcategory[] => [
     {
@@ -171,11 +171,31 @@ export default function Rent() {
       description: "Independent houses",
       count: 0,
     },
+    {
+      id: "agricultural",
+      name: "Agricultural",
+      slug: "agricultural",
+      description: "Agricultural lands and farming properties",
+      count: 0,
+    },
   ];
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    // Navigate with category filter for rent
-    navigate(`/rent/${subcategory.slug}?category=rent&priceType=rent`);
+    // For special categories that have their own dedicated pages with mini-subcategories
+    const specialCategories: Record<string, string> = {
+      commercial: "/commercial",
+      agricultural: "/agricultural",
+      agriculture: "/agricultural",
+      "co-living": "/co-living",
+      "pg-co-living": "/pg-co-living",
+    };
+
+    if (specialCategories[subcategory.slug]) {
+      navigate(specialCategories[subcategory.slug]);
+    } else {
+      // Navigate with category filter for rent
+      navigate(`/rent/${subcategory.slug}?category=rent&priceType=rent`);
+    }
   };
 
   if (loading) {

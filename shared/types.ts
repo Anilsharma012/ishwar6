@@ -4,8 +4,11 @@ export interface Property {
   description: string;
   price: number;
   priceType: "sale" | "rent"; // per month for rent
-  propertyType: string; // "residential", "commercial", "plot", etc.
-  subCategory: string; // "1bhk", "2bhk", "shop", etc.
+  propertyType: string; // "residential", "commercial", "plot", etc. (legacy, use categoryId/subcategoryId for new system)
+  subCategory: string; // "1bhk", "2bhk", "shop", etc. (legacy, use categoryId/subcategoryId for new system)
+  categoryId?: string; // New 3-level system: Category ID
+  subcategoryId?: string; // New 3-level system: Subcategory ID
+  miniSubcategoryId?: string; // New 3-level system: Mini-subcategory ID (optional, only if defined for the subcategory)
   location: {
     sector?: string;
     mohalla?: string;
@@ -80,6 +83,11 @@ export interface User {
     locations: string[];
   };
   favorites: string[]; // property IDs
+  freeListingLimit?: {
+    limit: number; // max free listings
+    period: "monthly" | "yearly"; // reset period
+    limitType: number; // days: 30 for monthly, 365 for yearly
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -100,12 +108,51 @@ export interface Agent extends User {
 export interface Category {
   _id?: string;
   name: string;
-  slug: string; // unique auto-generated
-  iconUrl: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  slug: string; // unique
+  icon?: string;
+  iconUrl?: string;
+  type?: "buy" | "rent" | "commercial" | "agricultural" | "co-living" | "new-projects" | "maps" | "other-services"; // Category type
+  description?: string;
+  sortOrder?: number;
+  order?: number;
+  active?: boolean;
+  isActive?: boolean;
+  subcategories?: Subcategory[]; // Optional embedded subcategories
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface Subcategory {
+  _id?: string;
+  categoryId?: string; // Reference to parent Category ID
+  name: string;
+  slug: string; // unique per category
+  icon?: string;
+  iconUrl?: string;
+  description?: string;
+  sortOrder?: number;
+  order?: number;
+  active?: boolean;
+  isActive?: boolean;
+  miniSubcategories?: MiniSubcategory[]; // Optional embedded mini-subcategories
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface MiniSubcategory {
+  _id?: string;
+  subcategoryId?: string; // Reference to parent Subcategory ID
+  name: string;
+  slug: string; // unique per subcategory
+  icon?: string;
+  iconUrl?: string;
+  description?: string;
+  sortOrder?: number;
+  order?: number;
+  active?: boolean;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ServiceListing {
@@ -125,18 +172,6 @@ export interface ServiceListing {
   active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-}
-
-export interface Subcategory {
-  _id?: string;
-  categoryId: string; // Reference to parent Category
-  name: string;
-  slug: string; // unique per category
-  iconUrl: string;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface ServiceListing {

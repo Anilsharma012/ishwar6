@@ -84,6 +84,7 @@ export const getProperties: RequestHandler = async (req, res) => {
     const {
       propertyType: qPropertyType,
       subCategory,
+      miniSubcategoryId,
       priceType,
       category: qCategory,
       sector,
@@ -95,6 +96,8 @@ export const getProperties: RequestHandler = async (req, res) => {
       bathrooms,
       minArea,
       maxArea,
+      premium,
+      featured,
       sortBy = "date_desc",
       page = "1",
       limit = "20",
@@ -188,7 +191,12 @@ export const getProperties: RequestHandler = async (req, res) => {
 
     // --- 4) Sub-category and other filters ---
     if (subCategory) filter.subCategory = norm(subCategory);
+    if (miniSubcategoryId) filter.miniSubcategoryId = miniSubcategoryId;
     if (priceType) filter.priceType = norm(priceType);
+
+    // Premium/Featured properties filter
+    if (premium === "true") filter.premium = true;
+    if (featured === "true") filter.featured = true;
     if (sector) filter["location.sector"] = norm(sector);
     if (mohalla) filter["location.mohalla"] = norm(mohalla);
     if (landmark) filter["location.landmark"] = norm(landmark);
@@ -415,6 +423,39 @@ export const createProperty: RequestHandler = async (req, res) => {
       normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
     }
 
+    // Handle mini-subcategory: look up ID from slug if provided
+    let miniSubcategoryId: string | undefined = undefined;
+    const miniSubcategorySlug = req.body.miniSubcategorySlug
+      ? normSlug(req.body.miniSubcategorySlug)
+      : undefined;
+
+    if (miniSubcategorySlug) {
+      try {
+        // Get the subcategory ID first
+        const normalizedSubCategory = normSlug(req.body.subCategory);
+        const subcategory = await db.collection("subcategories").findOne({
+          slug: normalizedSubCategory,
+        });
+
+        if (subcategory) {
+          // Now look up the mini-subcategory by slug and parent subcategoryId
+          const mini = await db.collection("mini_subcategories").findOne({
+            slug: miniSubcategorySlug,
+            subcategoryId: subcategory._id?.toString(),
+          });
+
+          if (mini) {
+            miniSubcategoryId = mini._id?.toString();
+          }
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to look up mini-subcategory:",
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+
     const propertyData: Omit<Property, "_id"> & {
       packageId?: string;
       isApproved?: boolean;
@@ -433,6 +474,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       priceType: req.body.priceType,
       propertyType: normalizedPropertyType,
       subCategory: normSlug(req.body.subCategory),
+      ...(miniSubcategoryId ? { miniSubcategoryId } : {}),
       location,
       specifications: {
         ...specifications,
@@ -478,6 +520,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       title: propertyData.title,
       propertyType: propertyData.propertyType,
       subCategory: propertyData.subCategory,
+      miniSubcategoryId: propertyData.miniSubcategoryId || null,
       status: propertyData.status,
       approvalStatus: propertyData.approvalStatus,
       isApproved: propertyData.isApproved,
@@ -485,19 +528,46 @@ export const createProperty: RequestHandler = async (req, res) => {
       packageId: propertyData.packageId || null,
     });
 
-    // Free post limit enforcement (default: 5 free posts per 30 days)
-    const FREE_POST_LIMIT = process.env.FREE_POST_LIMIT
-      ? Number(process.env.FREE_POST_LIMIT)
-      : 5;
-    const FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS
-      ? Number(process.env.FREE_POST_PERIOD_DAYS)
-      : 30;
-
+    // Free post limit enforcement - check user-specific limit or admin default
     if (!propertyData.packageId) {
+      const userIdStr = String(userId);
+
+      // Get user to check custom free listing limit
+      const user = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(userIdStr) });
+
+      // Use user-specific limit or fall back to admin settings or environment defaults
+      let FREE_POST_LIMIT = 5;
+      let FREE_POST_PERIOD_DAYS = 30;
+
+      if (user?.freeListingLimit) {
+        FREE_POST_LIMIT = user.freeListingLimit.limit;
+        FREE_POST_PERIOD_DAYS = user.freeListingLimit.limitType;
+      } else {
+        // Try to get admin default settings
+        const adminSettings = await db
+          .collection("adminSettings")
+          .findOne({ _id: "freeListingLimits" });
+
+        if (adminSettings) {
+          FREE_POST_LIMIT = adminSettings.defaultLimit || 5;
+          FREE_POST_PERIOD_DAYS = adminSettings.defaultLimitType || 30;
+        } else {
+          // Use environment variables or hardcoded defaults
+          FREE_POST_LIMIT = process.env.FREE_POST_LIMIT
+            ? Number(process.env.FREE_POST_LIMIT)
+            : 5;
+          FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS
+            ? Number(process.env.FREE_POST_PERIOD_DAYS)
+            : 30;
+        }
+      }
+
       const periodStart = new Date(
         Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000,
       );
-      const userIdStr = String(userId);
+
       const freePostsCount = await db.collection("properties").countDocuments({
         ownerId: userIdStr,
         createdAt: { $gte: periodStart },
@@ -866,12 +936,10 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const requestUserId = String(userId);
 
     if (propertyOwnerId !== requestUserId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: "You can only edit your own properties",
-        });
+      return res.status(403).json({
+        success: false,
+        error: "You can only edit your own properties",
+      });
     }
 
     // Handle images
@@ -938,6 +1006,42 @@ export const updateProperty: RequestHandler = async (req, res) => {
       normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
     }
 
+    // Handle mini-subcategory: look up ID from slug if provided
+    let miniSubcategoryIdUpdate: string | undefined =
+      property.miniSubcategoryId;
+    const miniSubcategorySlug = req.body.miniSubcategorySlug
+      ? normSlugLocal(req.body.miniSubcategorySlug)
+      : undefined;
+
+    if (miniSubcategorySlug) {
+      try {
+        // Get the subcategory ID first
+        const normalizedSubCategory = normSlugLocal(
+          req.body.subCategory || property.subCategory,
+        );
+        const subcategory = await db.collection("subcategories").findOne({
+          slug: normalizedSubCategory,
+        });
+
+        if (subcategory) {
+          // Now look up the mini-subcategory by slug and parent subcategoryId
+          const mini = await db.collection("mini_subcategories").findOne({
+            slug: miniSubcategorySlug,
+            subcategoryId: subcategory._id?.toString(),
+          });
+
+          if (mini) {
+            miniSubcategoryIdUpdate = mini._id?.toString();
+          }
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to look up mini-subcategory during update:",
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+
     // Prepare update data
     const updateData: any = {
       title: req.body.title || property.title,
@@ -946,6 +1050,9 @@ export const updateProperty: RequestHandler = async (req, res) => {
       priceType: req.body.priceType || property.priceType,
       propertyType: normalizedPropertyType,
       subCategory: normSlugLocal(req.body.subCategory || property.subCategory),
+      ...(miniSubcategoryIdUpdate
+        ? { miniSubcategoryId: miniSubcategoryIdUpdate }
+        : {}),
       location,
       specifications: {
         ...specifications,

@@ -166,7 +166,19 @@ export default function Lease() {
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    navigate(`/lease/${subcategory.slug}?category=lease&priceType=lease`);
+    // For special categories that have their own dedicated pages with mini-subcategories
+    const specialCategories: Record<string, string> = {
+      commercial: "/commercial",
+      agricultural: "/agricultural",
+      "co-living": "/co-living",
+      "pg-co-living": "/pg-co-living",
+    };
+
+    if (specialCategories[subcategory.slug]) {
+      navigate(specialCategories[subcategory.slug]);
+    } else {
+      navigate(`/lease/${subcategory.slug}?category=lease&priceType=lease`);
+    }
   };
 
   if (loading) {

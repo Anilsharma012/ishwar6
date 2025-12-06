@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
+import { FreeListingStatsCard } from "../components/FreeListingStatsCard";
 import {
   Table,
   TableBody,
@@ -938,6 +939,8 @@ export default function EnhancedSellerDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            <FreeListingStatsCard />
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">

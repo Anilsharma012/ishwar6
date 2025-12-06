@@ -1,25 +1,47 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Home, IndianRupee } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-interface Advertisement {
+interface PremiumProperty {
   _id: string;
   title: string;
-  description: string;
-  image: string;
-  link?: string;
-  position: string;
-  active: boolean;
+  price: number;
+  priceType?: string;
+  propertyType?: string;
+  images: string[];
+  location?: {
+    city?: string;
+    sector?: string;
+    address?: string;
+  };
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  areaUnit?: string;
+  premium?: boolean;
+  featured?: boolean;
 }
 
 const SLIDE_INTERVAL = 4000;
-const SWIPE_THRESHOLD_RATIO = 0.18; // ~18%
+const SWIPE_THRESHOLD_RATIO = 0.18;
 const SETTLE_MS = 320;
 
+const formatPrice = (price: number): string => {
+  if (price >= 10000000) {
+    return `${(price / 10000000).toFixed(2)} Cr`;
+  } else if (price >= 100000) {
+    return `${(price / 100000).toFixed(2)} Lac`;
+  } else if (price >= 1000) {
+    return `${(price / 1000).toFixed(1)}K`;
+  }
+  return price.toString();
+};
+
 const PropertyAdsSlider: React.FC = () => {
-  const [ads, setAds] = useState<Advertisement[]>([]);
+  const navigate = useNavigate();
+  const [properties, setProperties] = useState<PremiumProperty[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // slide state with ref (so pointer handlers read fresh value)
   const [currentSlide, _setCurrentSlide] = useState(0);
   const currentSlideRef = useRef(0);
   const setCurrentSlide = (n: number | ((p: number) => number)) => {
@@ -41,40 +63,48 @@ const PropertyAdsSlider: React.FC = () => {
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   const slides = useMemo(
-    () => ads.map((ad) => ({ type: "ad" as const, data: ad })),
-    [ads]
+    () => properties.map((prop) => ({ type: "property" as const, data: prop })),
+    [properties]
   );
 
-  // fetch banners
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-        const adsRes = await (window as any).api("/banners?active=true", { timeout: 7000 });
-        if (adsRes?.ok && adsRes.json?.success && Array.isArray(adsRes.json.data)) {
-          const mapped: Advertisement[] = adsRes.json.data.map((b: any) => ({
-            _id: b._id || Math.random().toString(36).slice(2),
-            title: b.title,
-            description: b.description || "",
-            image: b.imageUrl || b.image,
-            link: b.link,
-            position: b.position || "homepage_middle",
-            active: b.isActive !== false,
-          }));
-          setAds(mapped.filter((m) => !!m.image));
+        const res = await (window as any).api("/properties?premium=true&status=active&limit=20", { timeout: 10000 });
+        if (res?.ok && res.json?.success) {
+          const rawData = res.json.data?.properties || res.json.data || [];
+          const dataArray = Array.isArray(rawData) ? rawData : [];
+          const premiumProps: PremiumProperty[] = dataArray
+            .filter((p: any) => p.premium === true || p.featured === true)
+            .map((p: any) => ({
+              _id: p._id,
+              title: p.title || "Premium Property",
+              price: p.price || 0,
+              priceType: p.priceType,
+              propertyType: p.propertyType,
+              images: Array.isArray(p.images) ? p.images : [],
+              location: p.location || {},
+              bedrooms: p.bedrooms,
+              bathrooms: p.bathrooms,
+              area: p.area,
+              areaUnit: p.areaUnit || "sq.ft",
+              premium: p.premium,
+              featured: p.featured,
+            }));
+          setProperties(premiumProps);
         } else {
-          setAds([]);
+          setProperties([]);
         }
       } catch (e) {
-        console.warn("ads fetch fail:", e);
-        setAds([]);
+        console.warn("Premium properties fetch failed:", e);
+        setProperties([]);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  // helpers
   const width = () => wrapRef.current?.getBoundingClientRect().width || 1;
   const applyTransform = (offsetPercent: number) => {
     const el = trackRef.current;
@@ -91,7 +121,6 @@ const PropertyAdsSlider: React.FC = () => {
     applyTransform(-currentSlideRef.current * 100);
   };
 
-  // autoplay controls (no play/pause UI)
   const clearAutoplay = () => {
     if (autoplayTimerRef.current) clearInterval(autoplayTimerRef.current);
     autoplayTimerRef.current = null;
@@ -120,7 +149,6 @@ const PropertyAdsSlider: React.FC = () => {
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
-  // pointer logic (mounted once per slide-count)
   useEffect(() => {
     const wrap = wrapRef.current;
     const track = trackRef.current;
@@ -148,17 +176,14 @@ const PropertyAdsSlider: React.FC = () => {
 
     const onMove = (e: PointerEvent) => {
       if (!draggingRef.current) return;
-      e.cancelable && e.preventDefault(); // avoid UA horizontal scroll conflicts
+      e.cancelable && e.preventDefault();
       dxRef.current = e.clientX - startXRef.current;
 
       if (rafRef.current == null) {
         rafRef.current = requestAnimationFrame(() => {
           rafRef.current = null;
           const w = width();
-
-          // ✅ FIX: natural drag direction (right drag => previous slide visible, left drag => next slide)
-          const offsetPct = -currentSlideRef.current * 100 + (dxRef.current / w) * 100; // <-- was * -100
-
+          const offsetPct = -currentSlideRef.current * 100 + (dxRef.current / w) * 100;
           applyTransform(offsetPct);
         });
       }
@@ -171,7 +196,7 @@ const PropertyAdsSlider: React.FC = () => {
 
       const w = width();
       const ratio = Math.abs(dxRef.current) / w;
-      const dir = dxRef.current < 0 ? 1 : -1; // left swipe => next, right swipe => prev
+      const dir = dxRef.current < 0 ? 1 : -1;
 
       if (Math.abs(dxRef.current) > 8) lastClickSuppressedRef.current = true;
 
@@ -181,10 +206,9 @@ const PropertyAdsSlider: React.FC = () => {
         setCurrentSlide(target);
       }
       syncToSlide();
-      startAutoplay(); // resume
+      startAutoplay();
     };
 
-    // initial align
     syncToSlide();
 
     wrap.addEventListener("pointerdown", onDown, { passive: true });
@@ -200,7 +224,6 @@ const PropertyAdsSlider: React.FC = () => {
     };
   }, [slides.length]);
 
-  // keep position in sync when slide changes by arrows/autoplay
   useEffect(() => {
     syncToSlide();
   }, [currentSlide]);
@@ -208,9 +231,23 @@ const PropertyAdsSlider: React.FC = () => {
   const next = () => slides.length > 1 && setCurrentSlide((p) => (p + 1) % slides.length);
   const prev = () => slides.length > 1 && setCurrentSlide((p) => (p - 1 + slides.length) % slides.length);
 
-  const handleBannerClick = (ad: Advertisement) => {
-    if (lastClickSuppressedRef.current) return; // ignore click after drag
-    if (ad.link) window.open(ad.link, "_blank", "noopener,noreferrer");
+  const handlePropertyClick = (property: PremiumProperty) => {
+    if (lastClickSuppressedRef.current) return;
+    navigate(`/property/${property._id}`);
+  };
+
+  const getLocationText = (loc: PremiumProperty["location"]) => {
+    if (!loc) return "Rohtak";
+    const parts = [loc.sector, loc.city].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : "Rohtak";
+  };
+
+  const getMainImage = (images: string[]) => {
+    if (images.length === 0) return "/placeholder.svg";
+    const img = images[0];
+    if (img.startsWith("http")) return img;
+    if (img.startsWith("/")) return img;
+    return `/uploads/properties/${img}`;
   };
 
   if (loading) {
@@ -229,10 +266,10 @@ const PropertyAdsSlider: React.FC = () => {
     <div className="px-4 py-6 bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Sponsored Banners</h2>
+          <h2 className="text-xl font-bold text-gray-900">Premium Properties</h2>
+          <span className="text-sm text-[#C70000] font-medium">{properties.length} Premium Listings</span>
         </div>
 
-        {/* MAIN CAROUSEL */}
         <div className="relative">
           <div
             ref={wrapRef}
@@ -244,29 +281,72 @@ const PropertyAdsSlider: React.FC = () => {
               className="flex"
               style={{ transform: `translate3d(-${currentSlide * 100}%,0,0)` }}
             >
-              {slides.map(({ data: ad }, index) => {
-                const mainUrl = ad.image || "/placeholder.svg";
-                const title = ad.title || "Advertisement";
+              {slides.map(({ data: property }, index) => {
+                const mainUrl = getMainImage(property.images);
                 return (
-                  <div key={`${ad._id}-${index}`} className="w-full flex-shrink-0">
+                  <div key={`${property._id}-${index}`} className="w-full flex-shrink-0">
                     <div
-                      onClick={() => handleBannerClick(ad)}
-                      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => handlePropertyClick(property)}
+                      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01]"
                     >
-                      <div className="relative h-64">
+                      <div className="relative h-64 md:h-80">
                         <img
                           src={mainUrl}
-                          alt={title}
+                          alt={property.title}
                           draggable={false}
                           className="w-full h-full object-cover pointer-events-none select-none"
                           onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.svg")}
                         />
-                        <div className="absolute top-4 right-4">
-                          <span className="bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium">Ad</span>
+                        
+                        <div className="absolute top-4 left-4 flex gap-2">
+                          <span className="bg-[#C70000] text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                            PREMIUM
+                          </span>
+                          {property.featured && (
+                            <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                              FEATURED
+                            </span>
+                          )}
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
-                        <div className="absolute left-4 bottom-4 text-white">
-                          <h3 className="text-lg font-semibold drop-shadow">{title}</h3>
+
+                        {property.priceType && (
+                          <div className="absolute top-4 right-4">
+                            <span className="bg-white/90 text-gray-800 px-3 py-1 rounded-full text-xs font-medium capitalize">
+                              For {property.priceType}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        
+                        <div className="absolute left-4 right-4 bottom-4 text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <IndianRupee className="h-5 w-5" />
+                            <span className="text-2xl font-bold">{formatPrice(property.price)}</span>
+                            {property.priceType === "rent" && <span className="text-sm opacity-80">/month</span>}
+                          </div>
+                          
+                          <h3 className="text-lg font-semibold drop-shadow line-clamp-1 mb-2">{property.title}</h3>
+                          
+                          <div className="flex items-center gap-1 text-sm opacity-90">
+                            <MapPin className="h-4 w-4" />
+                            <span className="line-clamp-1">{getLocationText(property.location)}</span>
+                          </div>
+
+                          <div className="flex items-center gap-4 mt-2 text-sm">
+                            {property.bedrooms && (
+                              <span className="flex items-center gap-1">
+                                <Home className="h-4 w-4" />
+                                {property.bedrooms} BHK
+                              </span>
+                            )}
+                            {property.area && (
+                              <span>{property.area} {property.areaUnit || "sq.ft"}</span>
+                            )}
+                            {property.propertyType && (
+                              <span className="capitalize bg-white/20 px-2 py-0.5 rounded">{property.propertyType}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -280,20 +360,63 @@ const PropertyAdsSlider: React.FC = () => {
             <>
               <button
                 onClick={prev}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all"
-                aria-label="Previous slide"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all z-10"
+                aria-label="Previous property"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={next}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all"
-                aria-label="Next slide"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all z-10"
+                aria-label="Next property"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </>
           )}
+        </div>
+
+        {slides.length > 1 && (
+          <div className="flex justify-center gap-2 mt-4">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  idx === currentSlide 
+                    ? "bg-[#C70000] w-6" 
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+            {slides.map(({ data: property }, idx) => (
+              <button
+                key={`thumb-${property._id}`}
+                onClick={() => setCurrentSlide(idx)}
+                className={`relative flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden transition-all ${
+                  idx === currentSlide 
+                    ? "ring-2 ring-[#C70000] ring-offset-2" 
+                    : "opacity-70 hover:opacity-100"
+                }`}
+              >
+                <img
+                  src={getMainImage(property.images)}
+                  alt={property.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.svg")}
+                />
+                {idx === currentSlide && (
+                  <div className="absolute inset-0 bg-[#C70000]/20" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

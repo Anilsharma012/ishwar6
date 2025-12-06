@@ -150,7 +150,19 @@ export default function PG() {
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    navigate(`/pg/${subcategory.slug}?category=pg`);
+    // For special categories that have their own dedicated pages with mini-subcategories
+    const specialCategories: Record<string, string> = {
+      commercial: "/commercial",
+      agricultural: "/agricultural",
+      "co-living": "/co-living",
+      "pg-co-living": "/pg-co-living",
+    };
+
+    if (specialCategories[subcategory.slug]) {
+      navigate(specialCategories[subcategory.slug]);
+    } else {
+      navigate(`/pg/${subcategory.slug}?category=pg`);
+    }
   };
 
   if (loading) {

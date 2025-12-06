@@ -266,6 +266,31 @@ function LightboxModalZoom({
     setOffset({ x: 0, y: 0 });
   }, [open, index]);
 
+
+
+    // 🔒 When lightbox open, lock body scroll
+  useEffect(() => {
+    if (!open) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+
+    // Scrollbar ki width adjust karne ke liye (layout jump avoid)
+    const scrollBarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    if (scrollBarWidth > 0) {
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+    }
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+    };
+  }, [open]);
+
+
   const wheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
     if (!open) return;
     const delta = e.deltaY > 0 ? -0.14 : 0.14;
@@ -345,34 +370,47 @@ function LightboxModalZoom({
         </button>
 
         {/* Main image area – full viewport, original aspect via object-contain */}
-        <div
-          className="relative w-full h-full flex items-center justify-center cursor-pointer select-none"
-          onWheel={wheel}
-          onMouseDown={down}
-          onMouseMove={move}
-          onMouseUp={up}
-          onMouseLeave={up}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onDoubleClick={toggleZoom}
-          onClick={toggleZoom}
-        >
-         <img
-  src={imgSrc(index)}
-  alt={title || "Property image"}
-  className="w-full h-auto max-h-[100vh] object-contain"
-  style={{
-    transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
-    transition: "transform 0.18s ease-out",
-    willChange: "transform",
-  }}
-  draggable={false}
-  onContextMenu={(e) => e.preventDefault()}
-/>
+{/* Main image area – full viewport, original aspect via object-contain */}
+<div
+  className="relative w-full h-full flex items-center justify-center cursor-pointer select-none"
+  onWheel={wheel}
+  onMouseDown={down}
+  onMouseMove={move}
+  onMouseUp={up}
+  onMouseLeave={up}
+  onTouchStart={onTouchStart}
+  onTouchMove={onTouchMove}
+  onTouchEnd={onTouchEnd}
+  onDoubleClick={toggleZoom}
+  onClick={toggleZoom}
+>
+  {/* 👇 Ye wrapper ab 90% viewport width lega, watermark isi ke andar rahega */}
+  <div
+    className="relative inline-block w-[90vw] max-w-[90vw] max-h-[90vh]"
+    style={{
+      transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+      transition: "transform 0.18s ease-out",
+      willChange: "transform",
+    }}
+  >
+    <img
+      src={imgSrc(index)}
+      alt={title || "Property image"}
+      className="w-full h-auto max-h-[90vh] object-contain"
+      draggable={false}
+      onContextMenu={(e) => e.preventDefault()}
+    />
 
-          <WatermarkLayer text={wmText} copies={wmCopies} opacity={wmOpacity} />
-        </div>
+    {/* Watermark sirf image area ke upar */}
+    <WatermarkLayer
+      text={wmText}
+      copies={wmCopies}
+      opacity={wmOpacity}
+    />
+  </div>
+</div>
+
+
 
         {/* Helper text bottom */}
         <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-300 px-4">
@@ -863,500 +901,515 @@ export default function PropertyDetail() {
   const isRent = property.priceType === "rent";
 
   const images = Array.isArray(property.images) ? property.images : [];
-  const addr =
-    property.location?.address ||
-    [loc.landmark, loc.colony, loc.sector, loc.area, loc.city]
-      .filter(Boolean)
-      .join(", ");
+  const addr = property.location?.area || "Rohtak";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Button
-              variant="ghost"
-              onClick={() => navigate(-1)}
-              className="flex items-center"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div className="flex items-center space-x-2">
+  <div className="min-h-screen bg-gray-50">
+  {/* Header */}
+  <div className="bg-white border-b sticky top-0 z-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between h-16">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="flex items-center"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
+        <div className="flex items-center space-x-2">
+          {/* ❤️ Wishlist button on detail page */}
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={likeBusy}
+            onClick={toggleLike}
+            aria-label={isLiked ? "Remove from wishlist" : "Save to wishlist"}
+            title={isLiked ? "Remove from wishlist" : "Save to wishlist"}
+          >
+            <Heart
+              className={`h-4 w-4 ${
+                isLiked ? "fill-red-500 text-red-500" : "text-gray-600"
+              }`}
+            />
+          </Button>
+
+          {/* Share button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              const shareData = {
+                title: property?.title || "Property Listing",
+                text: `Check out this property: ${property?.title}`,
+                url: window.location.href,
+              };
+              try {
+                if (navigator.share) {
+                  await navigator.share(shareData);
+                  notify("Shared successfully!");
+                } else {
+                  await navigator.clipboard.writeText(window.location.href);
+                  notify("Link copied to clipboard!");
+                }
+              } catch {
+                await navigator.clipboard.writeText(window.location.href);
+                notify("Link copied to clipboard!");
+              }
+            }}
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+
+          {/* Message owner button */}
+          <Button
+            size="sm"
+            disabled={startingChat}
+            className="bg-[#C70000] hover:bg-[#A60000] text-white"
+            onClick={handleStartChat}
+          >
+            {startingChat ? (
+              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1" />
+            ) : (
+              <MessageCircle className="h-4 w-4 mr-1" />
+            )}
+            {startingChat ? "Starting..." : "Message Owner"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Body */}
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Images + Details */}
+      <div className="lg:col-span-2 space-y-6">
+        {images.length > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <PreviewImageWithMarks
+                images={images}
+                index={currentImageIndex}
+                onChange={setCurrentImageIndex}
+                title={property.title}
+                watermarkText={
+                  watermarkSettings?.text || "ashishproperties.in"
+                }
+                watermarkOpacity={
+                  typeof watermarkSettings?.opacity === "number"
+                    ? watermarkSettings.opacity
+                    : 0.18
+                }
+                watermarkCopies={3}
+                onOpenModal={() => setLightboxOpen(true)}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Property Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl text-gray-900">
+              {property.title}
+            </CardTitle>
+            <div className="flex items-center text-gray-600 mt-1">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span>{addr}</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-[#C70000] mb-3">
+              ₹{Number(property.price || 0).toLocaleString("en-IN")}{" "}
+              {isRent && <span className="text-lg">/month</span>}
+            </div>
+
+            <div className="flex flex-wrap gap-1 mb-3">
+              {!!property.propertyType && (
+                <Chip className="bg-red-50 text-[#C70000]">
+                  <Home className="h-3 w-3 mr-1" />
+                  {String(property.propertyType)}
+                </Chip>
+              )}
+              {!!property.subCategory && (
+                <Chip>
+                  <Layers className="h-3 w-3 mr-1" />
+                  {String(property.subCategory)}
+                </Chip>
+              )}
+              {!!property.priceType && (
+                <Chip>
+                  <Tag className="h-3 w-3 mr-1" />
+                  {String(property.priceType).toUpperCase()}
+                </Chip>
+              )}
+              {!!property.status && <Chip>{String(property.status)}</Chip>}
+              {(property.isVerified || property.meta?.verified) && (
+                <Chip className="bg-emerald-50 text-emerald-700">
+                  <BadgeCheck className="h-3 w-3 mr-1" />
+                  Verified
+                </Chip>
+              )}
+            </div>
+
+            {property.description && (
+              <>
+                <h4 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                  <FileText className="h-4 w-4" /> Description
+                </h4>
+                <p className="text-gray-700 whitespace-pre-line mb-4">
+                  {property.description}
+                </p>
+              </>
+            )}
+
+            <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <Ruler className="h-4 w-4" /> Specifications
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6">
+              <KV k="Bedrooms" v={specs.bedrooms} />
+              <KV k="Bathrooms" v={specs.bathrooms} />
+              <KV k="Balconies" v={specs.balconies} />
+              <KV
+                k="Area"
+                v={
+                  specs.area && `${specs.area} ${specs.areaUnit || "sq ft"}`
+                }
+              />
+              <KV
+                k="Carpet Area"
+                v={
+                  specs.carpetArea &&
+                  `${specs.carpetArea} ${specs.areaUnit || "sq ft"}`
+                }
+              />
+              <KV
+                k="Built-up Area"
+                v={
+                  specs.builtUpArea &&
+                  `${specs.builtUpArea} ${specs.areaUnit || "sq ft"}`
+                }
+              />
+              <KV k="Floor" v={specs.floor} />
+              <KV k="Total Floors" v={specs.totalFloors} />
+              <KV k="Facing" v={specs.facing} />
+              <KV k="Furnishing" v={specs.furnishing} />
+              <KV k="Property Age" v={specs.age} />
+              <KV k="Ownership" v={specs.ownership} />
+              <KV k="Maintenance" v={specs.maintenance} />
+              <KV
+                k="Dimensions"
+                v={
+                  (property.dimensions?.length ||
+                    property.dimensions?.width) &&
+                  `${property.dimensions?.length || ""}${
+                    property.dimensions?.length ? " x " : ""
+                  }${property.dimensions?.width || ""} ${
+                    property.dimensions?.unit || ""
+                  }`
+                }
+              />
+              <KV
+                k="Plot Area"
+                v={
+                  details.plotArea &&
+                  `${details.plotArea} ${details.plotUnit || ""}`
+                }
+              />
+              <KV
+                k="RERA"
+                v={property.meta?.reraId || details.reraId}
+              />
+              <KV
+                k="Posted On"
+                v={
+                  (property.meta?.postedOn || property.createdAt) &&
+                  new Date(
+                    property.meta?.postedOn || (property.createdAt as any)
+                  ).toLocaleDateString()
+                }
+              />
+              <KV k="Listing ID" v={property.meta?.listingId} />
+              <KV
+                k="Posted By"
+                v={
+                  property.meta?.postedBy ||
+                  property.postedBy ||
+                  property.contactInfo?.name
+                }
+              />
+            </div>
+
+            {!!(
+              property.amenities?.length || details.amenities?.length
+            ) && (
+              <>
+                <h4 className="mt-4 text-sm font-semibold text-gray-900 mb-2">
+                  Amenities / Features
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {(property.amenities || details.amenities || [])
+                    .slice(0, 40)
+                    .map((a: string, i: number) => (
+                      <Chip key={i}>{a}</Chip>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {(loc?.landmark ||
+              loc?.nearby?.length ||
+              details?.nearby?.length ||
+              property.tags?.length ||
+              details?.tags?.length) && (
+              <>
+                <h4 className="mt-4 text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <Landmark className="h-4 w-4" /> Nearby / Tags
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {loc?.landmark && <Chip>{loc.landmark}</Chip>}
+                  {Array.isArray(loc?.nearby) &&
+                    loc.nearby.map((n, i) => (
+                      <Chip key={`n-${i}`}>{n}</Chip>
+                    ))}
+                  {Array.isArray(details?.nearby) &&
+                    details!.nearby!.map((n, i) => (
+                      <Chip key={`dn-${i}`}>{n}</Chip>
+                    ))}
+                  {(property.tags || details?.tags || []).map(
+                    (t: string, i: number) => (
+                      <Chip key={`t-${i}`}>{t}</Chip>
+                    )
+                  )}
+                </div>
+              </>
+            )}
+
+            {(details?.floorPlanUrl ||
+              details?.reraCertificateUrl ||
+              details?.documents?.length) && (
+              <>
+                <h4 className="mt-4 text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <IdCard className="h-4 w-4" /> Documents
+                </h4>
+                <div className="flex flex-col gap-2">
+                  {details?.floorPlanUrl && (
+                    <a
+                      className="text-[#C70000] underline"
+                      href={details.floorPlanUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      • Floor Plan
+                    </a>
+                  )}
+                  {details?.reraCertificateUrl && (
+                    <a
+                      className="text-[#C70000] underline"
+                      href={details.reraCertificateUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      • RERA Certificate
+                    </a>
+                  )}
+                  {Array.isArray(details?.documents) &&
+                    details.documents.map((d: any, i: number) => (
+                      <a
+                        key={i}
+                        className="text-[#C70000] underline"
+                        href={typeof d === "string" ? d : d?.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        •{" "}
+                        {typeof d === "string"
+                          ? `Document ${i + 1}`
+                          : d?.name || `Document ${i + 1}`}
+                      </a>
+                    ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {(property.location?.address ||
+          property.location?.city ||
+          property.location?.sector ||
+          property.location?.colony) && (
+          <Card>
+            <CardContent className="p-4">
+              <LocationMap
+                address={property.location?.address}
+                city={property.location?.city}
+                state={property.location?.state}
+                sector={property.location?.sector}
+                colony={property.location?.colony}
+                landmark={property.location?.landmark}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardContent>
+            <div className="mt-6">
+              <PropertyReviews propertyId={property._id} />
+              <ReviewsList targetId={property._id} targetType="property" />
+              {authLoading ? (
+                <div className="text-sm text-gray-500 mt-2">
+                  Checking login…
+                </div>
+              ) : isAuthenticated ? (
+                <ReviewForm
+                  key={user?._id || "authed"}
+                  targetId={property._id}
+                  targetType="property"
+                />
+              ) : (
+                <div className="mt-2 text-sm">
+                  Login to write a review.{" "}
+                  <Link
+                    to="/login"
+                    state={{ redirectTo: location.pathname }}
+                    className="text-[#C70000] underline"
+                  >
+                    Login
+                  </Link>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Contact Section */}
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="font-medium">
+                {property.contactInfo?.name}
+              </p>
+              <p className="text-sm text-gray-600">
+                {property.contactInfo?.email}
+              </p>
+            </div>
+
+            {/* Desktop */}
+            <div className="hidden md:flex flex-col space-y-3">
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  const shareData = {
-                    title: property?.title || "Property Listing",
-                    text: `Check out this property: ${property?.title}`,
-                    url: window.location.href,
-                  };
-                  try {
-                    if (navigator.share) {
-                      await navigator.share(shareData);
-                      notify("Shared successfully!");
-                    } else {
-                      await navigator.clipboard.writeText(window.location.href);
-                      notify("Link copied to clipboard!");
-                    }
-                  } catch {
-                    await navigator.clipboard.writeText(window.location.href);
-                    notify("Link copied to clipboard!");
-                  }
-                }}
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                disabled={startingChat}
-                className="bg-[#C70000] hover:bg-[#A60000] text-white"
+                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"
                 onClick={handleStartChat}
               >
-                {startingChat ? (
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-1" />
-                ) : (
-                  <MessageCircle className="h-4 w-4 mr-1" />
-                )}
-                {startingChat ? "Starting..." : "Message Owner"}
+                <MessageCircle className="h-4 w-4 mr-2" /> Message
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
+                onClick={() =>
+                  handleCall(property.contactInfo?.phone || "")
+                }
+              >
+                <Phone className="h-4 w-4 mr-2" /> Call
+              </Button>
+              <Button
+                className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
+                onClick={() =>
+                  handleWhatsApp(
+                    property.contactInfo?.whatsappNumber ||
+                      property.contactInfo?.phone ||
+                      ""
+                  )
+                }
+              >
+                WhatsApp
               </Button>
             </div>
-          </div>
-        </div>
+
+            {/* Mobile */}
+            <div className="space-y-3 md:hidden">
+              <Button
+                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3 rounded-md"
+                onClick={handleStartChat}
+                disabled={startingChat}
+              >
+                {startingChat ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                )}
+                <span>{startingChat ? "Starting..." : "Message"}</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3 rounded-md"
+                onClick={() =>
+                  handleCall(property.contactInfo?.phone || "")
+                }
+              >
+                <Phone className="h-4 w-4 mr-2" /> Call
+              </Button>
+
+              <Button
+                className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3 rounded-md"
+                onClick={() =>
+                  handleWhatsApp(
+                    property.contactInfo?.whatsappNumber ||
+                      property.contactInfo?.phone ||
+                      ""
+                  )
+                }
+              >
+                WhatsApp
+              </Button>
+            </div>
+
+            <div className="pt-4 border-t">
+              <p className="text-xs text-gray-500 text-center">
+                Contact details are verified by our team
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Images + Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {images.length > 0 && (
-              <Card>
-                <CardContent className="p-4">
-                  <PreviewImageWithMarks
-                    images={images}
-                    index={currentImageIndex}
-                    onChange={setCurrentImageIndex}
-                    title={property.title}
-                    watermarkText={
-                      watermarkSettings?.text || "ashishproperties.in"
-                    }
-                    watermarkOpacity={
-                      typeof watermarkSettings?.opacity === "number"
-                        ? watermarkSettings.opacity
-                        : 0.18
-                    }
-                    watermarkCopies={3}
-                    onOpenModal={() => setLightboxOpen(true)}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Property Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl text-gray-900">
-                  {property.title}
-                </CardTitle>
-                <div className="flex items-center text-gray-600 mt-1">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span>{addr}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-[#C70000] mb-3">
-                  ₹{Number(property.price || 0).toLocaleString("en-IN")}{" "}
-                  {isRent && <span className="text-lg">/month</span>}
-                </div>
-
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {!!property.propertyType && (
-                    <Chip className="bg-red-50 text-[#C70000]">
-                      <Home className="h-3 w-3 mr-1" />
-                      {String(property.propertyType)}
-                    </Chip>
-                  )}
-                  {!!property.subCategory && (
-                    <Chip>
-                      <Layers className="h-3 w-3 mr-1" />
-                      {String(property.subCategory)}
-                    </Chip>
-                  )}
-                  {!!property.priceType && (
-                    <Chip>
-                      <Tag className="h-3 w-3 mr-1" />
-                      {String(property.priceType).toUpperCase()}
-                    </Chip>
-                  )}
-                  {!!property.status && <Chip>{String(property.status)}</Chip>}
-                  {(property.isVerified || property.meta?.verified) && (
-                    <Chip className="bg-emerald-50 text-emerald-700">
-                      <BadgeCheck className="h-3 w-3 mr-1" />
-                      Verified
-                    </Chip>
-                  )}
-                </div>
-
-                {property.description && (
-                  <>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                      <FileText className="h-4 w-4" /> Description
-                    </h4>
-                    <p className="text-gray-700 whitespace-pre-line mb-4">
-                      {property.description}
-                    </p>
-                  </>
-                )}
-
-                <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                  <Ruler className="h-4 w-4" /> Specifications
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6">
-                  <KV k="Bedrooms" v={specs.bedrooms} />
-                  <KV k="Bathrooms" v={specs.bathrooms} />
-                  <KV k="Balconies" v={specs.balconies} />
-                  <KV
-                    k="Area"
-                    v={
-                      specs.area &&
-                      `${specs.area} ${specs.areaUnit || "sq ft"}`
-                    }
-                  />
-                  <KV
-                    k="Carpet Area"
-                    v={
-                      specs.carpetArea &&
-                      `${specs.carpetArea} ${specs.areaUnit || "sq ft"}`
-                    }
-                  />
-                  <KV
-                    k="Built-up Area"
-                    v={
-                      specs.builtUpArea &&
-                      `${specs.builtUpArea} ${specs.areaUnit || "sq ft"}`
-                    }
-                  />
-                  <KV k="Floor" v={specs.floor} />
-                  <KV k="Total Floors" v={specs.totalFloors} />
-                  <KV k="Facing" v={specs.facing} />
-                  <KV k="Furnishing" v={specs.furnishing} />
-                  <KV k="Property Age" v={specs.age} />
-                  <KV k="Ownership" v={specs.ownership} />
-                  <KV k="Maintenance" v={specs.maintenance} />
-                  <KV
-                    k="Dimensions"
-                    v={
-                      (property.dimensions?.length ||
-                        property.dimensions?.width) &&
-                      `${property.dimensions?.length || ""}${
-                        property.dimensions?.length ? " x " : ""
-                      }${property.dimensions?.width || ""} ${
-                        property.dimensions?.unit || ""
-                      }`
-                    }
-                  />
-                  <KV
-                    k="Plot Area"
-                    v={
-                      details.plotArea &&
-                      `${details.plotArea} ${details.plotUnit || ""}`
-                    }
-                  />
-                  <KV
-                    k="RERA"
-                    v={property.meta?.reraId || details.reraId}
-                  />
-                  <KV
-                    k="Posted On"
-                    v={
-                      (property.meta?.postedOn || property.createdAt) &&
-                      new Date(
-                        property.meta?.postedOn || (property.createdAt as any)
-                      ).toLocaleDateString()
-                    }
-                  />
-                  <KV k="Listing ID" v={property.meta?.listingId} />
-                  <KV
-                    k="Posted By"
-                    v={
-                      property.meta?.postedBy ||
-                      property.postedBy ||
-                      property.contactInfo?.name
-                    }
-                  />
-                </div>
-
-                {!!(
-                  property.amenities?.length ||
-                  details.amenities?.length
-                ) && (
-                  <>
-                    <h4 className="mt-4 text-sm font-semibold text-gray-900 mb-2">
-                      Amenities / Features
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(property.amenities || details.amenities || [])
-                        .slice(0, 40)
-                        .map((a: string, i: number) => (
-                          <Chip key={i}>{a}</Chip>
-                        ))}
-                    </div>
-                  </>
-                )}
-
-                {(loc?.landmark ||
-                  loc?.nearby?.length ||
-                  details?.nearby?.length ||
-                  property.tags?.length ||
-                  details?.tags?.length) && (
-                  <>
-                    <h4 className="mt-4 text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                      <Landmark className="h-4 w-4" /> Nearby / Tags
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {loc?.landmark && <Chip>{loc.landmark}</Chip>}
-                      {Array.isArray(loc?.nearby) &&
-                        loc.nearby.map((n, i) => (
-                          <Chip key={`n-${i}`}>{n}</Chip>
-                        ))}
-                      {Array.isArray(details?.nearby) &&
-                        details!.nearby!.map((n, i) => (
-                          <Chip key={`dn-${i}`}>{n}</Chip>
-                        ))}
-                      {(property.tags || details?.tags || []).map(
-                        (t: string, i: number) => (
-                          <Chip key={`t-${i}`}>{t}</Chip>
-                        )
-                      )}
-                    </div>
-                  </>
-                )}
-
-                {(details?.floorPlanUrl ||
-                  details?.reraCertificateUrl ||
-                  details?.documents?.length) && (
-                  <>
-                    <h4 className="mt-4 text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                      <IdCard className="h-4 w-4" /> Documents
-                    </h4>
-                    <div className="flex flex-col gap-2">
-                      {details?.floorPlanUrl && (
-                        <a
-                          className="text-[#C70000] underline"
-                          href={details.floorPlanUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          • Floor Plan
-                        </a>
-                      )}
-                      {details?.reraCertificateUrl && (
-                        <a
-                          className="text-[#C70000] underline"
-                          href={details.reraCertificateUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          • RERA Certificate
-                        </a>
-                      )}
-                      {Array.isArray(details?.documents) &&
-                        details.documents.map((d: any, i: number) => (
-                          <a
-                            key={i}
-                            className="text-[#C70000] underline"
-                            href={typeof d === "string" ? d : d?.url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            •{" "}
-                            {typeof d === "string"
-                              ? `Document ${i + 1}`
-                              : d?.name || `Document ${i + 1}`}
-                          </a>
-                        ))}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            {(property.location?.address ||
-              property.location?.city ||
-              property.location?.sector ||
-              property.location?.colony) && (
-              <Card>
-                <CardContent className="p-4">
-                  <LocationMap
-                    address={property.location?.address}
-                    city={property.location?.city}
-                    state={property.location?.state}
-                    sector={property.location?.sector}
-                    colony={property.location?.colony}
-                    landmark={property.location?.landmark}
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            <Card>
-              <CardContent>
-                <div className="mt-6">
-                  <PropertyReviews propertyId={property._id} />
-                  <ReviewsList targetId={property._id} targetType="property" />
-                  {authLoading ? (
-                    <div className="text-sm text-gray-500 mt-2">
-                      Checking login…
-                    </div>
-                  ) : isAuthenticated ? (
-                    <ReviewForm
-                      key={user?._id || "authed"}
-                      targetId={property._id}
-                      targetType="property"
-                    />
-                  ) : (
-                    <div className="mt-2 text-sm">
-                      Login to write a review.{" "}
-                      <Link
-                        to="/login"
-                        state={{ redirectTo: location.pathname }}
-                        className="text-[#C70000] underline"
-                      >
-                        Login
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Contact Section */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="font-medium">
-                    {property.contactInfo?.name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {property.contactInfo?.email}
-                  </p>
-                </div>
-
-                {/* Desktop */}
-                <div className="hidden md:flex flex-col space-y-3">
-                  <Button
-                    className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"
-                    onClick={handleStartChat}
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" /> Message
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
-                    onClick={() =>
-                      handleCall(property.contactInfo?.phone || "")
-                    }
-                  >
-                    <Phone className="h-4 w-4 mr-2" /> Call
-                  </Button>
-                  <Button
-                    className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
-                    onClick={() =>
-                      handleWhatsApp(
-                        property.contactInfo?.whatsappNumber ||
-                          property.contactInfo?.phone ||
-                          ""
-                      )
-                    }
-                  >
-                    WhatsApp
-                  </Button>
-                </div>
-
-                {/* Mobile */}
-                <div className="space-y-3 md:hidden">
-                  <Button
-                    className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3 rounded-md"
-                    onClick={handleStartChat}
-                    disabled={startingChat}
-                  >
-                    {startingChat ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                    ) : (
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                    )}
-                    <span>{startingChat ? "Starting..." : "Message"}</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3 rounded-md"
-                    onClick={() =>
-                      handleCall(property.contactInfo?.phone || "")
-                    }
-                  >
-                    <Phone className="h-4 w-4 mr-2" /> Call
-                  </Button>
-
-                  <Button
-                    className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3 rounded-md"
-                    onClick={() =>
-                      handleWhatsApp(
-                        property.contactInfo?.whatsappNumber ||
-                          property.contactInfo?.phone ||
-                          ""
-                      )
-                    }
-                  >
-                    WhatsApp
-                  </Button>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <p className="text-xs text-gray-500 text-center">
-                    Contact details are verified by our team
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      {/* LIGHTBOX */}
-      <LightboxModalZoom
-        open={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        images={images}
-        index={currentImageIndex}
-        onIndexChange={setCurrentImageIndex}
-        title={property.title}
-        wmText={watermarkSettings?.text || "ashishproperties.in"}
-        wmOpacity={
-          typeof watermarkSettings?.opacity === "number"
-            ? watermarkSettings.opacity
-            : 0.18
-        }
-        wmCopies={3}
-      />
-
-      {property && (
-        <EnquiryModal
-          isOpen={enquiryModalOpen}
-          onClose={() => setEnquiryModalOpen(false)}
-          propertyId={property._id}
-          propertyTitle={property.title}
-          ownerName={property.contactInfo?.name || ""}
-        />
-      )}
     </div>
+  </div>
+
+  {/* LIGHTBOX */}
+  <LightboxModalZoom
+    open={lightboxOpen}
+    onClose={() => setLightboxOpen(false)}
+    images={images}
+    index={currentImageIndex}
+    onIndexChange={setCurrentImageIndex}
+    title={property.title}
+    wmText={watermarkSettings?.text || "ashishproperties.in"}
+    wmOpacity={
+      typeof watermarkSettings?.opacity === "number"
+        ? watermarkSettings.opacity
+        : 0.18
+    }
+    wmCopies={3}
+  />
+
+  {property && (
+    <EnquiryModal
+      isOpen={enquiryModalOpen}
+      onClose={() => setEnquiryModalOpen(false)}
+      propertyId={property._id}
+      propertyTitle={property.title}
+      ownerName={property.contactInfo?.name || ""}
+    />
+  )}
+</div>
+
   );
 }

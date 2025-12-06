@@ -306,9 +306,9 @@ export default function Support() {
 
             <Card className="mb-6">
               <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start space-x-4"> 
                   <MessageSquare className="h-8 w-8 text-[#C70000] mt-1" />
-                  <div>
+               {/*   <div>
                     <h2 className="text-lg font-semibold mb-2">Need More Help?</h2>
                     <p className="text-gray-600 mb-4">
                       Can't find what you're looking for? Create a support ticket and our team will assist you.
@@ -320,7 +320,7 @@ export default function Support() {
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Create Support Ticket
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               </CardContent>
             </Card>

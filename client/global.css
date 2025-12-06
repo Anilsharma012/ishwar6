@@ -133,6 +133,20 @@
   .active\:scale-98:active {
     transform: scale(0.98);
   }
+
+  /* Admin notification badge pulse animation */
+  .notification-badge-pulse {
+    animation: notification-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes notification-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* ---------------- Watermark (property cards) – bottom center -------------- */
@@ -202,4 +216,61 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform;
+}
+
+
+
+
+/* Desktop par (>=768px) left aane wala mobile-logo HIDE */
+@media (min-width: 768px) {
+  .header-left a { display: none !important; }
+}
+
+/* Center brand ko aggressively bada allow karo */
+.center-brand img {
+  max-height: none !important;   /* kill any global cap */
+}
+
+/* Optionally: aur bada chahiye */
+@media (min-width: 1024px) {
+  .center-brand img { height: 7rem !important; } /* ~h-28 */
+}
+@media (min-width: 1280px) {
+  .center-brand img { height: 8rem !important; } /* ~h-32 */
+}
+
+
+
+
+
+/* Desktop par fixed overlay "home logo" ko hatao */
+@media (min-width: 768px) {
+  a[aria-label="Ashish Properties Home"].fixed,
+  a[aria-label="Ashish Properties Home"][class*="fixed"] {
+    display: none !important;
+  }
+}
+
+/* (Already added) center logo size force */
+.center-brand img { max-height: none !important; }
+@media (min-width: 1024px) { .center-brand img { height: 7rem !important; } }
+@media (min-width: 1280px) { .center-brand img { height: 15rem !important; } }
+
+
+
+
+
+/* Advertisement banner text fix */
+.advertisement-carousel h2,
+.advertisement-carousel p {
+  color: #fff !important;
+}
+
+/* Optionally thoda readable font weight/size */
+.advertisement-carousel h2 {
+  font-weight: 700;
+}
+
+.advertisement-carousel p {
+  font-weight: 400;
 }

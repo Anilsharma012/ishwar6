@@ -4,6 +4,8 @@ import type { ApiResponse } from "@shared/types";
 import { ObjectId } from "mongodb";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import "dotenv/config";
+
 
 /** ---------- Config ---------- */
 interface RazorpayConfig {
@@ -18,10 +20,21 @@ const getRazorpayConfig = (): RazorpayConfig | null => {
   const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
   const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || "").trim();
 
-  if (!keyId || !keySecret) {
-    console.error(
-      "❌ Razorpay credentials not configured (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET missing)"
-    );
+  console.log(
+    "🔑 RZP cfg:",
+    {
+      hasKeyId: !!keyId,
+      hasKeySecret: !!keySecret,
+      prefix: keyId.slice(0, 8) + "...",
+      NODE_ENV: process.env.NODE_ENV,
+    }
+  );
+
+  if (!keyId || !keySecret) return null;
+
+  // safety: production me test key allow mat karo
+  if ((process.env.NODE_ENV || "production") === "production" && keyId.startsWith("rzp_test")) {
+    console.error("❌ Production is using TEST Razorpay key.");
     return null;
   }
 
@@ -32,6 +45,8 @@ const getRazorpayConfig = (): RazorpayConfig | null => {
     webhookSecret: webhookSecret || undefined,
   };
 };
+
+
 
 /** ---------- Helpers ---------- */
 const bad = (res: any, msg: string, code = 400) =>

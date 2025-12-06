@@ -344,9 +344,9 @@ function App() {
 
                   {/* About Us and Policy Routes */}
                   <Route
-                      path="/categories/:category"
-                      element={<CategoryProperties />}
-                    />
+                    path="/about-us"
+                    element={<AboutUs />}
+                  />
                     <Route path="/checkout/:planId" element={<Checkout />} />
                     <Route
                       path="/categories/:category/:subcategory"

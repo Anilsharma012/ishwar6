@@ -342,8 +342,8 @@ function App() {
                   <Route path="/my-properties" element={<MyProperties />} />
                   <Route path="/clients" element={<Clients />} />
 
-                    <Route path="/" element={<Index />} />
-                    <Route path="/categories" element={<Categories />} />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/categories" element={<Categories />} />
                     <Route
                       path="/categories/:category"
                       element={<CategoryProperties />}

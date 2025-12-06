@@ -193,7 +193,11 @@ export const getSubcategoriesWithCounts: RequestHandler = async (req, res) => {
       // For buy/sale categories, filter by priceType, for others use propertyType
       const propertyFilter: any = {
         status: "active",
-        approvalStatus: "approved",
+        $or: [
+          { approvalStatus: "approved" },
+          { approvalStatus: { $exists: false } },
+          { approvalStatus: "pending" },
+        ],
       };
 
       // Map category to appropriate property field filter

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Property } from "@shared/types";
 import { api } from "../lib/api";
 import { Button } from "../components/ui/button";
@@ -151,6 +151,7 @@ async function getAuthToken(): Promise<string | null> {
     if (fbAuth?.currentUser?.getIdToken)
       token = await fbAuth.currentUser.getIdToken(true);
   } catch {}
+
   return token;
 }
 
@@ -179,7 +180,7 @@ export default function EnhancedSellerDashboard() {
   const [replyTarget, setReplyTarget] = useState<Message | null>(null);
   const [replyText, setReplyText] = useState("");
 
-  // NEW: Logout confirm modal state
+  // Logout confirm modal state
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   const openReplyModal = (m: Message) => {
@@ -187,11 +188,13 @@ export default function EnhancedSellerDashboard() {
     setReplyText(`Hi ${m.buyerName}, regarding ${m.propertyTitle}.`);
     setReplyModalOpen(true);
   };
+
   const closeReplyModal = () => {
     setReplyModalOpen(false);
     setReplyTarget(null);
     setReplyText("");
   };
+
   const handleReplyButtonClick = (m: Message) => {
     if (m.conversationId) {
       navigate(`/conversation/${m.conversationId}`);
@@ -207,11 +210,13 @@ export default function EnhancedSellerDashboard() {
         toast.error("Session expired or invalid target. Please login again.");
         return;
       }
+
       const trimmed = replyText.trim();
       if (!trimmed) {
         toast.error("Please enter a reply message before sending.");
         return;
       }
+
       const body: Record<string, unknown> = { message: trimmed };
       if (replyTarget.source === "enquiry") body.enquiryId = replyTarget._id;
       if (replyTarget.buyerId) body.buyerId = replyTarget.buyerId;
@@ -225,8 +230,10 @@ export default function EnhancedSellerDashboard() {
           | string
           | null
           | undefined;
+
         closeReplyModal();
         await fetchDashboardData();
+
         if (newConversationId) navigate(`/conversation/${newConversationId}`);
       } else {
         toast.error("Failed to send reply");
@@ -243,15 +250,10 @@ export default function EnhancedSellerDashboard() {
     "all" | "pending" | "approved" | "rejected"
   >("all");
 
-  // Handler for clicking KPI cards to navigate to property status page
+  // ✅ FIXED: clean single function (duplicate block removed)
   const handleKPIFilter = (
     filter: "all" | "pending" | "approved" | "rejected",
   ) => {
-
-    navigate(`/seller-dashboard/properties?status=${filter}`);
-  };
-
-    // Navigate to dedicated SellerPropertyStatusPage with status filter
     navigate(`/seller-dashboard/properties?status=${filter}`);
   };
 
@@ -265,13 +267,11 @@ export default function EnhancedSellerDashboard() {
         filterParam === "approved" ||
         filterParam === "rejected")
     ) {
-      // Redirect to dedicated properties page with status parameter
       navigate(`/seller-dashboard/properties?status=${filterParam}`, {
         replace: true,
       });
     }
   }, [location.search, navigate]);
-
 
   // Profile
   const [profileData, setProfileData] = useState({
@@ -315,9 +315,12 @@ export default function EnhancedSellerDashboard() {
       navigate("/user-dashboard", { replace: true });
       return;
     }
+
     void fetchDashboardData();
+
     const handler = () => fetchDashboardData();
     window.addEventListener("properties:updated", handler as any);
+
     return () =>
       window.removeEventListener("properties:updated", handler as any);
   }, [user, navigate]);
@@ -385,6 +388,7 @@ export default function EnhancedSellerDashboard() {
     try {
       setLoading(true);
       setError("");
+
       const token = await getAuthToken();
       if (!token) {
         navigate("/auth", { replace: true });
@@ -534,6 +538,7 @@ export default function EnhancedSellerDashboard() {
         (res as any)?.data?._id ||
         (res as any)?.data?.data?.conversationId ||
         (res as any)?.data?.conversationId;
+
       if (newId) navigate(`/conversation/${newId}`);
       else toast.error("Failed to open chat");
     } catch (e) {
@@ -561,18 +566,16 @@ export default function EnhancedSellerDashboard() {
       const token = await getAuthToken();
       await api.post(`/seller/properties/${id}/resubmit`, {}, token!);
       await fetchDashboardData();
-      toast({
-        title: "Property Resubmitted",
+
+      toast.success("Property Resubmitted", {
         description:
           "Your property has been resubmitted for review. Our team will review it shortly.",
         duration: 5000,
       });
     } catch (e) {
       console.error("resubmit:", e);
-      toast({
-        title: "Resubmission Failed",
+      toast.error("Resubmission Failed", {
         description: "Unable to resubmit the property. Please try again.",
-        variant: "destructive",
         duration: 5000,
       });
     }
@@ -628,6 +631,7 @@ export default function EnhancedSellerDashboard() {
     let list = properties.slice();
     if (propStatus !== "all")
       list = list.filter((p) => p.approvalStatus === propStatus);
+
     if (propSearch.trim()) {
       const q = propSearch.toLowerCase();
       list = list.filter(
@@ -672,7 +676,7 @@ export default function EnhancedSellerDashboard() {
       <OLXStyleHeader />
 
       <div className="container mx-auto px-4 py-6">
-        {/* Header (mobile-friendly, no overlap) */}
+        {/* Header */}
         <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
             <h1 className="text-2xl font-bold text-gray-900 truncate">
@@ -708,7 +712,6 @@ export default function EnhancedSellerDashboard() {
               Refresh
             </Button>
 
-            {/* CHANGED: open confirm dialog instead of direct logout */}
             <Button
               onClick={() => setLogoutOpen(true)}
               variant="outline"
@@ -837,13 +840,8 @@ export default function EnhancedSellerDashboard() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* FIXED: no horizontal scroll; proper chips in 2 rows on mobile */}
           <div className="mb-3">
-            <TabsList
-              className="
-        block w-full h-auto rounded-md bg-muted p-1
-      "
-            >
+            <TabsList className="block w-full h-auto rounded-md bg-muted p-1">
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                 <TabsTrigger
                   value="overview"
@@ -870,6 +868,7 @@ export default function EnhancedSellerDashboard() {
                 >
                   My Properties
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="messages"
                   className="relative w-full py-2 text-xs sm:text-sm justify-center"
@@ -882,26 +881,26 @@ export default function EnhancedSellerDashboard() {
                   )}
                 </TabsTrigger>
 
-                {/* 2nd row */}
                 <TabsTrigger
                   value="insights"
                   className="w-full py-2 text-xs sm:text-sm justify-center"
                 >
                   Insights
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="payments"
                   className="w-full py-2 text-xs sm:text-sm justify-center"
                 >
                   Payments
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="settings"
                   className="w-full py-2 text-xs sm:text-sm justify-center"
                 >
                   Settings
                 </TabsTrigger>
-                {/* <TabsTrigger value="blog" className="w-full py-2 text-xs sm:text-sm justify-center">Blog</TabsTrigger> */}
               </div>
             </TabsList>
           </div>
@@ -919,6 +918,7 @@ export default function EnhancedSellerDashboard() {
                       <Plus className="h-4 w-4 mr-2" /> Post New Property
                     </Button>
                   </Link>
+
                   <Button
                     variant="outline"
                     className="w-full"
@@ -928,6 +928,7 @@ export default function EnhancedSellerDashboard() {
                   >
                     <Home className="h-4 w-4 mr-2" /> Manage Properties
                   </Button>
+
                   <Button
                     variant="outline"
                     className="w-full"
@@ -936,6 +937,7 @@ export default function EnhancedSellerDashboard() {
                     <MessageSquare className="h-4 w-4 mr-2" /> View Messages (
                     {stats.unreadMessages})
                   </Button>
+
                   <Button
                     variant="outline"
                     className="w-full"
@@ -980,9 +982,7 @@ export default function EnhancedSellerDashboard() {
                   <div className="space-y-4">
                     {properties.slice(0, 3).map((property: any, idx) => (
                       <div
-                        key={
-                          property._id || property.id || property.title || idx
-                        }
+                        key={property._id || property.id || property.title || idx}
                         className="border border-gray-200 rounded-lg p-4"
                       >
                         <div className="flex items-start justify-between">
@@ -1092,9 +1092,7 @@ export default function EnhancedSellerDashboard() {
                                   variant="outline"
                                   onClick={() => {
                                     if (!id)
-                                      return toast.error(
-                                        "Notification id missing",
-                                      );
+                                      return toast.error("Notification id missing");
                                     markNotificationAsRead(id);
                                   }}
                                 >
@@ -1107,9 +1105,7 @@ export default function EnhancedSellerDashboard() {
                                 variant="outline"
                                 onClick={() => {
                                   if (!id)
-                                    return toast.error(
-                                      "Notification id missing",
-                                    );
+                                    return toast.error("Notification id missing");
                                   deleteNotification(id, n.source);
                                 }}
                               >
@@ -1205,9 +1201,7 @@ export default function EnhancedSellerDashboard() {
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   Posted{" "}
-                                  {new Date(
-                                    property.createdAt,
-                                  ).toLocaleDateString()}
+                                  {new Date(property.createdAt).toLocaleDateString()}
                                 </div>
                               </div>
                             </TableCell>
@@ -1371,18 +1365,13 @@ export default function EnhancedSellerDashboard() {
                             </p>
                             <div className="flex items-center space-x-4 text-xs text-gray-400">
                               <span>Property: {m.propertyTitle}</span>
-                              <span>
-                                {new Date(m.timestamp).toLocaleString()}
-                              </span>
+                              <span>{new Date(m.timestamp).toLocaleString()}</span>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             {m.buyerPhone && (
                               <>
-                                <a
-                                  href={`tel:${m.buyerPhone}`}
-                                  className="inline-flex"
-                                >
+                                <a href={`tel:${m.buyerPhone}`} className="inline-flex">
                                   <Button size="sm" variant="outline">
                                     Call
                                   </Button>
@@ -1561,55 +1550,55 @@ export default function EnhancedSellerDashboard() {
                     </p>
                   </div>
                 ) : (
-                    <div className="space-y-3">
-                      {payments.map((p, idx) => (
-                        <div
-                          key={(p as any)._id || p.transactionId || idx}
-                          className="border rounded-lg p-3"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium">{p.package}</div>
-                              <div className="text-sm text-gray-500">
-                                {new Date(p.date).toLocaleDateString()}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                Transaction ID: {p.transactionId}
-                              </div>
+                  <div className="space-y-3">
+                    {payments.map((p, idx) => (
+                      <div
+                        key={(p as any)._id || p.transactionId || idx}
+                        className="border rounded-lg p-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">{p.package}</div>
+                            <div className="text-sm text-gray-500">
+                              {new Date(p.date).toLocaleDateString()}
                             </div>
-                            <div className="text-right">
-                              <div className="font-bold text-[#C70000]">
-                                ₹{p.amount.toLocaleString()}
-                              </div>
-                              <Badge
-                                className={
-                                  p.status === "completed"
-                                    ? "bg-green-100 text-green-800"
-                                    : p.status === "pending"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : "bg-red-100 text-red-800"
-                                }
-                              >
-                                {p.status}
-                              </Badge>
+                            <div className="text-xs text-gray-400">
+                              Transaction ID: {p.transactionId}
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2 mt-2">
-                            <Button size="sm" variant="outline">
-                              <Download className="h-3 w-3 mr-1" />
-                              Invoice
-                            </Button>
-                            <Button size="sm" variant="outline">
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Details
-                            </Button>
+                          <div className="text-right">
+                            <div className="font-bold text-[#C70000]">
+                              ₹{p.amount.toLocaleString()}
+                            </div>
+                            <Badge
+                              className={
+                                p.status === "completed"
+                                  ? "bg-green-100 text-green-800"
+                                  : p.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }
+                            >
+                              {p.status}
+                            </Badge>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Button size="sm" variant="outline">
+                            <Download className="h-3 w-3 mr-1" />
+                            Invoice
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Details
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Settings */}
@@ -1738,8 +1727,10 @@ export default function EnhancedSellerDashboard() {
                     onClick={async () => {
                       if (
                         profileData.newPassword !== profileData.confirmPassword
-                      )
-                        return setError("New passwords do not match");
+                      ) {
+                        setError("New passwords do not match");
+                        return;
+                      }
                       try {
                         const token = await getAuthToken();
                         await api.put(
@@ -1848,7 +1839,7 @@ export default function EnhancedSellerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* NEW: Logout Confirmation Modal */}
+      {/* Logout Confirmation Modal */}
       <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

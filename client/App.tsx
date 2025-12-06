@@ -101,6 +101,7 @@ import PaymentStatus from "./pages/PaymentStatus";
 import PackagesPage from "./pages/Packages";
 import BlogListing from "./pages/BlogListing";
 import BlogDetail from "./pages/BlogDetail";
+import Listings from "./pages/Listings";
 
 // PWA install UI ko hata diya (hum APK route use kar rahe)
 // import PWAInstallButton from "./components/PWAInstallButton";

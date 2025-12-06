@@ -342,29 +342,7 @@ function App() {
                   <Route path="/my-properties" element={<MyProperties />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/about-us" element={<AboutUs />} />
-                    <Route
-                      path="/categories/:category/:subcategory"
-                      element={<CategoryProperties />}
-                    />
-                    <Route
-                      path="/categories/:category/:subcategory/:propertyType"
-                      element={<CategoryProperties />}
-                    />
-                    <Route path="/properties" element={<Properties />} />
-                    {/* New Category Routes */}
-                    <Route path="/buy" element={<Buy />} />
-                    <Route path="/sale" element={<Sale />} />
-                    <Route path="/rent" element={<Rent />} />
-                    <Route path="/lease" element={<Lease />} />
-                    <Route path="/pg" element={<PG />} />
-                    <Route path="/commercial" element={<Commercial />} />
-                    <Route path="/co-living" element={<CoLiving />} />
-                    <Route path="/pg-co-living" element={<PGCoLiving />} />
-                    <Route path="/pgco-living" element={<PGCoLiving />} />
-                    <Route path="/agricultural" element={<Agricultural />} />
-                    <Route path="/agriculturall" element={<Agricultural />} />
-                    <Route path="/services" element={<Services />} />
-                    <Route path="/other-services" element={<OtherServices />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route
                       path="/other-services/:cat"
                       element={<OtherServicesCategory />}

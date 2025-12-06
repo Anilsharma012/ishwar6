@@ -172,7 +172,13 @@ export default function Agricultural() {
   ];
 
   const handleMiniClick = (mini: MiniSubcategory) => {
-    navigate(`/listings?category=agricultural&miniSubcategory=${mini.slug}`);
+    const query = new URLSearchParams();
+    query.append("category", "agricultural");
+    if (currentSubcategorySlug) {
+      query.append("subcategory", currentSubcategorySlug);
+    }
+    query.append("miniSubcategory", mini.slug);
+    navigate(`/listings?${query.toString()}`);
   };
 
   if (loading) {

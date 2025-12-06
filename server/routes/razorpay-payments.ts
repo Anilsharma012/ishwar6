@@ -275,9 +275,10 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
               packageExpiry,
 
               // visibility / moderation
-              status: "pending_approval",
-              approvalStatus: "pending",
-              isApproved: false,
+              // After successful payment, property is immediately active
+              status: "active",
+              approvalStatus: "approved",
+              isApproved: true,
 
               // UX extras
               featured: pkg.type === "featured" || pkg.type === "premium",

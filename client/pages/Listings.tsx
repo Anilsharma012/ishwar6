@@ -110,44 +110,46 @@ export default function Listings() {
     try {
       setLoading(true);
 
-      let url = "/api/properties";
+      const params = new URLSearchParams();
 
       if (category) {
-        url += `&category=${encodeURIComponent(category)}`;
+        params.append("category", category);
       }
       if (subcategory) {
-        url += `&subcategory=${encodeURIComponent(subcategory)}`;
+        params.append("subcategory", subcategory);
       }
       if (miniSubcategory) {
-        url += `&miniSubcategory=${encodeURIComponent(miniSubcategory)}`;
+        params.append("miniSubcategory", miniSubcategory);
       }
 
       if (filters.minPrice) {
-        url += `&minPrice=${filters.minPrice}`;
+        params.append("minPrice", filters.minPrice);
       }
       if (filters.maxPrice) {
-        url += `&maxPrice=${filters.maxPrice}`;
+        params.append("maxPrice", filters.maxPrice);
       }
       if (filters.bedrooms) {
-        url += `&bedrooms=${filters.bedrooms}`;
+        params.append("bedrooms", filters.bedrooms);
       }
       if (filters.bathrooms) {
-        url += `&bathrooms=${filters.bathrooms}`;
+        params.append("bathrooms", filters.bathrooms);
       }
       if (filters.minArea) {
-        url += `&minArea=${filters.minArea}`;
+        params.append("minArea", filters.minArea);
       }
       if (filters.maxArea) {
-        url += `&maxArea=${filters.maxArea}`;
+        params.append("maxArea", filters.maxArea);
       }
       if (filters.sector) {
-        url += `&sector=${encodeURIComponent(filters.sector)}`;
+        params.append("sector", filters.sector);
       }
       if (filters.mohalla) {
-        url += `&mohalla=${encodeURIComponent(filters.mohalla)}`;
+        params.append("mohalla", filters.mohalla);
       }
 
-      url += `&sort=${filters.sortBy}`;
+      params.append("sortBy", filters.sortBy);
+
+      const url = `/api/properties?${params.toString()}`;
 
       const response = await fetch(url);
       if (response.ok) {

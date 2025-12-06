@@ -6,7 +6,6 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import "dotenv/config";
 
-
 /** ---------- Config ---------- */
 interface RazorpayConfig {
   enabled: boolean;
@@ -20,20 +19,20 @@ const getRazorpayConfig = (): RazorpayConfig | null => {
   const keySecret = (process.env.RAZORPAY_KEY_SECRET || "").trim();
   const webhookSecret = (process.env.RAZORPAY_WEBHOOK_SECRET || "").trim();
 
-  console.log(
-    "🔑 RZP cfg:",
-    {
-      hasKeyId: !!keyId,
-      hasKeySecret: !!keySecret,
-      prefix: keyId.slice(0, 8) + "...",
-      NODE_ENV: process.env.NODE_ENV,
-    }
-  );
+  console.log("🔑 RZP cfg:", {
+    hasKeyId: !!keyId,
+    hasKeySecret: !!keySecret,
+    prefix: keyId.slice(0, 8) + "...",
+    NODE_ENV: process.env.NODE_ENV,
+  });
 
   if (!keyId || !keySecret) return null;
 
   // safety: production me test key allow mat karo
-  if ((process.env.NODE_ENV || "production") === "production" && keyId.startsWith("rzp_test")) {
+  if (
+    (process.env.NODE_ENV || "production") === "production" &&
+    keyId.startsWith("rzp_test")
+  ) {
     console.error("❌ Production is using TEST Razorpay key.");
     return null;
   }
@@ -45,8 +44,6 @@ const getRazorpayConfig = (): RazorpayConfig | null => {
     webhookSecret: webhookSecret || undefined,
   };
 };
-
-
 
 /** ---------- Helpers ---------- */
 const bad = (res: any, msg: string, code = 400) =>
@@ -231,7 +228,7 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
           paidAt: now,
           updatedAt: now,
         },
-      }
+      },
     );
 
     // 2) If property/package present → attach package snapshot & mark as PENDING APPROVAL (not live)
@@ -242,7 +239,9 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
 
       if (pkg) {
         const packageExpiry = new Date();
-        packageExpiry.setDate(packageExpiry.getDate() + Number(pkg.duration || 0));
+        packageExpiry.setDate(
+          packageExpiry.getDate() + Number(pkg.duration || 0),
+        );
 
         await db.collection("properties").updateOne(
           { _id: new ObjectId(String(tx.propertyId)) },
@@ -289,7 +288,7 @@ export const verifyRazorpayPayment: RequestHandler = async (req, res) => {
               liveAt: "",
               approvedAt: "",
             },
-          }
+          },
         );
       }
     }

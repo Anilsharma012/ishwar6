@@ -57,7 +57,7 @@ const generateChecksum = (
   base64Payload: string,
   endpoint: string,
   saltKey: string,
-  saltIndex: string
+  saltIndex: string,
 ) => {
   const data = base64Payload + endpoint + saltKey;
   const hash = crypto.createHash("sha256").update(data).digest("hex");
@@ -65,10 +65,17 @@ const generateChecksum = (
 };
 
 /** For callback/status verify: sha256(responseBase64 + saltKey) == x-verify(before ###) */
-const verifyChecksum = (responseBase64: string, xVerify: string, saltKey: string) => {
+const verifyChecksum = (
+  responseBase64: string,
+  xVerify: string,
+  saltKey: string,
+) => {
   try {
     const [hash] = (xVerify || "").split("###");
-    const calc = crypto.createHash("sha256").update(responseBase64 + saltKey).digest("hex");
+    const calc = crypto
+      .createHash("sha256")
+      .update(responseBase64 + saltKey)
+      .digest("hex");
     return calc === hash;
   } catch {
     return false;
@@ -88,21 +95,25 @@ export const createPhonePeTransaction: RequestHandler = async (req, res) => {
 
     const userIdRaw = (req as any).userId as string | undefined;
     if (!userIdRaw) {
-      return res.status(401).json({ success: false, error: "Please login to continue" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Please login to continue" });
     }
     const userId = new ObjectId(userIdRaw);
 
-    const { packageId, propertyId, paymentMethod, paymentDetails, mode } = (req.body ||
-      {}) as {
-      packageId: string;
-      propertyId?: string | null;
-      paymentMethod?: string;
-      paymentDetails?: { merchantTransactionId?: string; [k: string]: any };
-      mode?: "redirect" | "qr";
-    };
+    const { packageId, propertyId, paymentMethod, paymentDetails, mode } =
+      (req.body || {}) as {
+        packageId: string;
+        propertyId?: string | null;
+        paymentMethod?: string;
+        paymentDetails?: { merchantTransactionId?: string; [k: string]: any };
+        mode?: "redirect" | "qr";
+      };
 
     if (!packageId) {
-      return res.status(400).json({ success: false, error: "Missing required field: packageId" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing required field: packageId" });
     }
 
     const finalPaymentMethod = paymentMethod || "phonepe";
@@ -122,11 +133,16 @@ export const createPhonePeTransaction: RequestHandler = async (req, res) => {
     try {
       pkgId = new ObjectId(packageId);
     } catch {
-      return res.status(400).json({ success: false, error: "Invalid package ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid package ID" });
     }
 
     const pack = await db.collection("ad_packages").findOne({ _id: pkgId });
-    if (!pack) return res.status(404).json({ success: false, error: "Package not found" });
+    if (!pack)
+      return res
+        .status(404)
+        .json({ success: false, error: "Package not found" });
 
     const propId = propertyId ? new ObjectId(propertyId) : undefined;
     const now = new Date();
@@ -170,7 +186,12 @@ export const createPhonePeTransaction: RequestHandler = async (req, res) => {
 
     // Prepare signature
     const payload = Buffer.from(JSON.stringify(payRequest)).toString("base64");
-    const xVerify = generateChecksum(payload, payEndpoint, config.saltKey, config.saltIndex);
+    const xVerify = generateChecksum(
+      payload,
+      payEndpoint,
+      config.saltKey,
+      config.saltIndex,
+    );
 
     const apiRoot = config.testMode
       ? "https://api-preprod.phonepe.com/apis/pg-sandbox"
@@ -199,12 +220,16 @@ export const createPhonePeTransaction: RequestHandler = async (req, res) => {
       const code = respJson?.code || resp.status;
       const message = respJson?.message || "PhonePe pay failed";
       console.error("PhonePe init failed:", code, message, respJson);
-      return res.status(200).json({ success: false, error: `PhonePe: ${code} - ${message}` });
+      return res
+        .status(200)
+        .json({ success: false, error: `PhonePe: ${code} - ${message}` });
     }
 
     const instrumentResponse = respJson?.data?.instrumentResponse || {};
     const redirectUrl =
-      instrumentResponse?.redirectInfo?.url || respJson?.data?.redirectUrl || null;
+      instrumentResponse?.redirectInfo?.url ||
+      respJson?.data?.redirectUrl ||
+      null;
     const qrBase64 = instrumentResponse?.qrData || null;
 
     const out: ApiResponse<{
@@ -226,7 +251,12 @@ export const createPhonePeTransaction: RequestHandler = async (req, res) => {
     return res.json(out);
   } catch (err: any) {
     console.error("Error creating PhonePe transaction:", err);
-    return res.status(500).json({ success: false, error: err?.message || "Failed to create transaction" });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error: err?.message || "Failed to create transaction",
+      });
   }
 };
 
@@ -237,21 +267,31 @@ export const createPhonePeTransaction: RequestHandler = async (req, res) => {
 export const phonePeCallback: RequestHandler = async (req, res) => {
   try {
     const config = await getPhonePeConfig();
-    if (!config) return res.status(400).json({ success: false, error: "PhonePe not configured" });
+    if (!config)
+      return res
+        .status(400)
+        .json({ success: false, error: "PhonePe not configured" });
 
     const { response } = req.body as { response?: string };
     const xVerify =
-      (req.headers["x-verify"] as string) || (req.headers["x-VERIFY"] as string);
+      (req.headers["x-verify"] as string) ||
+      (req.headers["x-VERIFY"] as string);
 
     if (!response || !xVerify) {
-      return res.status(400).json({ success: false, error: "Invalid callback data" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid callback data" });
     }
 
     if (!verifyChecksum(response, xVerify, config.saltKey)) {
-      return res.status(400).json({ success: false, error: "Invalid checksum" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid checksum" });
     }
 
-    const decoded = JSON.parse(Buffer.from(response, "base64").toString("utf-8"));
+    const decoded = JSON.parse(
+      Buffer.from(response, "base64").toString("utf-8"),
+    );
     const data = decoded?.data || {};
     const merchantTransactionId: string = data.merchantTransactionId;
     const phonepeTxnId: string = data.transactionId;
@@ -259,15 +299,20 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
 
     const db = getDatabase();
 
-    const tx = await db.collection("transactions").findOne({ merchantTransactionId });
+    const tx = await db
+      .collection("transactions")
+      .findOne({ merchantTransactionId });
     if (!tx) {
       console.error("Txn not found (callback):", merchantTransactionId);
       return res.status(200).json({ success: true }); // ack anyway
     }
 
     const paidStates = new Set(["SUCCESS", "COMPLETED"]);
-    const newStatus =
-      paidStates.has(state) ? "paid" : state === "FAILED" ? "failed" : "processing";
+    const newStatus = paidStates.has(state)
+      ? "paid"
+      : state === "FAILED"
+        ? "failed"
+        : "processing";
 
     await db.collection("transactions").updateOne(
       { _id: tx._id },
@@ -279,7 +324,7 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
           updatedAt: new Date(),
           ...(newStatus === "paid" ? { paidAt: new Date() } : {}),
         },
-      }
+      },
     );
 
     // If paid and property exists → push to pending admin approval
@@ -289,7 +334,9 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
       });
       if (package_) {
         const packageExpiry = new Date();
-        packageExpiry.setDate(packageExpiry.getDate() + Number(package_.duration || 0));
+        packageExpiry.setDate(
+          packageExpiry.getDate() + Number(package_.duration || 0),
+        );
 
         await db.collection("properties").updateOne(
           { _id: new ObjectId(String(tx.propertyId)) },
@@ -297,7 +344,8 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
             $set: {
               packageId: new ObjectId(String(tx.packageId)),
               packageExpiry,
-              featured: package_.type === "featured" || package_.type === "premium",
+              featured:
+                package_.type === "featured" || package_.type === "premium",
               // After successful payment, property is immediately active
               status: "active",
               approvalStatus: "approved",
@@ -305,7 +353,7 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
               updatedAt: new Date(),
               premiumPaymentCompletedAt: new Date(),
             },
-          }
+          },
         );
       }
     }
@@ -313,7 +361,9 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
     return res.json({ success: true, message: "Callback processed" });
   } catch (err) {
     console.error("PhonePe callback error:", err);
-    return res.status(500).json({ success: false, error: "Failed to process callback" });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to process callback" });
   }
 };
 
@@ -324,15 +374,25 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
 export const getPhonePePaymentStatus: RequestHandler = async (req, res) => {
   try {
     const config = await getPhonePeConfig();
-    if (!config) return res.status(400).json({ success: false, error: "PhonePe not configured" });
+    if (!config)
+      return res
+        .status(400)
+        .json({ success: false, error: "PhonePe not configured" });
 
     const merchantTransactionId = req.params.merchantTransactionId;
     if (!merchantTransactionId) {
-      return res.status(400).json({ success: false, error: "Missing merchantTransactionId" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing merchantTransactionId" });
     }
 
     const endpoint = `/pg/v1/status/${config.merchantId}/${merchantTransactionId}`;
-    const xVerify = generateChecksum("", endpoint, config.saltKey, config.saltIndex);
+    const xVerify = generateChecksum(
+      "",
+      endpoint,
+      config.saltKey,
+      config.saltIndex,
+    );
 
     const apiRoot = config.testMode
       ? "https://api-preprod.phonepe.com/apis/pg-sandbox"
@@ -359,8 +419,11 @@ export const getPhonePePaymentStatus: RequestHandler = async (req, res) => {
       const state = j.data?.state as string | undefined;
 
       const paidStates = new Set(["SUCCESS", "COMPLETED"]);
-      const newStatus =
-        paidStates.has(state || "") ? "paid" : state === "FAILED" ? "failed" : "processing";
+      const newStatus = paidStates.has(state || "")
+        ? "paid"
+        : state === "FAILED"
+          ? "failed"
+          : "processing";
 
       await db.collection("transactions").updateOne(
         { merchantTransactionId },
@@ -371,7 +434,7 @@ export const getPhonePePaymentStatus: RequestHandler = async (req, res) => {
             updatedAt: new Date(),
             ...(newStatus === "paid" ? { paidAt: new Date() } : {}),
           },
-        }
+        },
       );
     }
 
@@ -379,7 +442,12 @@ export const getPhonePePaymentStatus: RequestHandler = async (req, res) => {
     return res.json(out);
   } catch (err: any) {
     console.error("Error checking PhonePe payment status:", err);
-    return res.status(500).json({ success: false, error: err?.message || "Failed to check payment status" });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error: err?.message || "Failed to check payment status",
+      });
   }
 };
 
@@ -390,40 +458,45 @@ export const getPhonePePaymentStatus: RequestHandler = async (req, res) => {
  */
 export const phonePePaymentCallback: RequestHandler = async (req, res) => {
   try {
-    const packageId = (req.body?.packageId || req.query?.packageId) as string | undefined;
-    const propertyId = (req.body?.propertyId || req.query?.propertyId) as string | undefined;
-    const merchantTransactionId = (req.body?.transactionId || req.query?.transactionId) as
+    const packageId = (req.body?.packageId || req.query?.packageId) as
       | string
       | undefined;
+    const propertyId = (req.body?.propertyId || req.query?.propertyId) as
+      | string
+      | undefined;
+    const merchantTransactionId = (req.body?.transactionId ||
+      req.query?.transactionId) as string | undefined;
 
     if (!merchantTransactionId) {
       return res.redirect("/?paymentStatus=error&reason=missing_transaction");
     }
 
     const db = getDatabase();
-    const tx = await db.collection("transactions").findOne({ merchantTransactionId });
+    const tx = await db
+      .collection("transactions")
+      .findOne({ merchantTransactionId });
 
     if (!tx) {
       return res.redirect(
         `/?paymentStatus=pending&transactionId=${merchantTransactionId}&packageId=${packageId || ""}&propertyId=${
           propertyId || ""
-        }`
+        }`,
       );
     }
 
     if (tx.status === "paid") {
       return res.redirect(
-        `/seller-dashboard?paymentStatus=success&transactionId=${merchantTransactionId}&packageId=${packageId || ""}`
+        `/seller-dashboard?paymentStatus=success&transactionId=${merchantTransactionId}&packageId=${packageId || ""}`,
       );
     } else if (tx.status === "failed") {
       return res.redirect(
-        `/?paymentStatus=failed&transactionId=${merchantTransactionId}&reason=payment_failed`
+        `/?paymentStatus=failed&transactionId=${merchantTransactionId}&reason=payment_failed`,
       );
     } else {
       return res.redirect(
         `/payment-status?transactionId=${merchantTransactionId}&packageId=${packageId || ""}&propertyId=${
           propertyId || ""
-        }`
+        }`,
       );
     }
   } catch (err) {
@@ -435,7 +508,10 @@ export const phonePePaymentCallback: RequestHandler = async (req, res) => {
 /**
  * (Optional) GET /api/payments/methods
  */
-export const getPaymentMethodsWithPhonePe: RequestHandler = async (_req, res) => {
+export const getPaymentMethodsWithPhonePe: RequestHandler = async (
+  _req,
+  res,
+) => {
   try {
     const cfg = await getPhonePeConfig();
     const paymentMethods = {
@@ -466,6 +542,11 @@ export const getPaymentMethodsWithPhonePe: RequestHandler = async (_req, res) =>
     return res.json(out);
   } catch (err: any) {
     console.error("Error fetching payment methods:", err);
-    return res.status(500).json({ success: false, error: err?.message || "Failed to fetch payment methods" });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error: err?.message || "Failed to fetch payment methods",
+      });
   }
 };

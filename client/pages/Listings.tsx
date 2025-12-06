@@ -152,7 +152,9 @@ export default function Listings() {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setProperties(Array.isArray(data.data?.properties) ? data.data.properties : []);
+        setProperties(
+          Array.isArray(data.data?.properties) ? data.data.properties : [],
+        );
       } else {
         setProperties([]);
       }
@@ -214,7 +216,12 @@ export default function Listings() {
     const parts = [];
     if (miniSubcategory) parts.push(getMiniSubcategoryName());
     if (subcategory) {
-      parts.push(subcategory.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "));
+      parts.push(
+        subcategory
+          .split("-")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" "),
+      );
     }
     if (category) parts.push(getCategoryName());
     return parts.length > 0 ? parts.join(" - ") : "Listings";
@@ -224,8 +231,13 @@ export default function Listings() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid URL</h1>
-        <p className="text-gray-600 mb-4">Please provide a category parameter</p>
-        <Button onClick={() => navigate("/")} className="bg-[#C70000] hover:bg-[#A60000]">
+        <p className="text-gray-600 mb-4">
+          Please provide a category parameter
+        </p>
+        <Button
+          onClick={() => navigate("/")}
+          className="bg-[#C70000] hover:bg-[#A60000]"
+        >
           Go to Home
         </Button>
       </div>
@@ -247,7 +259,9 @@ export default function Listings() {
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{getPageTitle()}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {getPageTitle()}
+              </h1>
               <p className="text-sm text-gray-600">
                 {properties.length} properties found
               </p>
@@ -272,7 +286,9 @@ export default function Listings() {
                   </label>
                   <select
                     value={filters.priceType}
-                    onChange={(e) => handleFilterChange("priceType", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("priceType", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
                     <option value="">All</option>
@@ -286,14 +302,18 @@ export default function Listings() {
                     type="number"
                     placeholder="Min Price"
                     value={filters.minPrice}
-                    onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("minPrice", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   />
                   <input
                     type="number"
                     placeholder="Max Price"
                     value={filters.maxPrice}
-                    onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("maxPrice", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   />
                 </div>
@@ -305,7 +325,9 @@ export default function Listings() {
                   </label>
                   <select
                     value={filters.bedrooms}
-                    onChange={(e) => handleFilterChange("bedrooms", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("bedrooms", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
                     <option value="">Any</option>
@@ -323,7 +345,9 @@ export default function Listings() {
                   </label>
                   <select
                     value={filters.bathrooms}
-                    onChange={(e) => handleFilterChange("bathrooms", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("bathrooms", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
                     <option value="">Any</option>
@@ -339,14 +363,18 @@ export default function Listings() {
                     type="number"
                     placeholder="Min Area (Sq.ft)"
                     value={filters.minArea}
-                    onChange={(e) => handleFilterChange("minArea", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("minArea", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   />
                   <input
                     type="number"
                     placeholder="Max Area (Sq.ft)"
                     value={filters.maxArea}
-                    onChange={(e) => handleFilterChange("maxArea", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("maxArea", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   />
                 </div>
@@ -358,7 +386,9 @@ export default function Listings() {
                   </label>
                   <select
                     value={filters.sector}
-                    onChange={(e) => handleFilterChange("sector", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("sector", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
                     <option value="">All Sectors</option>
@@ -376,7 +406,9 @@ export default function Listings() {
                   </label>
                   <select
                     value={filters.mohalla}
-                    onChange={(e) => handleFilterChange("mohalla", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("mohalla", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
                     <option value="">All Mohallas</option>
@@ -395,7 +427,9 @@ export default function Listings() {
                   </label>
                   <select
                     value={filters.sortBy}
-                    onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("sortBy", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
                     <option value="date_desc">Newest First</option>
@@ -452,7 +486,10 @@ export default function Listings() {
                   <p className="text-gray-500 mb-4">
                     Try adjusting your filters or explore other categories
                   </p>
-                  <Button onClick={() => navigate("/")} className="bg-[#C70000] hover:bg-[#A60000]">
+                  <Button
+                    onClick={() => navigate("/")}
+                    className="bg-[#C70000] hover:bg-[#A60000]"
+                  >
                     Back to Home
                   </Button>
                 </div>
@@ -520,7 +557,9 @@ export default function Listings() {
 
                         <div className="flex items-center gap-1 text-gray-600 text-sm mb-2">
                           <MapPin className="w-4 h-4" />
-                          <span className="line-clamp-1">{property.location}</span>
+                          <span className="line-clamp-1">
+                            {property.location}
+                          </span>
                         </div>
 
                         {property.price && (

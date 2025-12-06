@@ -298,8 +298,10 @@ export const phonePeCallback: RequestHandler = async (req, res) => {
               packageId: new ObjectId(String(tx.packageId)),
               packageExpiry,
               featured: package_.type === "featured" || package_.type === "premium",
-              status: "inactive",
-              approvalStatus: "pending_approval",
+              // After successful payment, property is immediately active
+              status: "active",
+              approvalStatus: "approved",
+              isApproved: true,
               updatedAt: new Date(),
               premiumPaymentCompletedAt: new Date(),
             },

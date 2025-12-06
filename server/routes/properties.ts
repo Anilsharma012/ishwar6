@@ -85,6 +85,7 @@ export const getProperties: RequestHandler = async (req, res) => {
       propertyType: qPropertyType,
       subCategory,
       miniSubcategoryId,
+      miniSubcategory,
       priceType,
       category: qCategory,
       sector,
@@ -191,7 +192,39 @@ export const getProperties: RequestHandler = async (req, res) => {
 
     // --- 4) Sub-category and other filters ---
     if (subCategory) filter.subCategory = norm(subCategory);
-    if (miniSubcategoryId) filter.miniSubcategoryId = miniSubcategoryId;
+
+    // Handle miniSubcategory: if slug provided, look it up to get ID
+    if (miniSubcategory && !miniSubcategoryId) {
+      try {
+        const normalizedMiniSlug = norm(miniSubcategory);
+        const normalizedSubCat = norm(subCategory) || norm(category);
+
+        // First find the subcategory
+        const subcategoryDoc = await db.collection("subcategories").findOne({
+          slug: normalizedSubCat,
+        });
+
+        if (subcategoryDoc) {
+          // Then find the mini-subcategory
+          const miniDoc = await db.collection("mini_subcategories").findOne({
+            slug: normalizedMiniSlug,
+            subcategoryId: subcategoryDoc._id?.toString(),
+          });
+
+          if (miniDoc) {
+            filter.miniSubcategoryId = miniDoc._id?.toString();
+          }
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to look up miniSubcategory:",
+          err instanceof Error ? err.message : err,
+        );
+      }
+    } else if (miniSubcategoryId) {
+      filter.miniSubcategoryId = miniSubcategoryId;
+    }
+
     if (priceType) filter.priceType = norm(priceType);
 
     // Premium/Featured properties filter
@@ -389,7 +422,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     const approvalStatus: "pending" | "pending_approval" = packageId
       ? "pending_approval"
       : "pending";
-    const status: "inactive" | "active" = "inactive"; // 🔒 NEVER live at creation
+    // Properties with free listings are immediately active
+    // Properties with packages become active after payment confirmation
+    const status: "inactive" | "active" = packageId ? "inactive" : "active";
 
     // Map UI aliases to canonical DB values (same as query-time mapping)
     const TYPE_ALIASES: Record<string, string> = {

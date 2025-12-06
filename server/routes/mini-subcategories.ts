@@ -459,7 +459,11 @@ export const getMiniSubcategoriesWithCounts: RequestHandler = async (
           $match: {
             miniSubcategoryId: { $in: miniIds },
             status: "active",
-            approvalStatus: "approved",
+            $or: [
+              { approvalStatus: "approved" },
+              { approvalStatus: { $exists: false } },
+              { approvalStatus: "pending" },
+            ],
           },
         },
         {

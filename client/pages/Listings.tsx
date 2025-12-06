@@ -82,8 +82,9 @@ export default function Listings() {
     useState<Property | null>(null);
 
   const category = searchParams.get("category") || "";
-  const miniSubcategory = searchParams.get("miniSubcategory") || "";
+  const miniSubcategorySlug = searchParams.get("miniSubcategory") || "";
   const subcategory = searchParams.get("subcategory") || "";
+  const [miniSubcategoryId, setMiniSubcategoryId] = useState<string>("");
 
   const getInitialFilters = (): FilterState => {
     return {

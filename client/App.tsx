@@ -343,226 +343,28 @@ function App() {
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/about-us" element={<AboutUs />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route
-                      path="/other-services/:cat"
-                      element={<OtherServicesCategory />}
-                    />
-                    <Route
-                      path="/other-services/:cat/:sub"
-                      element={<OtherServicesListings />}
-                    />
-                    <Route path="/advertise" element={<Advertise />} />
-                    {/* Category/Subcategory Listings */}
-                    <Route path="/buy/:slug" element={<CategoryProperties />} />
-                    <Route
-                      path="/sale/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route
-                      path="/rent/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route
-                      path="/lease/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route path="/pg/:slug" element={<CategoryProperties />} />
-                    <Route
-                      path="/commercial/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route
-                      path="/co-living/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route
-                      path="/pg-co-living/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route
-                      path="/agricultural/:slug"
-                      element={<CategoryProperties />}
-                    />
-                    <Route path="/property/:id" element={<PropertyDetail />} />
-                    <Route
-                      path="/properties/:id"
-                      element={<PropertyDetail />}
-                    />
-                    <Route path="/chat" element={<Chat />} />
-                    <Route
-                      path="/chat/:conversationId"
-                      element={<ChatPage />}
-                    />
-                    <Route path="/chats" element={<Conversations />} />
-                    <Route
-                      path="/conversation/:id"
-                      element={<ChatConversation />}
-                    />
-                    <Route path="/test-chat/:id" element={<TestChat />} />
-                    <Route path="/dev/chat-test" element={<DevChatTest />} />
-                    <Route path="/step3-test" element={<Step3Test />} />
-                    <Route path="/my-account" element={<MyAccount />} />
-                    <Route path="/agents" element={<Agents />} />
-                    <Route path="/login" element={<LoginModal />} />
-                    <Route path="/user-login" element={<EnhancedUserLogin />} />
-                    <Route path="/auth" element={<ComprehensiveAuth />} />
-                    <Route path="/firebase-auth" element={<FirebaseAuth />} />
-                    <Route
-                      path="/firebase-auth-test"
-                      element={<FirebaseAuthTest />}
-                    />
-                    <Route path="/user" element={<User />} />
-                    <Route path="/user-dashboard" element={<UserDashboard />} />
-                    <Route path="/post-property" element={<PostProperty />} />
-                    <Route path="/payment-status" element={<PaymentStatus />} />
-                    <Route path="/packages" element={<PackagesPage />} />
-                    <Route
-                      path="/seller"
-                      element={
-                        <SellerProtectedRoute>
-                          <Seller />
-                        </SellerProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/seller-dashboard"
-                      element={
-                        <SellerProtectedRoute>
-                          <EnhancedSellerDashboard />
-                        </SellerProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/seller-dashboard/properties"
-                      element={
-                        <SellerProtectedRoute>
-                          <SellerPropertyStatusPage />
-                        </SellerProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/seller-dashboard/notifications"
-                      element={
-                        <SellerProtectedRoute>
-                          <SellerNotificationsPage />
-                        </SellerProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/seller-dashboard/analytics"
-                      element={
-                        <SellerProtectedRoute>
-                          <SellerAnalyticsPage />
-                        </SellerProtectedRoute>
-                      }
-                    />
-                    <Route path="/support/:action" element={<Support />} />
-                    <Route
-                      path="/support/ticket/:ticketId"
-                      element={<Support />}
-                    />
-                    <Route
-                      path="/enhanced-seller-dashboard"
-                      element={<EnhancedSellerDashboard />}
-                    />
-                    <Route
-                      path="/buyer-dashboard"
-                      element={<BuyerDashboard />}
-                    />
-                    <Route
-                      path="/agent-dashboard"
-                      element={<AgentDashboard />}
-                    />
-                    <Route path="/seller/blog" element={<SellerBlog />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/admin/support" element={<Admin />} />
-                    <Route
-                      path="/admin/reviews"
-                      element={<AdminReviewsModeration />}
-                    />
-                    <Route path="/ashu/login" element={<AdminLogin />} />
-                    <Route
-                      path="/admin/ads/categories"
-                      element={<CategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/ads/categories/:categoryId/subcategories"
-                      element={<SubcategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/ads/categories/:categoryId/subcategories"
-                      element={<AdminSubcategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/ads/categories/:categoryId/subcategories/*"
-                      element={<AdminSubcategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/categories/:categoryId/subcategories"
-                      element={<AdminSubcategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/categories/:categoryId/subcategories/*"
-                      element={<AdminSubcategoriesPage />}
-                    />
-                    <Route
-                      path="/admin/locations/countries"
-                      element={<CountriesPage />}
-                    />
-                    <Route path="/staff/login" element={<StaffLogin />} />
-                    <Route
-                      path="/staff-dashboard"
-                      element={<StaffDashboard />}
-                    />
-                    <Route path="/staff-admin" element={<StaffAdmin />} />
-                    {/* New Routes for Menu Dashboard Pages */}
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/messages" element={<Messages />} />
-                    <Route path="/my-properties" element={<MyProperties />} />
-                    <Route path="/clients" element={<Clients />} />
-
-
-                    {/* ✅ Wishlist routes (both paths) */}
-                    <Route path="/favorites" element={<Favorites />} />
-                    <Route path="/wishlist" element={<Wishlist />} />
-
-                    <Route path="/account/my-ads" element={<MyProperties />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/blog/:slug" element={<BlogDetail />} />
-                    <Route path="/blogs" element={<BlogListing />} />
-                    <Route path="/blogs/:id" element={<BlogPost />} />
-                    <Route path="/maps" element={<Maps />} />
-                    <Route path="/new-projects" element={<NewProjects />} />
-                    <Route path="/recent-views" element={<RecentViews />} />
-                    <Route path="/leads" element={<Leads />} />
-                    <Route path="/notifications" element={<Notifications />} />
-
-                    {/* Content Pages */}
-                    <Route path="/about-us" element={<AboutUs />} />
-                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route
-                      path="/terms-conditions"
-                      element={<TermsAndConditions />}
-                    />
-                    <Route path="/refund-policy" element={<ContentPage />} />
-                    <Route path="/contact-us" element={<ContactUs />} />
-                    <Route path="/contact" element={<ContactUs />} />
-
-                    {/* Dynamic Pages from Admin */}
-                    <Route path="/page/:slug" element={<DynamicPage />} />
-                    <Route
-                      path="/p/privacy-policy"
-                      element={<PrivacyPolicy />}
-                    />
-                    <Route path="/p/about-us" element={<AboutUs />} />
-                    <Route
-                      path="/p/terms-conditions"
-                      element={<TermsAndConditions />}
-                    />
-                    <Route path="/p/:slug" element={<ContentPage />} />
-
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
+                  <Route path="/terms-conditions" element={<TermsAndConditions />} />
+                  <Route path="/refund-policy" element={<ContentPage />} />
+                  <Route path="/contact-us" element={<ContactUs />} />
+                  <Route path="/contact" element={<ContactUs />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/account/my-ads" element={<MyProperties />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/blogs" element={<BlogListing />} />
+                  <Route path="/blogs/:id" element={<BlogPost />} />
+                  <Route path="/maps" element={<Maps />} />
+                  <Route path="/new-projects" element={<NewProjects />} />
+                  <Route path="/recent-views" element={<RecentViews />} />
+                  <Route path="/leads" element={<Leads />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/page/:slug" element={<DynamicPage />} />
+                  <Route path="/p/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/p/about-us" element={<AboutUs />} />
+                  <Route path="/p/terms-conditions" element={<TermsAndConditions />} />
+                  <Route path="/p/:slug" element={<ContentPage />} />
+                  <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
 

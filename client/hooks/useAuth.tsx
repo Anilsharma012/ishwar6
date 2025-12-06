@@ -88,8 +88,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (newToken: string, newUser: User) => {
-    try { clearToasts(); } catch {}
+    try {
+      clearToasts();
+    } catch {}
+    // Store token under multiple keys for compatibility with different parts of the app
     localStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem("token", newToken); // Generic key for legacy code
+
+    // Store role-specific tokens for seller/admin/user flows
+    if (newUser.userType === "seller") {
+      localStorage.setItem("sellerToken", newToken);
+    } else if (newUser.userType === "admin") {
+      localStorage.setItem("adminToken", newToken);
+    } else if (newUser.userType === "user") {
+      localStorage.setItem("userToken", newToken);
+    }
+
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
@@ -97,9 +111,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    try { clearToasts(); } catch {}
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    try {
+      clearToasts();
+    } catch {}
+    const keysToRemove = [
+      TOKEN_KEY,
+      USER_KEY,
+      "token",
+      "user",
+      "adminToken",
+      "adminUser",
+      "sellerToken",
+      "userToken",
+      "authToken",
+    ];
+    for (const key of keysToRemove) {
+      try {
+        localStorage.removeItem(key);
+      } catch {}
+    }
     setToken(null);
     setUser(null);
     apiClient.clearToken?.(); // optional helper in apiClient

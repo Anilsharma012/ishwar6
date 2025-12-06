@@ -33,8 +33,11 @@ function clearAllTokens() {
 
 function setPrimaryToken(tok: string | null) {
   try {
-    if (tok) localStorage.setItem("adminToken", tok);
-    else clearAllTokens();
+    if (tok) {
+      localStorage.setItem("adminToken", tok);
+      localStorage.setItem("token", tok);
+      localStorage.setItem("authToken", tok);
+    } else clearAllTokens();
   } catch {
     /* ignore */
   }
@@ -59,8 +62,13 @@ function redirectToLogin() {
   const path = window.location.pathname || "";
   const to = path.includes("/seller")
     ? "/seller-login?reason=expired"
+
+    : path.includes("/admin")
+      ? "/admin/login?reason=expired"
+
     : path.includes("/admin") || path.includes("/ashu")
       ? "/ashu/login?reason=expired"
+
       : "/login?reason=expired";
   window.location.replace(to);
 }

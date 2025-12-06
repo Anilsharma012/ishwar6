@@ -67,6 +67,7 @@ import EnhancedSellerDashboard from "./pages/EnhancedSellerDashboard";
 import SellerPropertyStatusPage from "./pages/SellerPropertyStatusPage";
 import SellerNotificationsPage from "./pages/SellerNotificationsPage";
 import SellerAnalyticsPage from "./pages/SellerAnalyticsPage";
+import SellerPaymentsPage from "./pages/SellerPaymentsPage";
 import Settings from "./pages/Settings";
 import Messages from "./pages/Messages";
 import MyProperties from "./pages/MyProperties";
@@ -146,6 +147,200 @@ function App() {
 
                   {/* ✅ Show logo bar only on Home */}
                   <HomeHeaderGate />
+
+
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route
+                    path="/categories/:category"
+                    element={<CategoryProperties />}
+                  />
+                  <Route path="/checkout/:planId" element={<Checkout />} />
+                  <Route
+                    path="/categories/:category/:subcategory"
+                    element={<CategoryProperties />}
+                  />
+                  <Route
+                    path="/categories/:category/:subcategory/:propertyType"
+                    element={<CategoryProperties />}
+                  />
+                  <Route path="/properties" element={<Properties />} />
+                  {/* New Category Routes */}
+                  <Route path="/buy" element={<Buy />} />
+                  <Route path="/sale" element={<Sale />} />
+                  <Route path="/rent" element={<Rent />} />
+                  <Route path="/lease" element={<Lease />} />
+                  <Route path="/pg" element={<PG />} />
+                  <Route path="/commercial" element={<Commercial />} />
+                  <Route path="/co-living" element={<CoLiving />} />
+                  <Route path="/pg-co-living" element={<PGCoLiving />} />
+                  <Route path="/pgco-living" element={<PGCoLiving />} />
+                  <Route path="/agricultural" element={<Agricultural />} />
+                  <Route path="/agriculturall" element={<Agricultural />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/other-services" element={<OtherServices />} />
+                  <Route
+                    path="/other-services/:cat"
+                    element={<OtherServicesCategory />}
+                  />
+                  <Route
+                    path="/other-services/:cat/:sub"
+                    element={<OtherServicesListings />}
+                  />
+                  <Route path="/advertise" element={<Advertise />} />
+                  {/* Category/Subcategory Listings */}
+                  <Route path="/buy/:slug" element={<CategoryProperties />} />
+                  <Route path="/sale/:slug" element={<CategoryProperties />} />
+                  <Route path="/rent/:slug" element={<CategoryProperties />} />
+                  <Route path="/lease/:slug" element={<CategoryProperties />} />
+                  <Route path="/pg/:slug" element={<CategoryProperties />} />
+                  <Route
+                    path="/commercial/:slug"
+                    element={<CategoryProperties />}
+                  />
+                  <Route
+                    path="/co-living/:slug"
+                    element={<CategoryProperties />}
+                  />
+                  <Route
+                    path="/pg-co-living/:slug"
+                    element={<CategoryProperties />}
+                  />
+                  <Route
+                    path="/agricultural/:slug"
+                    element={<CategoryProperties />}
+                  />
+                  <Route path="/property/:id" element={<PropertyDetail />} />
+                  <Route path="/properties/:id" element={<PropertyDetail />} />
+                  <Route path="/chat" element={<Chat />} />
+                  <Route path="/chat/:conversationId" element={<ChatPage />} />
+                  <Route path="/chats" element={<Conversations />} />
+                  <Route
+                    path="/conversation/:id"
+                    element={<ChatConversation />}
+                  />
+                  <Route path="/test-chat/:id" element={<TestChat />} />
+                  <Route path="/dev/chat-test" element={<DevChatTest />} />
+                  <Route path="/step3-test" element={<Step3Test />} />
+                  <Route path="/my-account" element={<MyAccount />} />
+                  <Route path="/agents" element={<Agents />} />
+                  <Route path="/login" element={<LoginModal />} />
+                  <Route path="/user-login" element={<EnhancedUserLogin />} />
+                  <Route path="/auth" element={<ComprehensiveAuth />} />
+                  <Route path="/firebase-auth" element={<FirebaseAuth />} />
+                  <Route
+                    path="/firebase-auth-test"
+                    element={<FirebaseAuthTest />}
+                  />
+                  <Route path="/user" element={<User />} />
+                  <Route path="/user-dashboard" element={<UserDashboard />} />
+                  <Route path="/post-property" element={<PostProperty />} />
+                  <Route path="/payment-status" element={<PaymentStatus />} />
+                  <Route path="/packages" element={<PackagesPage />} />
+                  <Route
+                    path="/seller"
+                    element={
+                      <SellerProtectedRoute>
+                        <Seller />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard"
+                    element={
+                      <SellerProtectedRoute>
+                        <EnhancedSellerDashboard />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/properties"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerPropertyStatusPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/notifications"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerNotificationsPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/analytics"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerAnalyticsPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller-dashboard/payments"
+                    element={
+                      <SellerProtectedRoute>
+                        <SellerPaymentsPage />
+                      </SellerProtectedRoute>
+                    }
+                  />
+                  <Route path="/support/:action" element={<Support />} />
+                  <Route
+                    path="/support/ticket/:ticketId"
+                    element={<Support />}
+                  />
+                  <Route
+                    path="/enhanced-seller-dashboard"
+                    element={<EnhancedSellerDashboard />}
+                  />
+                  <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
+                  <Route path="/agent-dashboard" element={<AgentDashboard />} />
+                  <Route path="/seller/blog" element={<SellerBlog />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/support" element={<Admin />} />
+                  <Route
+                    path="/admin/reviews"
+                    element={<AdminReviewsModeration />}
+                  />
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route
+                    path="/admin/ads/categories"
+                    element={<CategoriesPage />}
+                  />
+                  <Route
+                    path="/admin/ads/categories/:categoryId/subcategories"
+                    element={<SubcategoriesPage />}
+                  />
+                  <Route
+                    path="/admin/ads/categories/:categoryId/subcategories"
+                    element={<AdminSubcategoriesPage />}
+                  />
+                  <Route
+                    path="/admin/ads/categories/:categoryId/subcategories/*"
+                    element={<AdminSubcategoriesPage />}
+                  />
+                  <Route
+                    path="/admin/categories/:categoryId/subcategories"
+                    element={<AdminSubcategoriesPage />}
+                  />
+                  <Route
+                    path="/admin/categories/:categoryId/subcategories/*"
+                    element={<AdminSubcategoriesPage />}
+                  />
+                  <Route
+                    path="/admin/locations/countries"
+                    element={<CountriesPage />}
+                  />
+                  <Route path="/staff/login" element={<StaffLogin />} />
+                  <Route path="/staff-dashboard" element={<StaffDashboard />} />
+                  <Route path="/staff-admin" element={<StaffAdmin />} />
+                  {/* New Routes for Menu Dashboard Pages */}
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/my-properties" element={<MyProperties />} />
+                  <Route path="/clients" element={<Clients />} />
 
                   <Routes>
                     <Route path="/" element={<Index />} />
@@ -355,6 +550,7 @@ function App() {
                     <Route path="/messages" element={<Messages />} />
                     <Route path="/my-properties" element={<MyProperties />} />
                     <Route path="/clients" element={<Clients />} />
+
 
                     {/* ✅ Wishlist routes (both paths) */}
                     <Route path="/favorites" element={<Favorites />} />

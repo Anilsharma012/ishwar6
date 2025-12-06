@@ -247,6 +247,10 @@ export default function EnhancedSellerDashboard() {
   const handleKPIFilter = (
     filter: "all" | "pending" | "approved" | "rejected",
   ) => {
+
+    navigate(`/seller-dashboard/properties?status=${filter}`);
+  };
+
     // Navigate to dedicated SellerPropertyStatusPage with status filter
     navigate(`/seller-dashboard/properties?status=${filter}`);
   };
@@ -267,6 +271,7 @@ export default function EnhancedSellerDashboard() {
       });
     }
   }, [location.search, navigate]);
+
 
   // Profile
   const [profileData, setProfileData] = useState({
@@ -917,14 +922,16 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("properties")}
+                    onClick={() =>
+                      navigate("/seller-dashboard/properties?status=all")
+                    }
                   >
                     <Home className="h-4 w-4 mr-2" /> Manage Properties
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("messages")}
+                    onClick={() => navigate("/seller-dashboard/notifications")}
                   >
                     <MessageSquare className="h-4 w-4 mr-2" /> View Messages (
                     {stats.unreadMessages})
@@ -932,7 +939,7 @@ export default function EnhancedSellerDashboard() {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => setActiveTab("payments")}
+                    onClick={() => navigate("/seller-dashboard/payments")}
                   >
                     <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                   </Button>
@@ -948,7 +955,9 @@ export default function EnhancedSellerDashboard() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setActiveTab("properties")}
+                  onClick={() =>
+                    navigate("/seller-dashboard/properties?status=all")
+                  }
                 >
                   View All
                 </Button>
@@ -1481,7 +1490,7 @@ export default function EnhancedSellerDashboard() {
                     </div>
                     <Button
                       className="w-full bg-amber-500 hover:bg-amber-600"
-                      onClick={() => setActiveTab("payments")}
+                      onClick={() => navigate("/seller-dashboard/payments")}
                     >
                       <Crown className="h-4 w-4 mr-2" /> Upgrade to Premium
                     </Button>

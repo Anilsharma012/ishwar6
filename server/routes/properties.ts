@@ -85,6 +85,7 @@ export const getProperties: RequestHandler = async (req, res) => {
       propertyType: qPropertyType,
       subCategory,
       miniSubcategoryId,
+      miniSubcategory,
       priceType,
       category: qCategory,
       sector,

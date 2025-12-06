@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
+import CategoryBar from "../components/CategoryBar";
+import StaticFooter from "../components/StaticFooter";
 import ImageModal from "../components/ImageModal";
 import Watermark from "../components/Watermark";
 import { Button } from "../components/ui/button";

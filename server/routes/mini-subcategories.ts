@@ -194,7 +194,11 @@ export const createMiniSubcategory: RequestHandler = async (req, res) => {
 
     // Generate slug
     const baseSlug = slugRaw || normSlug(name);
-    const slug = await ensureUniqueSlugInSubcategory(db, baseSlug, subcategoryId);
+    const slug = await ensureUniqueSlugInSubcategory(
+      db,
+      baseSlug,
+      subcategoryId,
+    );
 
     // Create mini-subcategory
     const miniData: Omit<MiniSubcategory, "_id"> = {
@@ -211,7 +215,9 @@ export const createMiniSubcategory: RequestHandler = async (req, res) => {
       updatedAt: new Date(),
     };
 
-    const result = await db.collection("mini_subcategories").insertOne(miniData);
+    const result = await db
+      .collection("mini_subcategories")
+      .insertOne(miniData);
 
     const response: ApiResponse<{ _id: string }> = {
       success: true,
@@ -290,7 +296,8 @@ export const updateMiniSubcategory: RequestHandler = async (req, res) => {
         if (existing) {
           return res.status(400).json({
             success: false,
-            error: "Mini-subcategory with this slug already exists in this subcategory",
+            error:
+              "Mini-subcategory with this slug already exists in this subcategory",
           });
         }
       }
@@ -300,7 +307,10 @@ export const updateMiniSubcategory: RequestHandler = async (req, res) => {
 
     const result = await db
       .collection("mini_subcategories")
-      .updateOne({ _id: new ObjectId(miniSubcategoryId) }, { $set: updateData });
+      .updateOne(
+        { _id: new ObjectId(miniSubcategoryId) },
+        { $set: updateData },
+      );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
@@ -405,7 +415,13 @@ export const toggleMiniSubcategoryActive: RequestHandler = async (req, res) => {
       .collection("mini_subcategories")
       .updateOne(
         { _id: new ObjectId(miniSubcategoryId) },
-        { $set: { active: newActive, isActive: newActive, updatedAt: new Date() } },
+        {
+          $set: {
+            active: newActive,
+            isActive: newActive,
+            updatedAt: new Date(),
+          },
+        },
       );
 
     const response: ApiResponse<{ active: boolean }> = {

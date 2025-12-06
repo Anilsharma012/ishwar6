@@ -341,13 +341,7 @@ function App() {
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/my-properties" element={<MyProperties />} />
                   <Route path="/clients" element={<Clients />} />
-
-                  {/* About Us and Policy Routes */}
-                  <Route
-                    path="/about-us"
-                    element={<AboutUs />}
-                  />
-                    <Route path="/checkout/:planId" element={<Checkout />} />
+                  <Route path="/about-us" element={<AboutUs />} />
                     <Route
                       path="/categories/:category/:subcategory"
                       element={<CategoryProperties />}

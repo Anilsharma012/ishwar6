@@ -389,7 +389,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     const approvalStatus: "pending" | "pending_approval" = packageId
       ? "pending_approval"
       : "pending";
-    const status: "inactive" | "active" = "inactive"; // 🔒 NEVER live at creation
+    // Properties with free listings are immediately active
+    // Properties with packages become active after payment confirmation
+    const status: "inactive" | "active" = packageId ? "inactive" : "active";
 
     // Map UI aliases to canonical DB values (same as query-time mapping)
     const TYPE_ALIASES: Record<string, string> = {

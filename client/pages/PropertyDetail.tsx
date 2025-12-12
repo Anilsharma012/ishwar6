@@ -1347,77 +1347,16 @@ export default function PropertyDetail() {
             {/* Desktop */}
             <div className="hidden md:flex flex-col space-y-3">
               <Button
-                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"/>
-
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Button
-              variant="ghost"
-              onClick={() => navigate(-1)}
-              className="flex items-center"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-
-            <div className="flex items-center space-x-2">
-              {/* ❤️ Wishlist button on detail page */}
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={likeBusy}
-                onClick={toggleLike}
-                aria-label={
-                  isLiked ? "Remove from wishlist" : "Save to wishlist"
-                }
-                title={isLiked ? "Remove from wishlist" : "Save to wishlist"}
-              >
-                <Heart
-                  className={`h-4 w-4 ${
-                    isLiked ? "fill-red-500 text-red-500" : "text-gray-600"
-                  }`}
-                />
-              </Button>
-
-              {/* Share button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  const shareData = {
-                    title: property?.title || "Property Listing",
-                    text: `Check out this property: ${property?.title}`,
-                    url: window.location.href,
-                  };
-                  try {
-                    if (navigator.share) {
-                      await navigator.share(shareData);
-                      notify("Shared successfully!");
-                    } else {
-                      await navigator.clipboard.writeText(window.location.href);
-                      notify("Link copied to clipboard!");
-                    }
-                  } catch {
-                    await navigator.clipboard.writeText(window.location.href);
-                    notify("Link copied to clipboard!");
-                  }
-                }}
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-
-              {/* Message owner button */}
-              <Button
-                size="sm"
-                disabled={startingChat}
-                className="bg-[#C70000] hover:bg-[#A60000] text-white"
-
+                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"
                 onClick={handleStartChat}
+                disabled={startingChat}
               >
-                <MessageCircle className="h-4 w-4 mr-2" /> Message
+                {startingChat ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                ) : (
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                )}
+                {startingChat ? "Starting..." : "Message Owner"}
               </Button>
               <Button
                 variant="outline"
@@ -1443,32 +1382,30 @@ export default function PropertyDetail() {
             </div>
 
             {/* Mobile */}
-            <div className="space-y-3 md:hidden">
+            <div className="md:hidden space-y-3">
               <Button
-                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3 rounded-md"
+                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"
                 onClick={handleStartChat}
                 disabled={startingChat}
               >
                 {startingChat ? (
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
                 ) : (
                   <MessageCircle className="h-4 w-4 mr-2" />
                 )}
-                <span>{startingChat ? "Starting..." : "Message"}</span>
+                {startingChat ? "Starting..." : "Message Owner"}
               </Button>
-
               <Button
                 variant="outline"
-                className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3 rounded-md"
+                className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
                 onClick={() =>
                   handleCall(property.contactInfo?.phone || "")
                 }
               >
                 <Phone className="h-4 w-4 mr-2" /> Call
               </Button>
-
               <Button
-                className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3 rounded-md"
+                className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
                 onClick={() =>
                   handleWhatsApp(
                     property.contactInfo?.whatsappNumber ||
@@ -1489,7 +1426,6 @@ export default function PropertyDetail() {
           </CardContent>
         </Card>
       </div>
-
 
       {/* Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

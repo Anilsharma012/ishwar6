@@ -194,15 +194,7 @@ export const createMiniSubcategory: RequestHandler = async (req, res) => {
 
     // Generate slug
     const baseSlug = slugRaw || normSlug(name);
-<<<<<<< HEAD
     const slug = await ensureUniqueSlugInSubcategory(db, baseSlug, subcategoryId);
-=======
-    const slug = await ensureUniqueSlugInSubcategory(
-      db,
-      baseSlug,
-      subcategoryId,
-    );
->>>>>>> cf6a76e (last commit)
 
     // Create mini-subcategory
     const miniData: Omit<MiniSubcategory, "_id"> = {
@@ -219,13 +211,7 @@ export const createMiniSubcategory: RequestHandler = async (req, res) => {
       updatedAt: new Date(),
     };
 
-<<<<<<< HEAD
     const result = await db.collection("mini_subcategories").insertOne(miniData);
-=======
-    const result = await db
-      .collection("mini_subcategories")
-      .insertOne(miniData);
->>>>>>> cf6a76e (last commit)
 
     const response: ApiResponse<{ _id: string }> = {
       success: true,
@@ -304,12 +290,7 @@ export const updateMiniSubcategory: RequestHandler = async (req, res) => {
         if (existing) {
           return res.status(400).json({
             success: false,
-<<<<<<< HEAD
             error: "Mini-subcategory with this slug already exists in this subcategory",
-=======
-            error:
-              "Mini-subcategory with this slug already exists in this subcategory",
->>>>>>> cf6a76e (last commit)
           });
         }
       }
@@ -317,16 +298,7 @@ export const updateMiniSubcategory: RequestHandler = async (req, res) => {
 
     updateData.updatedAt = new Date();
 
-    const result = await db
-      .collection("mini_subcategories")
-<<<<<<< HEAD
-      .updateOne({ _id: new ObjectId(miniSubcategoryId) }, { $set: updateData });
-=======
-      .updateOne(
-        { _id: new ObjectId(miniSubcategoryId) },
-        { $set: updateData },
-      );
->>>>>>> cf6a76e (last commit)
+    const result = await db.collection("mini_subcategories").updateOne({ _id: new ObjectId(miniSubcategoryId) }, { $set: updateData });
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
@@ -427,22 +399,10 @@ export const toggleMiniSubcategoryActive: RequestHandler = async (req, res) => {
 
     const newActive = !(mini.active !== false && mini.isActive !== false);
 
-    await db
-      .collection("mini_subcategories")
-      .updateOne(
-        { _id: new ObjectId(miniSubcategoryId) },
-<<<<<<< HEAD
-        { $set: { active: newActive, isActive: newActive, updatedAt: new Date() } },
-=======
-        {
-          $set: {
-            active: newActive,
-            isActive: newActive,
-            updatedAt: new Date(),
-          },
-        },
->>>>>>> cf6a76e (last commit)
-      );
+    await db.collection("mini_subcategories").updateOne(
+      { _id: new ObjectId(miniSubcategoryId) },
+      { $set: { active: newActive, isActive: newActive, updatedAt: new Date() } },
+    );
 
     const response: ApiResponse<{ active: boolean }> = {
       success: true,
@@ -495,15 +455,11 @@ export const getMiniSubcategoriesWithCounts: RequestHandler = async (
           $match: {
             miniSubcategoryId: { $in: miniIds },
             status: "active",
-<<<<<<< HEAD
-            approvalStatus: "approved",
-=======
             $or: [
               { approvalStatus: "approved" },
               { approvalStatus: { $exists: false } },
               { approvalStatus: "pending" },
             ],
->>>>>>> cf6a76e (last commit)
           },
         },
         {

@@ -152,6 +152,7 @@ export const getCategories: RequestHandler = async (req, res) => {
 
 // PUBLIC: Get category by slug with subcategories
 
+<<<<<<< HEAD
 //   export const getCategoryBySlug: RequestHandler = async (req, res) => {
 //   try {
 //     const db = getDatabase();
@@ -254,6 +255,42 @@ export const getCategories: RequestHandler = async (req, res) => {
 
 //     // Get subcategories - try both embedded and separate collection approach
 //     let subcategories = [];
+=======
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        error: "Category slug is required",
+      });
+    }
+
+    // Query by slug (prefer active ones)
+    let category = await db.collection("categories").findOne({
+      slug: slug.toLowerCase(),
+      $or: [{ isActive: true }, { active: true }],
+    });
+
+    // If no active category found, try any category
+    if (!category) {
+      category = await db.collection("categories").findOne({
+        slug: slug.toLowerCase(),
+      });
+    }
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        error: "Category not found",
+      });
+    }
+
+    // Get subcategories from separate collection
+    let subcategories = [];
+    subcategories = await db
+      .collection("subcategories")
+      .find({ categoryId: category._id.toString() })
+      .sort({ sortOrder: 1, createdAt: 1 })
+      .toArray();
+>>>>>>> cf6a76e (last commit)
 
 //     // First, try embedded subcategories in the category document
 //     if (
@@ -275,6 +312,7 @@ export const getCategories: RequestHandler = async (req, res) => {
 //         .toArray();
 //     }
 
+<<<<<<< HEAD
 //     const response: ApiResponse<any> = {
 //       success: true,
 //       data: {
@@ -292,6 +330,17 @@ export const getCategories: RequestHandler = async (req, res) => {
 //     });
 //   }
 // };  
+=======
+    res.json(response);
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch category",
+    });
+  }
+};  
+>>>>>>> cf6a76e (last commit)
 
 // PUBLIC: Get subcategories by category slug
 export const getSubcategoriesByCategory: RequestHandler = async (req, res) => {

@@ -872,23 +872,7 @@ export default function CategoryProperties() {
                           "/placeholder.png"
                         }
                         alt={property.title}
-                        className="w-full h-full object-cover cursor-pointer group-hover:opacity-90 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const images = Array.isArray(property.images)
-                            ? property.images
-                                .map((img) =>
-                                  typeof img === "string"
-                                    ? img
-                                    : (img as any)?.url,
-                                )
-                                .filter(Boolean)
-                            : [];
-                          if (images.length > 0) {
-                            setSelectedPropertyForZoom(property);
-                            setImageModalOpen(true);
-                          }
-                        }}
+                        className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = "/placeholder.png";

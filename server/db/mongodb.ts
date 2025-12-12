@@ -2,7 +2,8 @@ import { MongoClient, Db } from "mongodb";
 
 // MongoDB Atlas connection - using working credentials for now
 const username = "Aashishpropeorty";
-const password = "SATYAKA123";
+//const password = "SATYAKA123";
+const password = "Anilsharma123";
 const cluster = "property.zn2cowc.mongodb.net";
 
 const MONGODB_URI =

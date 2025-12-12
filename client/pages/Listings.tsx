@@ -110,6 +110,7 @@ export default function Listings() {
     try {
       setLoading(true);
 
+<<<<<<< HEAD
       let url = "/api/properties";
 
       if (category) {
@@ -148,6 +149,48 @@ export default function Listings() {
       }
 
       url += `&sort=${filters.sortBy}`;
+=======
+      const params = new URLSearchParams();
+
+      if (category) {
+        params.append("category", category);
+      }
+      if (subcategory) {
+        params.append("subcategory", subcategory);
+      }
+      if (miniSubcategory) {
+        params.append("miniSubcategory", miniSubcategory);
+      }
+
+      if (filters.minPrice) {
+        params.append("minPrice", filters.minPrice);
+      }
+      if (filters.maxPrice) {
+        params.append("maxPrice", filters.maxPrice);
+      }
+      if (filters.bedrooms) {
+        params.append("bedrooms", filters.bedrooms);
+      }
+      if (filters.bathrooms) {
+        params.append("bathrooms", filters.bathrooms);
+      }
+      if (filters.minArea) {
+        params.append("minArea", filters.minArea);
+      }
+      if (filters.maxArea) {
+        params.append("maxArea", filters.maxArea);
+      }
+      if (filters.sector) {
+        params.append("sector", filters.sector);
+      }
+      if (filters.mohalla) {
+        params.append("mohalla", filters.mohalla);
+      }
+
+      params.append("sortBy", filters.sortBy);
+
+      const url = `/api/properties?${params.toString()}`;
+>>>>>>> cf6a76e (last commit)
 
       const response = await fetch(url);
       if (response.ok) {

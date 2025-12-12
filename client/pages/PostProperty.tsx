@@ -1412,7 +1412,7 @@ export default function PostProperty() {
               {/* Property Type (Dynamic) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Property Type *
+                  Category Type*
                 </label>
                 <Select
                   value={formData.propertyType}

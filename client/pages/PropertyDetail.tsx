@@ -411,53 +411,11 @@ function LightboxModalZoom({
   </div>
 </div>
 
-
-=======
-        <div
-          className="relative w-full h-full flex items-center justify-center cursor-pointer select-none"
-          onWheel={wheel}
-          onMouseDown={down}
-          onMouseMove={move}
-          onMouseUp={up}
-          onMouseLeave={up}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          onDoubleClick={toggleZoom}
-          onClick={toggleZoom}
-        >
-          {/* 👇 Ye wrapper ab 90% viewport width lega, watermark isi ke andar rahega */}
-          <div
-            className="relative inline-block w-[90vw] max-w-[90vw] max-h-[90vh]"
-            style={{
-              transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
-              transition: "transform 0.18s ease-out",
-              willChange: "transform",
-            }}
-          >
-            <img
-              src={imgSrc(index)}
-              alt={title || "Property image"}
-              className="w-full h-auto max-h-[90vh] object-contain"
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-            />
-
-            {/* Watermark sirf image area ke upar */}
-            <WatermarkLayer
-              text={wmText}
-              copies={wmCopies}
-              opacity={wmOpacity}
-            />
-          </div>
-        </div>
-
-
-        {/* Helper text bottom (drag to move hataya) */}
-        <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-300 px-4">
-          Tap / click to zoom · Scroll to zoom · Swipe for next / previous · ESC
-          to close
-        </div>
+{/* Helper text bottom (drag to move hataya) */}
+<div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-300 px-4">
+  Tap / click to zoom · Scroll to zoom · Swipe for next / previous · ESC
+  to close
+</div>
       </div>
     </div>
   );

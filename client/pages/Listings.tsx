@@ -110,7 +110,6 @@ export default function Listings() {
     try {
       setLoading(true);
 
-
       let url = "/api/properties";
 
       if (category) {
@@ -190,7 +189,6 @@ export default function Listings() {
       params.append("sortBy", filters.sortBy);
 
       url = `/api/properties?${params.toString()}`;
-
 
       const response = await fetch(url);
       if (response.ok) {

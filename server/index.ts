@@ -39,7 +39,7 @@ import {
 // Category routes (new system)
 import {
   getCategories,
-//   getCategoryBySlug,
+  getCategoryBySlug,
   getSubcategoriesByCategory,
   getAllCategories,
   createCategory,

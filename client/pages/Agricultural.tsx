@@ -8,6 +8,7 @@ import StaticFooter from "../components/StaticFooter";
 
 interface MiniSubcategory {
   _id?: string;
+  id?: string; // ✅ fallback items use `id`
   name: string;
   slug: string;
   description?: string;
@@ -26,16 +27,12 @@ interface Subcategory {
 
 export default function Agricultural() {
   const navigate = useNavigate();
-  const [miniSubcategories, setMiniSubcategories] = useState<MiniSubcategory[]>(
-    [],
-  );
+
+  const [miniSubcategories, setMiniSubcategories] = useState<MiniSubcategory[]>([]);
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
-  const [currentSubcategorySlug, setCurrentSubcategorySlug] = useState<
-    string | null
-  >(null);
-
+  const [currentSubcategorySlug, setCurrentSubcategorySlug] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -45,72 +42,51 @@ export default function Agricultural() {
     try {
       setLoading(true);
 
+      let miniLoaded = false;
 
-      // First try to fetch the agricultural category with subcategories
-      const catResponse = await fetch(
-        "/api/categories/agricultural?withSub=true",
-
-      // Fetch the agricultural category
-      const catResponse = await fetch(
-        "/api/categories/agricultural"
-
-      );
-
+      // ✅ 1) Fetch agricultural category (prefer embedded subcategories)
+      const catResponse = await fetch("/api/categories/agricultural?withSub=true");
       if (catResponse.ok) {
         const catData = await catResponse.json();
-        if (catData.success && catData.data) {
+        if (catData?.success && catData?.data) {
+          const category = Array.isArray(catData.data) ? catData.data[0] : catData.data;
 
-          const category = Array.isArray(catData.data)
-            ? catData.data[0]
-            : catData.data;
+          // ✅ If embedded subcategories exist
+          if (category?.subcategories?.length) {
+            const subs: Subcategory[] = category.subcategories;
+            setSubcategories(subs);
 
-          const category = catData.data;
+            const firstSub = subs[0];
+            setCurrentSubcategorySlug(firstSub?.slug ?? null);
 
-
-          // If category has embedded subcategories, use the first one
-          if (
-            category.subcategories &&
-            Array.isArray(category.subcategories) &&
-            category.subcategories.length > 0
-          ) {
-            const firstSubcategory = category.subcategories[0];
-            setSubcategories(category.subcategories);
-
-            setCurrentSubcategorySlug(firstSubcategory.slug);
-
-
-            // Now fetch mini-subcategories for the first subcategory
-            if (firstSubcategory._id || firstSubcategory.id) {
-              const subId = firstSubcategory._id || firstSubcategory.id;
-              await fetchMiniSubcategoriesForSubcategory(subId);
+            const subId = firstSub?._id || firstSub?.id;
+            if (subId) {
+              miniLoaded = await fetchMiniSubcategoriesForSubcategory(subId);
             }
-
           } else {
-            // If no embedded subcategories, fetch them separately
-            const subResponse = await fetch(
-              "/api/categories/agricultural/subcategories",
-            );
+            // ✅ 2) Else fetch subcategories separately
+            const subResponse = await fetch("/api/categories/agricultural/subcategories");
             if (subResponse.ok) {
               const subData = await subResponse.json();
-              if (subData.success && Array.isArray(subData.data) && subData.data.length > 0) {
-                const firstSubcategory = subData.data[0];
-                setSubcategories(subData.data);
-                setCurrentSubcategorySlug(firstSubcategory.slug);
+              if (subData?.success && Array.isArray(subData.data) && subData.data.length > 0) {
+                const subs: Subcategory[] = subData.data;
+                setSubcategories(subs);
 
-                // Now fetch mini-subcategories for the first subcategory
-                if (firstSubcategory._id || firstSubcategory.id) {
-                  const subId = firstSubcategory._id || firstSubcategory.id;
-                  await fetchMiniSubcategoriesForSubcategory(subId);
+                const firstSub = subs[0];
+                setCurrentSubcategorySlug(firstSub?.slug ?? null);
+
+                const subId = firstSub?._id || firstSub?.id;
+                if (subId) {
+                  miniLoaded = await fetchMiniSubcategoriesForSubcategory(subId);
                 }
               }
             }
-
           }
         }
       }
 
-      // If we couldn't fetch mini-subcategories, use fallback
-      if (miniSubcategories.length === 0 && !useFallback) {
+      // ✅ Fallback if mini-subcategories not loaded
+      if (!miniLoaded) {
         setUseFallback(true);
         setMiniSubcategories(getFallbackMiniSubcategories());
       }
@@ -123,100 +99,41 @@ export default function Agricultural() {
     }
   };
 
-  const fetchMiniSubcategoriesForSubcategory = async (
-    subcategoryId: string,
-  ) => {
+  const fetchMiniSubcategoriesForSubcategory = async (subcategoryId: string) => {
     try {
-      const response = await fetch(
-        `/api/mini-subcategories/${subcategoryId}/with-counts`,
-      );
+      const response = await fetch(`/api/mini-subcategories/${subcategoryId}/with-counts`);
+      if (!response.ok) return false;
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && Array.isArray(data.data)) {
-          setMiniSubcategories(data.data);
-          return;
-        }
+      const data = await response.json();
+      if (data?.success && Array.isArray(data.data)) {
+        setMiniSubcategories(data.data);
+        return true;
       }
+      return false;
     } catch (error) {
       console.error("Error fetching mini-subcategories:", error);
+      return false;
     }
   };
 
-  /**
-   * Fallback mini-subcategories for agricultural page
-   */
   const getFallbackMiniSubcategories = (): MiniSubcategory[] => [
-    {
-      id: "agricultural-land",
-      name: "Agricultural Land",
-      slug: "agricultural-land",
-      description: "Vacant agricultural land for cultivation",
-      count: 0,
-    },
-    {
-      id: "farmhouse-with-land",
-      name: "Farmhouse with Land",
-      slug: "farmhouse-with-land",
-      description: "Farmhouses with surrounding agricultural land",
-      count: 0,
-    },
-    {
-      id: "orchard-plantation",
-      name: "Orchard/Plantation",
-      slug: "orchard-plantation",
-      description: "Fruit orchards and tree plantations",
-      count: 0,
-    },
-    {
-      id: "dairy-farm",
-      name: "Dairy Farm",
-      slug: "dairy-farm",
-      description: "Dairy farming properties with facilities",
-      count: 0,
-    },
-    {
-      id: "poultry-farm",
-      name: "Poultry Farm",
-      slug: "poultry-farm",
-      description: "Poultry farming properties and units",
-      count: 0,
-    },
-    {
-      id: "fish-prawn-farm",
-      name: "Fish/Prawn Farm",
-      slug: "fish-prawn-farm",
-      description: "Aquaculture and fish farming properties",
-      count: 0,
-    },
-    {
-      id: "polyhouse-greenhouse",
-      name: "Polyhouse/Greenhouse",
-      slug: "polyhouse-greenhouse",
-      description: "Protected cultivation structures",
-      count: 0,
-    },
-    {
-      id: "pasture-grazing-land",
-      name: "Pasture/Grazing Land",
-      slug: "pasture-grazing-land",
-      description: "Land for cattle grazing and pasturing",
-      count: 0,
-    },
+    { id: "agricultural-land", name: "Agricultural Land", slug: "agricultural-land", description: "Vacant agricultural land for cultivation", count: 0 },
+    { id: "farmhouse-with-land", name: "Farmhouse with Land", slug: "farmhouse-with-land", description: "Farmhouses with surrounding agricultural land", count: 0 },
+    { id: "orchard-plantation", name: "Orchard/Plantation", slug: "orchard-plantation", description: "Fruit orchards and tree plantations", count: 0 },
+    { id: "dairy-farm", name: "Dairy Farm", slug: "dairy-farm", description: "Dairy farming properties with facilities", count: 0 },
+    { id: "poultry-farm", name: "Poultry Farm", slug: "poultry-farm", description: "Poultry farming properties and units", count: 0 },
+    { id: "fish-prawn-farm", name: "Fish/Prawn Farm", slug: "fish-prawn-farm", description: "Aquaculture and fish farming properties", count: 0 },
+    { id: "polyhouse-greenhouse", name: "Polyhouse/Greenhouse", slug: "polyhouse-greenhouse", description: "Protected cultivation structures", count: 0 },
+    { id: "pasture-grazing-land", name: "Pasture/Grazing Land", slug: "pasture-grazing-land", description: "Land for cattle grazing and pasturing", count: 0 },
   ];
 
   const handleMiniClick = (mini: MiniSubcategory) => {
-
-    navigate(`/listings?category=agricultural&miniSubcategory=${mini.slug}`);
-
     const query = new URLSearchParams();
     query.append("category", "agricultural");
-    if (currentSubcategorySlug) {
-      query.append("subcategory", currentSubcategorySlug);
-    }
+    if (currentSubcategorySlug) query.append("subcategory", currentSubcategorySlug);
     query.append("miniSubcategory", mini.slug);
-    navigate(`/listings?${query.toString()}`);
 
+    navigate(`/listings?${query.toString()}`);
   };
 
   if (loading) {
@@ -242,44 +159,30 @@ export default function Agricultural() {
         <CategoryBar />
 
         <div className="px-4 py-6">
-          {/* Header */}
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Agricultural Properties
-            </h1>
-            <p className="text-gray-600">
-              Find agricultural lands, farms, and farming properties in Rohtak
-            </p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Agricultural Properties</h1>
+            <p className="text-gray-600">Find agricultural lands, farms, and farming properties in Rohtak</p>
           </div>
 
-          {/* Mini-subcategories Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {miniSubcategories.map((mini) => (
               <button
-                key={mini._id || mini.slug}
+                key={mini._id || mini.id || mini.slug}
                 onClick={() => handleMiniClick(mini)}
                 className="mini-subcat-card bg-white border border-gray-200 rounded-lg p-4 text-left hover:bg-gray-50 transition-all shadow-sm hover:shadow-md cursor-pointer"
                 data-testid="mini-subcat-card"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-lg">
-                      {mini.name}
-                    </h3>
-                    {mini.description && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {mini.description}
-                      </p>
-                    )}
+                    <h3 className="font-semibold text-gray-900 text-lg">{mini.name}</h3>
+                    {mini.description && <p className="text-sm text-gray-600 mt-1">{mini.description}</p>}
                   </div>
                   <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
                 </div>
 
-                {/* Property count badge */}
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
                   <span className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium">
-                    {mini.count ?? 0}{" "}
-                    {(mini.count ?? 0) === 1 ? "property" : "properties"}
+                    {mini.count ?? 0} {(mini.count ?? 0) === 1 ? "property" : "properties"}
                   </span>
                 </div>
               </button>
@@ -288,19 +191,14 @@ export default function Agricultural() {
 
           {miniSubcategories.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">
-                No agricultural properties available yet
-              </p>
+              <p className="text-gray-600 text-lg">No agricultural properties available yet</p>
             </div>
           )}
 
-          {/* Note about auto-categorization */}
           {miniSubcategories.length > 0 && (
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-900">
-                💡 <strong>Auto-Updated Listings:</strong> New agricultural
-                properties are automatically displayed here after admin
-                approval.
+                💡 <strong>Auto-Updated Listings:</strong> New agricultural properties are automatically displayed here after admin approval.
               </p>
             </div>
           )}

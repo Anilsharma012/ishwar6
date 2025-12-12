@@ -52,7 +52,7 @@ export default function Agricultural() {
 
       // Fetch the agricultural category
       const catResponse = await fetch(
-        "/api/categories/agricultural",
+        "/api/categories/agricultural"
 
       );
 

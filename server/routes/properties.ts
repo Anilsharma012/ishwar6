@@ -191,14 +191,6 @@ export const getProperties: RequestHandler = async (req, res) => {
       try {
         const normalizedMiniSlug = norm(miniSubcategory);
         const normalizedSubCat = norm(subCategory) || norm(category);
-<<<<<<< HEAD
-
-        // First find the subcategory
-        const subcategoryDoc = await db.collection("subcategories").findOne({
-          slug: normalizedSubCat,
-        });
-
-=======
         const normalizedPriceType = norm(priceType);
 
         // Determine which parent category to use based on context:
@@ -227,8 +219,6 @@ export const getProperties: RequestHandler = async (req, res) => {
         }
 
         const subcategoryDoc = await db.collection("subcategories").findOne(subcategoryFilter);
-
->>>>>>> cf6a76e (last commit)
         if (subcategoryDoc) {
           // Then find the mini-subcategory
           const miniDoc = await db.collection("mini_subcategories").findOne({
@@ -238,9 +228,6 @@ export const getProperties: RequestHandler = async (req, res) => {
 
           if (miniDoc) {
             filter.miniSubcategoryId = miniDoc._id?.toString();
-<<<<<<< HEAD
-          }
-=======
             console.log("✅ Filter: mini-subcategory resolved from slug", {
               miniSubcategory: normalizedMiniSlug,
               miniSubcategoryId: miniDoc._id?.toString(),
@@ -257,7 +244,6 @@ export const getProperties: RequestHandler = async (req, res) => {
             slug: normalizedSubCat,
             parentCategory: parentCategorySlug,
           });
->>>>>>> cf6a76e (last commit)
         }
       } catch (err) {
         console.warn(
@@ -436,13 +422,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       typeof req.body.packageId === "string" && req.body.packageId.trim() ? req.body.packageId.trim() : undefined;
 
     // moderation defaults
-<<<<<<< HEAD
-    const approvalStatus: "pending" | "pending_approval" = packageId
-      ? "pending_approval"
-      : "pending";
-=======
     const approvalStatus: "pending" | "pending_approval" = packageId ? "pending_approval" : "pending";
->>>>>>> cf6a76e (last commit)
     // Properties with free listings are immediately active
     // Properties with packages become active after payment confirmation
     const status: "inactive" | "active" = packageId ? "inactive" : "active";
@@ -481,23 +461,12 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     // Handle mini-subcategory: look up ID from slug if provided
     let miniSubcategoryId: string | undefined = undefined;
-<<<<<<< HEAD
-    const miniSubcategorySlug = req.body.miniSubcategorySlug
-      ? normSlug(req.body.miniSubcategorySlug)
-      : undefined;
-=======
     const miniSubcategorySlug = req.body.miniSubcategorySlug ? normSlug(req.body.miniSubcategorySlug) : undefined;
->>>>>>> cf6a76e (last commit)
 
     if (miniSubcategorySlug) {
       try {
         // Get the subcategory ID first
         const normalizedSubCategory = normSlug(req.body.subCategory);
-<<<<<<< HEAD
-        const subcategory = await db.collection("subcategories").findOne({
-          slug: normalizedSubCategory,
-        });
-=======
         const priceTypeValue = normSlug(req.body.priceType);
 
         // Find parent category to disambiguate subcategories with same slug
@@ -515,7 +484,6 @@ export const createProperty: RequestHandler = async (req, res) => {
         }
 
         const subcategory = await db.collection("subcategories").findOne(subcategoryFilter);
->>>>>>> cf6a76e (last commit)
 
         if (subcategory) {
           // Now look up the mini-subcategory by slug and parent subcategoryId
@@ -526,15 +494,6 @@ export const createProperty: RequestHandler = async (req, res) => {
 
           if (mini) {
             miniSubcategoryId = mini._id?.toString();
-<<<<<<< HEAD
-          }
-        }
-      } catch (err) {
-        console.warn(
-          "Failed to look up mini-subcategory:",
-          err instanceof Error ? err.message : err,
-        );
-=======
             console.log("✅ Mini-subcategory resolved:", {
               miniSubcategorySlug,
               miniSubcategoryId,
@@ -554,7 +513,6 @@ export const createProperty: RequestHandler = async (req, res) => {
         }
       } catch (err) {
         console.warn("Failed to look up mini-subcategory:", err instanceof Error ? err.message : err);
->>>>>>> cf6a76e (last commit)
       }
     }
 
@@ -632,13 +590,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       const userIdStr = String(userId);
 
       // Get user to check custom free listing limit
-<<<<<<< HEAD
-      const user = await db
-        .collection("users")
-        .findOne({ _id: new ObjectId(userIdStr) });
-=======
       const user = await db.collection("users").findOne({ _id: new ObjectId(userIdStr) });
->>>>>>> cf6a76e (last commit)
 
       // Use user-specific limit or fall back to admin settings or environment defaults
       let FREE_POST_LIMIT = 5;
@@ -649,40 +601,19 @@ export const createProperty: RequestHandler = async (req, res) => {
         FREE_POST_PERIOD_DAYS = user.freeListingLimit.limitType;
       } else {
         // Try to get admin default settings
-<<<<<<< HEAD
-        const adminSettings = await db
-          .collection("adminSettings")
-          .findOne({ _id: "freeListingLimits" });
-=======
         const adminSettings = await db.collection("adminSettings").findOne({ _id: "freeListingLimits" });
->>>>>>> cf6a76e (last commit)
 
         if (adminSettings) {
           FREE_POST_LIMIT = adminSettings.defaultLimit || 5;
           FREE_POST_PERIOD_DAYS = adminSettings.defaultLimitType || 30;
         } else {
           // Use environment variables or hardcoded defaults
-<<<<<<< HEAD
-          FREE_POST_LIMIT = process.env.FREE_POST_LIMIT
-            ? Number(process.env.FREE_POST_LIMIT)
-            : 5;
-          FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS
-            ? Number(process.env.FREE_POST_PERIOD_DAYS)
-            : 30;
-        }
-      }
-
-      const periodStart = new Date(
-        Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000,
-      );
-=======
           FREE_POST_LIMIT = process.env.FREE_POST_LIMIT ? Number(process.env.FREE_POST_LIMIT) : 5;
           FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS ? Number(process.env.FREE_POST_PERIOD_DAYS) : 30;
         }
       }
 
       const periodStart = new Date(Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000);
->>>>>>> cf6a76e (last commit)
 
       const freePostsCount = await db.collection("properties").countDocuments({
         ownerId: userIdStr,
@@ -954,14 +885,7 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const propertyOwnerId = String(property.ownerId);
     const requestUserId = String(userId);
     if (propertyOwnerId !== requestUserId) {
-<<<<<<< HEAD
-      return res.status(403).json({
-        success: false,
-        error: "You can only edit your own properties",
-      });
-=======
       return res.status(403).json({ success: false, error: "You can only edit your own properties" });
->>>>>>> cf6a76e (last commit)
     }
 
     // Handle images
@@ -1019,31 +943,12 @@ export const updateProperty: RequestHandler = async (req, res) => {
     }
 
     // Handle mini-subcategory: look up ID from slug if provided
-<<<<<<< HEAD
-    let miniSubcategoryIdUpdate: string | undefined =
-      property.miniSubcategoryId;
-    const miniSubcategorySlug = req.body.miniSubcategorySlug
-      ? normSlugLocal(req.body.miniSubcategorySlug)
-      : undefined;
-=======
     let miniSubcategoryIdUpdate: string | undefined = property.miniSubcategoryId;
     const miniSubcategorySlug = req.body.miniSubcategorySlug ? normSlugLocal(req.body.miniSubcategorySlug) : undefined;
->>>>>>> cf6a76e (last commit)
 
     if (miniSubcategorySlug) {
       try {
         // Get the subcategory ID first
-<<<<<<< HEAD
-        const normalizedSubCategory = normSlugLocal(
-          req.body.subCategory || property.subCategory,
-        );
-        const subcategory = await db.collection("subcategories").findOne({
-          slug: normalizedSubCategory,
-        });
-
-        if (subcategory) {
-          // Now look up the mini-subcategory by slug and parent subcategoryId
-=======
         const normalizedSubCategory = normSlugLocal(req.body.subCategory || property.subCategory);
         const priceTypeValue = normSlugLocal(req.body.priceType || property.priceType);
 
@@ -1059,28 +964,14 @@ export const updateProperty: RequestHandler = async (req, res) => {
         const subcategory = await db.collection("subcategories").findOne(subcategoryFilter);
 
         if (subcategory) {
->>>>>>> cf6a76e (last commit)
           const mini = await db.collection("mini_subcategories").findOne({
             slug: miniSubcategorySlug,
             subcategoryId: subcategory._id?.toString(),
           });
-<<<<<<< HEAD
-
-          if (mini) {
-            miniSubcategoryIdUpdate = mini._id?.toString();
-          }
-        }
-      } catch (err) {
-        console.warn(
-          "Failed to look up mini-subcategory during update:",
-          err instanceof Error ? err.message : err,
-        );
-=======
           if (mini) miniSubcategoryIdUpdate = mini._id?.toString();
         }
       } catch (err) {
         console.warn("Failed to look up mini-subcategory during update:", err instanceof Error ? err.message : err);
->>>>>>> cf6a76e (last commit)
       }
     }
 
@@ -1092,13 +983,7 @@ export const updateProperty: RequestHandler = async (req, res) => {
       priceType: req.body.priceType || property.priceType,
       propertyType: normalizedPropertyType,
       subCategory: normSlugLocal(req.body.subCategory || property.subCategory),
-<<<<<<< HEAD
-      ...(miniSubcategoryIdUpdate
-        ? { miniSubcategoryId: miniSubcategoryIdUpdate }
-        : {}),
-=======
       ...(miniSubcategoryIdUpdate ? { miniSubcategoryId: miniSubcategoryIdUpdate } : {}),
->>>>>>> cf6a76e (last commit)
       location,
       specifications: {
         ...specifications,

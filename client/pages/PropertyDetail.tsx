@@ -945,7 +945,7 @@ export default function PropertyDetail() {
   const addr = property.location?.area || "Rohtak";
 
   return (
-<<<<<<< HEAD
+
   <div className="min-h-screen bg-gray-50">
   {/* Header */}
   <div className="bg-white border-b sticky top-0 z-10">

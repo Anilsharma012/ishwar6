@@ -189,7 +189,7 @@ export default function Listings() {
 
       params.append("sortBy", filters.sortBy);
 
-      const url = `/api/properties?${params.toString()}`;
+      url = `/api/properties?${params.toString()}`;
 
 
       const response = await fetch(url);

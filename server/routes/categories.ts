@@ -194,9 +194,24 @@ export const initializeCategories: RequestHandler = async (req, res) => {
         icon: "🏢",
         description: "Shops, offices, and commercial properties",
         subcategories: [
-          { id: "shop", name: "Shop", slug: "shop", description: "Retail shops and stores" },
-          { id: "office", name: "Office", slug: "office", description: "Office spaces" },
-          { id: "warehouse", name: "Warehouse", slug: "warehouse", description: "Storage and warehouse facilities" },
+          {
+            id: "shop",
+            name: "Shop",
+            slug: "shop",
+            description: "Retail shops and stores",
+          },
+          {
+            id: "office",
+            name: "Office",
+            slug: "office",
+            description: "Office spaces",
+          },
+          {
+            id: "warehouse",
+            name: "Warehouse",
+            slug: "warehouse",
+            description: "Storage and warehouse facilities",
+          },
         ],
         order: 2,
         active: true,
@@ -206,7 +221,9 @@ export const initializeCategories: RequestHandler = async (req, res) => {
 
     // ensure unique slug index once
     try {
-      await db.collection("categories").createIndex({ slug: 1 }, { unique: true });
+      await db
+        .collection("categories")
+        .createIndex({ slug: 1 }, { unique: true });
     } catch {}
 
     await db.collection("categories").insertMany(defaultCategories);

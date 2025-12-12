@@ -32,12 +32,10 @@ export default function Agricultural() {
   const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [useFallback, setUseFallback] = useState(false);
-<<<<<<< HEAD
-=======
   const [currentSubcategorySlug, setCurrentSubcategorySlug] = useState<
     string | null
   >(null);
->>>>>>> cf6a76e (last commit)
+
 
   useEffect(() => {
     fetchData();
@@ -47,27 +45,27 @@ export default function Agricultural() {
     try {
       setLoading(true);
 
-<<<<<<< HEAD
+
       // First try to fetch the agricultural category with subcategories
       const catResponse = await fetch(
         "/api/categories/agricultural?withSub=true",
-=======
+
       // Fetch the agricultural category
       const catResponse = await fetch(
         "/api/categories/agricultural",
->>>>>>> cf6a76e (last commit)
+
       );
 
       if (catResponse.ok) {
         const catData = await catResponse.json();
         if (catData.success && catData.data) {
-<<<<<<< HEAD
+
           const category = Array.isArray(catData.data)
             ? catData.data[0]
             : catData.data;
-=======
+
           const category = catData.data;
->>>>>>> cf6a76e (last commit)
+
 
           // If category has embedded subcategories, use the first one
           if (
@@ -77,18 +75,16 @@ export default function Agricultural() {
           ) {
             const firstSubcategory = category.subcategories[0];
             setSubcategories(category.subcategories);
-<<<<<<< HEAD
-=======
+
             setCurrentSubcategorySlug(firstSubcategory.slug);
->>>>>>> cf6a76e (last commit)
+
 
             // Now fetch mini-subcategories for the first subcategory
             if (firstSubcategory._id || firstSubcategory.id) {
               const subId = firstSubcategory._id || firstSubcategory.id;
               await fetchMiniSubcategoriesForSubcategory(subId);
             }
-<<<<<<< HEAD
-=======
+
           } else {
             // If no embedded subcategories, fetch them separately
             const subResponse = await fetch(
@@ -108,7 +104,7 @@ export default function Agricultural() {
                 }
               }
             }
->>>>>>> cf6a76e (last commit)
+
           }
         }
       }
@@ -210,9 +206,9 @@ export default function Agricultural() {
   ];
 
   const handleMiniClick = (mini: MiniSubcategory) => {
-<<<<<<< HEAD
+
     navigate(`/listings?category=agricultural&miniSubcategory=${mini.slug}`);
-=======
+
     const query = new URLSearchParams();
     query.append("category", "agricultural");
     if (currentSubcategorySlug) {
@@ -220,7 +216,7 @@ export default function Agricultural() {
     }
     query.append("miniSubcategory", mini.slug);
     navigate(`/listings?${query.toString()}`);
->>>>>>> cf6a76e (last commit)
+
   };
 
   if (loading) {

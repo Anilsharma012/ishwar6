@@ -958,7 +958,7 @@ export function createServer() {
 
   // PUBLIC Category routes
   app.get("/api/categories", getCategories); // ?active=true&withSub=true
-//   app.get("/api/categories/:slug", getCategoryBySlug);
+  app.get("/api/categories/:slug", getCategoryBySlug); // ?withSub=true to embed subcategories
   app.get(
     "/api/categories/:categorySlug/subcategories",
     getSubcategoriesByCategory,

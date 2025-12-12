@@ -1347,7 +1347,7 @@ export default function PropertyDetail() {
             {/* Desktop */}
             <div className="hidden md:flex flex-col space-y-3">
               <Button
-                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"
+                className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"/>
 
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

@@ -1348,7 +1348,7 @@ export default function PropertyDetail() {
             <div className="hidden md:flex flex-col space-y-3">
               <Button
                 className="w-full bg-[#C70000] hover:bg-[#A60000] text-white flex justify-center items-center py-3"
-=======
+
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
@@ -1414,7 +1414,7 @@ export default function PropertyDetail() {
                 size="sm"
                 disabled={startingChat}
                 className="bg-[#C70000] hover:bg-[#A60000] text-white"
->>>>>>> cf6a76e (last commit)
+
                 onClick={handleStartChat}
               >
                 <MessageCircle className="h-4 w-4 mr-2" /> Message
@@ -1489,8 +1489,7 @@ export default function PropertyDetail() {
           </CardContent>
         </Card>
       </div>
-<<<<<<< HEAD
-=======
+
 
       {/* Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -1920,7 +1919,7 @@ export default function PropertyDetail() {
           ownerName={property.contactInfo?.name || ""}
         />
       )}
->>>>>>> cf6a76e (last commit)
+
     </div>
   </div>
 

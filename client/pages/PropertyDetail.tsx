@@ -266,23 +266,14 @@ function LightboxModalZoom({
     setOffset({ x: 0, y: 0 });
   }, [open, index]);
 
-<<<<<<< HEAD
 
-
-    // 🔒 When lightbox open, lock body scroll
-=======
-  // 🔒 When lightbox open, lock body scroll
->>>>>>> cf6a76e (last commit)
   useEffect(() => {
     if (!open) return;
 
     const originalOverflow = document.body.style.overflow;
     const originalPaddingRight = document.body.style.paddingRight;
 
-<<<<<<< HEAD
-    // Scrollbar ki width adjust karne ke liye (layout jump avoid)
-=======
->>>>>>> cf6a76e (last commit)
+
     const scrollBarWidth =
       window.innerWidth - document.documentElement.clientWidth;
     if (scrollBarWidth > 0) {
@@ -297,10 +288,7 @@ function LightboxModalZoom({
     };
   }, [open]);
 
-<<<<<<< HEAD
 
-=======
->>>>>>> cf6a76e (last commit)
   const wheel: React.WheelEventHandler<HTMLDivElement> = (e) => {
     if (!open) return;
     const delta = e.deltaY > 0 ? -0.14 : 0.14;
@@ -382,8 +370,7 @@ function LightboxModalZoom({
           <X className="w-6 h-6" />
         </button>
 
-        {/* Main image area – full viewport, original aspect via object-contain */}
-<<<<<<< HEAD
+
 {/* Main image area – full viewport, original aspect via object-contain */}
 <div
   className="relative w-full h-full flex items-center justify-center cursor-pointer select-none"
@@ -464,7 +451,7 @@ function LightboxModalZoom({
             />
           </div>
         </div>
->>>>>>> cf6a76e (last commit)
+
 
         {/* Helper text bottom (drag to move hataya) */}
         <div className="absolute bottom-4 left-0 right-0 text-center text-xs text-gray-300 px-4">
@@ -476,9 +463,8 @@ function LightboxModalZoom({
   );
 }
 
-/* =========================================================
-   Preview (page) – click to open modal
-========================================================= */
+
+
 function PreviewImageWithMarks({
   images,
   index,
@@ -551,7 +537,7 @@ function PreviewImageWithMarks({
   );
 }
 
-/* ========================================================= */
+
 
 export default function PropertyDetail() {
   const { settings: watermarkSettings } = useWatermark();

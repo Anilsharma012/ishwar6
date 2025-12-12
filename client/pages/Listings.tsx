@@ -110,7 +110,6 @@ export default function Listings() {
     try {
       setLoading(true);
 
-<<<<<<< HEAD
       let url = "/api/properties";
 
       if (category) {
@@ -149,7 +148,7 @@ export default function Listings() {
       }
 
       url += `&sort=${filters.sortBy}`;
-=======
+
       const params = new URLSearchParams();
 
       if (category) {
@@ -189,8 +188,7 @@ export default function Listings() {
 
       params.append("sortBy", filters.sortBy);
 
-      const url = `/api/properties?${params.toString()}`;
->>>>>>> cf6a76e (last commit)
+      url = `/api/properties?${params.toString()}`;
 
       const response = await fetch(url);
       if (response.ok) {

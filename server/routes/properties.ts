@@ -17,12 +17,16 @@ import {
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const uploadPath = path.join(process.cwd(), "uploads", "properties");
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+    if (!fs.existsSync(uploadPath))
+      fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (_req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`,
+    );
   },
 });
 
@@ -51,7 +55,9 @@ const CAT_SYNONYMS: Record<string, string[]> = {
 };
 
 function normSlug(v: any): string {
-  return String(v || "").trim().toLowerCase();
+  return String(v || "")
+    .trim()
+    .toLowerCase();
 }
 
 function expandCategory(cat: string): string[] {
@@ -191,20 +197,13 @@ export const getProperties: RequestHandler = async (req, res) => {
       try {
         const normalizedMiniSlug = norm(miniSubcategory);
         const normalizedSubCat = norm(subCategory) || norm(category);
-<<<<<<< HEAD
-
-        // First find the subcategory
-        const subcategoryDoc = await db.collection("subcategories").findOne({
-          slug: normalizedSubCat,
-        });
-
-=======
         const normalizedPriceType = norm(priceType);
 
         // Determine which parent category to use based on context:
         // Prefer explicit category slug (e.g., "agricultural") if provided.
         // Otherwise fall back to top tab grouping derived from priceType (rent/buy).
-        let parentCategorySlug = norm(category) || (normalizedPriceType === "rent" ? "rent" : "buy");
+        let parentCategorySlug =
+          norm(category) || (normalizedPriceType === "rent" ? "rent" : "buy");
 
         // Defensive: if normalizedSubCat looks like "buy" or "rent" (top tabs),
         // don't mistakenly treat it as a subcategory slug — ensure parentCategorySlug
@@ -226,9 +225,9 @@ export const getProperties: RequestHandler = async (req, res) => {
           subcategoryFilter.categoryId = parentCategory._id?.toString();
         }
 
-        const subcategoryDoc = await db.collection("subcategories").findOne(subcategoryFilter);
-
->>>>>>> cf6a76e (last commit)
+        const subcategoryDoc = await db
+          .collection("subcategories")
+          .findOne(subcategoryFilter);
         if (subcategoryDoc) {
           // Then find the mini-subcategory
           const miniDoc = await db.collection("mini_subcategories").findOne({
@@ -238,9 +237,6 @@ export const getProperties: RequestHandler = async (req, res) => {
 
           if (miniDoc) {
             filter.miniSubcategoryId = miniDoc._id?.toString();
-<<<<<<< HEAD
-          }
-=======
             console.log("✅ Filter: mini-subcategory resolved from slug", {
               miniSubcategory: normalizedMiniSlug,
               miniSubcategoryId: miniDoc._id?.toString(),
@@ -257,7 +253,6 @@ export const getProperties: RequestHandler = async (req, res) => {
             slug: normalizedSubCat,
             parentCategory: parentCategorySlug,
           });
->>>>>>> cf6a76e (last commit)
         }
       } catch (err) {
         console.warn(
@@ -297,8 +292,10 @@ export const getProperties: RequestHandler = async (req, res) => {
     }
     if (minArea || maxArea) {
       filter["specifications.area"] = {};
-      if (minArea) filter["specifications.area"].$gte = parseInt(String(minArea), 10);
-      if (maxArea) filter["specifications.area"].$lte = parseInt(String(maxArea), 10);
+      if (minArea)
+        filter["specifications.area"].$gte = parseInt(String(minArea), 10);
+      if (maxArea)
+        filter["specifications.area"].$lte = parseInt(String(maxArea), 10);
     }
 
     // --- 5) Sorting / Pagination unchanged ---
@@ -348,14 +345,19 @@ export const getProperties: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch properties" });
   }
 };
 
 /* =========================================================================
    PUBLIC: Category page with path params (/categories/:category/:sub?)
    ========================================================================= */
-export const listPublicPropertiesByCategory: RequestHandler = async (req, res) => {
+export const listPublicPropertiesByCategory: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     // Reuse getProperties logic by mapping params → query and calling same code path
     req.query = {
@@ -367,7 +369,9 @@ export const listPublicPropertiesByCategory: RequestHandler = async (req, res) =
     return getProperties(req, res);
   } catch (err) {
     console.error("listPublicPropertiesByCategory error:", err);
-    return res.status(500).json({ success: false, error: "Failed to list properties" });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to list properties" });
   }
 };
 
@@ -379,12 +383,21 @@ export const getPropertyById: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { id } = req.params;
     if (!ObjectId.isValid(id))
-      return res.status(400).json({ success: false, error: "Invalid property ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
 
-    const property = await db.collection("properties").findOne({ _id: new ObjectId(id) });
-    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+    const property = await db
+      .collection("properties")
+      .findOne({ _id: new ObjectId(id) });
+    if (!property)
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
-    await db.collection("properties").updateOne({ _id: new ObjectId(id) }, { $inc: { views: 1 } });
+    await db
+      .collection("properties")
+      .updateOne({ _id: new ObjectId(id) }, { $inc: { views: 1 } });
 
     const response: ApiResponse<Property> = {
       success: true,
@@ -404,12 +417,17 @@ export const createProperty: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
 
     // images
     const images: string[] = [];
     if (Array.isArray((req as any).files)) {
-      (req as any).files.forEach((file: any) => images.push(`/uploads/properties/${file.filename}`));
+      (req as any).files.forEach((file: any) =>
+        images.push(`/uploads/properties/${file.filename}`),
+      );
     }
 
     // safe parse
@@ -430,19 +448,19 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     const providedPremium = req.body.premium === "true";
     const contactVisibleFlag =
-      typeof req.body.contactVisible === "string" ? req.body.contactVisible === "true" : !!req.body.contactVisible;
+      typeof req.body.contactVisible === "string"
+        ? req.body.contactVisible === "true"
+        : !!req.body.contactVisible;
 
     const packageId: string | undefined =
-      typeof req.body.packageId === "string" && req.body.packageId.trim() ? req.body.packageId.trim() : undefined;
+      typeof req.body.packageId === "string" && req.body.packageId.trim()
+        ? req.body.packageId.trim()
+        : undefined;
 
     // moderation defaults
-<<<<<<< HEAD
     const approvalStatus: "pending" | "pending_approval" = packageId
       ? "pending_approval"
       : "pending";
-=======
-    const approvalStatus: "pending" | "pending_approval" = packageId ? "pending_approval" : "pending";
->>>>>>> cf6a76e (last commit)
     // Properties with free listings are immediately active
     // Properties with packages become active after payment confirmation
     const status: "inactive" | "active" = packageId ? "inactive" : "active";
@@ -481,30 +499,27 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     // Handle mini-subcategory: look up ID from slug if provided
     let miniSubcategoryId: string | undefined = undefined;
-<<<<<<< HEAD
     const miniSubcategorySlug = req.body.miniSubcategorySlug
       ? normSlug(req.body.miniSubcategorySlug)
       : undefined;
-=======
-    const miniSubcategorySlug = req.body.miniSubcategorySlug ? normSlug(req.body.miniSubcategorySlug) : undefined;
->>>>>>> cf6a76e (last commit)
 
     if (miniSubcategorySlug) {
       try {
         // Get the subcategory ID first
         const normalizedSubCategory = normSlug(req.body.subCategory);
-<<<<<<< HEAD
-        const subcategory = await db.collection("subcategories").findOne({
-          slug: normalizedSubCategory,
-        });
-=======
         const priceTypeValue = normSlug(req.body.priceType);
 
         // Find parent category to disambiguate subcategories with same slug
         // Prefer explicit category if provided in body; otherwise fallback to priceType tabs
         const explicitCategoryFromBody = normSlug(req.body.category);
-        let categoryFilter: any = { slug: explicitCategoryFromBody || (priceTypeValue === "rent" ? "rent" : "buy") };
-        const parentCategory = await db.collection("categories").findOne(categoryFilter);
+        let categoryFilter: any = {
+          slug:
+            explicitCategoryFromBody ||
+            (priceTypeValue === "rent" ? "rent" : "buy"),
+        };
+        const parentCategory = await db
+          .collection("categories")
+          .findOne(categoryFilter);
 
         // Now look up subcategory under the correct parent category
         const subcategoryFilter: any = {
@@ -514,8 +529,9 @@ export const createProperty: RequestHandler = async (req, res) => {
           subcategoryFilter.categoryId = parentCategory._id?.toString();
         }
 
-        const subcategory = await db.collection("subcategories").findOne(subcategoryFilter);
->>>>>>> cf6a76e (last commit)
+        const subcategory = await db
+          .collection("subcategories")
+          .findOne(subcategoryFilter);
 
         if (subcategory) {
           // Now look up the mini-subcategory by slug and parent subcategoryId
@@ -526,15 +542,6 @@ export const createProperty: RequestHandler = async (req, res) => {
 
           if (mini) {
             miniSubcategoryId = mini._id?.toString();
-<<<<<<< HEAD
-          }
-        }
-      } catch (err) {
-        console.warn(
-          "Failed to look up mini-subcategory:",
-          err instanceof Error ? err.message : err,
-        );
-=======
             console.log("✅ Mini-subcategory resolved:", {
               miniSubcategorySlug,
               miniSubcategoryId,
@@ -553,8 +560,10 @@ export const createProperty: RequestHandler = async (req, res) => {
           });
         }
       } catch (err) {
-        console.warn("Failed to look up mini-subcategory:", err instanceof Error ? err.message : err);
->>>>>>> cf6a76e (last commit)
+        console.warn(
+          "Failed to look up mini-subcategory:",
+          err instanceof Error ? err.message : err,
+        );
       }
     }
 
@@ -585,7 +594,10 @@ export const createProperty: RequestHandler = async (req, res) => {
         area: toInt(specifications.area),
         floor: toInt(specifications.floor),
         totalFloors: toInt(specifications.totalFloors),
-        parking: typeof specifications.parking === "string" ? specifications.parking === "yes" : !!specifications.parking,
+        parking:
+          typeof specifications.parking === "string"
+            ? specifications.parking === "yes"
+            : !!specifications.parking,
       },
       images,
       amenities: Array.isArray(amenities) ? amenities : [],
@@ -632,13 +644,9 @@ export const createProperty: RequestHandler = async (req, res) => {
       const userIdStr = String(userId);
 
       // Get user to check custom free listing limit
-<<<<<<< HEAD
       const user = await db
         .collection("users")
         .findOne({ _id: new ObjectId(userIdStr) });
-=======
-      const user = await db.collection("users").findOne({ _id: new ObjectId(userIdStr) });
->>>>>>> cf6a76e (last commit)
 
       // Use user-specific limit or fall back to admin settings or environment defaults
       let FREE_POST_LIMIT = 5;
@@ -649,20 +657,15 @@ export const createProperty: RequestHandler = async (req, res) => {
         FREE_POST_PERIOD_DAYS = user.freeListingLimit.limitType;
       } else {
         // Try to get admin default settings
-<<<<<<< HEAD
         const adminSettings = await db
           .collection("adminSettings")
           .findOne({ _id: "freeListingLimits" });
-=======
-        const adminSettings = await db.collection("adminSettings").findOne({ _id: "freeListingLimits" });
->>>>>>> cf6a76e (last commit)
 
         if (adminSettings) {
           FREE_POST_LIMIT = adminSettings.defaultLimit || 5;
           FREE_POST_PERIOD_DAYS = adminSettings.defaultLimitType || 30;
         } else {
           // Use environment variables or hardcoded defaults
-<<<<<<< HEAD
           FREE_POST_LIMIT = process.env.FREE_POST_LIMIT
             ? Number(process.env.FREE_POST_LIMIT)
             : 5;
@@ -675,19 +678,15 @@ export const createProperty: RequestHandler = async (req, res) => {
       const periodStart = new Date(
         Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000,
       );
-=======
-          FREE_POST_LIMIT = process.env.FREE_POST_LIMIT ? Number(process.env.FREE_POST_LIMIT) : 5;
-          FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS ? Number(process.env.FREE_POST_PERIOD_DAYS) : 30;
-        }
-      }
-
-      const periodStart = new Date(Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000);
->>>>>>> cf6a76e (last commit)
 
       const freePostsCount = await db.collection("properties").countDocuments({
         ownerId: userIdStr,
         createdAt: { $gte: periodStart },
-        $or: [{ packageId: { $exists: false } }, { packageId: null }, { isPaid: false }],
+        $or: [
+          { packageId: { $exists: false } },
+          { packageId: null },
+          { isPaid: false },
+        ],
       });
 
       if (freePostsCount >= FREE_POST_LIMIT) {
@@ -703,12 +702,22 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     // confirmation email (best-effort)
     try {
-      const user = await db.collection("users").findOne({ _id: new ObjectId(String(userId)) });
+      const user = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(String(userId)) });
       if (user?.email) {
-        await sendPropertyConfirmationEmail(user.email, user.name || "User", propertyData.title, propertyId);
+        await sendPropertyConfirmationEmail(
+          user.email,
+          user.name || "User",
+          propertyData.title,
+          propertyId,
+        );
       }
     } catch (e) {
-      console.warn("Property confirmation email failed:", (e as any)?.message || e);
+      console.warn(
+        "Property confirmation email failed:",
+        (e as any)?.message || e,
+      );
     }
 
     const response: ApiResponse<{ _id: string }> = {
@@ -720,7 +729,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     console.error("Error creating property:", error);
-    res.status(500).json({ success: false, error: "Failed to create property" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to create property" });
   }
 };
 
@@ -744,7 +755,9 @@ export const getFeaturedProperties: RequestHandler = async (_req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching featured properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch featured properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch featured properties" });
   }
 };
 
@@ -755,9 +768,16 @@ export const getUserProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
 
-    const properties = await db.collection("properties").find({ ownerId: String(userId) }).sort({ createdAt: -1 }).toArray();
+    const properties = await db
+      .collection("properties")
+      .find({ ownerId: String(userId) })
+      .sort({ createdAt: -1 })
+      .toArray();
 
     const response: ApiResponse<Property[]> = {
       success: true,
@@ -766,7 +786,9 @@ export const getUserProperties: RequestHandler = async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching user properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch user properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch user properties" });
   }
 };
 
@@ -782,27 +804,48 @@ export const getUserNotifications: RequestHandler = async (req, res) => {
     const userIdObj = new ObjectId(String(userId));
 
     // Fetch user notifications
-    const userNotifications = await db.collection("user_notifications").find({ userId: userIdObj }).sort({ createdAt: -1 }).toArray();
+    const userNotifications = await db
+      .collection("user_notifications")
+      .find({ userId: userIdObj })
+      .sort({ createdAt: -1 })
+      .toArray();
 
     // If seller/agent/admin, also fetch seller notifications
     let sellerNotifications: any[] = [];
     if (["seller", "agent", "admin"].includes(String(userType || ""))) {
-      sellerNotifications = await db.collection("notifications").find({ sellerId: userIdObj }).sort({ createdAt: -1 }).toArray();
+      sellerNotifications = await db
+        .collection("notifications")
+        .find({ sellerId: userIdObj })
+        .sort({ createdAt: -1 })
+        .toArray();
     }
 
     // Add source field to indicate which collection each notification came from
-    const userNotifsWithSource = userNotifications.map((n) => ({ ...n, _notificationSource: "user_notifications" }));
-    const sellerNotifsWithSource = sellerNotifications.map((n) => ({ ...n, _notificationSource: "notifications" }));
+    const userNotifsWithSource = userNotifications.map((n) => ({
+      ...n,
+      _notificationSource: "user_notifications",
+    }));
+    const sellerNotifsWithSource = sellerNotifications.map((n) => ({
+      ...n,
+      _notificationSource: "notifications",
+    }));
 
     // Merge and sort by creation date
-    const allNotifications = [...userNotifsWithSource, ...sellerNotifsWithSource].sort(
-      (a, b) => new Date(b.createdAt || b.sentAt).getTime() - new Date(a.createdAt || a.sentAt).getTime(),
+    const allNotifications = [
+      ...userNotifsWithSource,
+      ...sellerNotifsWithSource,
+    ].sort(
+      (a, b) =>
+        new Date(b.createdAt || b.sentAt).getTime() -
+        new Date(a.createdAt || a.sentAt).getTime(),
     );
 
     res.json({ success: true, data: allNotifications });
   } catch (error) {
     console.error("Error fetching user notifications:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch notifications" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch notifications" });
   }
 };
 
@@ -813,7 +856,9 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
     const db = getDatabase();
 
     if (!ObjectId.isValid(String(notificationId))) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
     await db.collection("user_notifications").updateOne(
@@ -827,7 +872,9 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
     res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    res.status(500).json({ success: false, error: "Failed to mark notification as read" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to mark notification as read" });
   }
 };
 
@@ -838,7 +885,9 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
     const db = getDatabase();
 
     if (!ObjectId.isValid(String(notificationId))) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
     await db.collection("user_notifications").deleteOne({
@@ -849,7 +898,9 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
     res.json({ success: true, message: "Notification deleted" });
   } catch (error) {
     console.error("Error deleting notification:", error);
-    res.status(500).json({ success: false, error: "Failed to delete notification" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to delete notification" });
   }
 };
 
@@ -859,7 +910,11 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
 export const getPendingProperties: RequestHandler = async (_req, res) => {
   try {
     const db = getDatabase();
-    const properties = await db.collection("properties").find({ approvalStatus: { $in: ["pending", "pending_approval"] } }).sort({ createdAt: -1 }).toArray();
+    const properties = await db
+      .collection("properties")
+      .find({ approvalStatus: { $in: ["pending", "pending_approval"] } })
+      .sort({ createdAt: -1 })
+      .toArray();
 
     const response: ApiResponse<Property[]> = {
       success: true,
@@ -868,7 +923,9 @@ export const getPendingProperties: RequestHandler = async (_req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching pending properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch pending properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch pending properties" });
   }
 };
 
@@ -886,12 +943,21 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     };
     const adminId = (req as any).userId;
 
-    if (!ObjectId.isValid(String(id))) return res.status(400).json({ success: false, error: "Invalid property ID" });
-    if (!["approved", "rejected"].includes(String(approvalStatus))) return res.status(400).json({ success: false, error: "Invalid approval status" });
+    if (!ObjectId.isValid(String(id)))
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
+    if (!["approved", "rejected"].includes(String(approvalStatus)))
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid approval status" });
 
     const _id = new ObjectId(String(id));
     const property = await db.collection("properties").findOne({ _id });
-    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+    if (!property)
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
     const now = new Date();
     const updateData: any = { approvalStatus, updatedAt: now };
@@ -913,9 +979,15 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     // best-effort email
     try {
       if (approvalStatus === "approved") {
-        const owner = await db.collection("users").findOne({ _id: new ObjectId(property.ownerId) });
+        const owner = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(property.ownerId) });
         if (owner?.email) {
-          await sendPropertyApprovalEmail(owner.email, owner.name || "User", property.title);
+          await sendPropertyApprovalEmail(
+            owner.email,
+            owner.name || "User",
+            property.title,
+          );
         }
       }
     } catch (e) {
@@ -929,7 +1001,9 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error updating property approval:", error);
-    res.status(500).json({ success: false, error: "Failed to update property approval" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update property approval" });
   }
 };
 
@@ -942,26 +1016,35 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const userId = (req as any).userId;
     const { id } = req.params;
 
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
-    if (!ObjectId.isValid(id)) return res.status(400).json({ success: false, error: "Invalid property ID" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
+    if (!ObjectId.isValid(id))
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
 
     const propertyId = new ObjectId(id);
 
     // Check if property exists and is owned by user
-    const property = await db.collection("properties").findOne({ _id: propertyId });
-    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+    const property = await db
+      .collection("properties")
+      .findOne({ _id: propertyId });
+    if (!property)
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
     const propertyOwnerId = String(property.ownerId);
     const requestUserId = String(userId);
     if (propertyOwnerId !== requestUserId) {
-<<<<<<< HEAD
-      return res.status(403).json({
-        success: false,
-        error: "You can only edit your own properties",
-      });
-=======
-      return res.status(403).json({ success: false, error: "You can only edit your own properties" });
->>>>>>> cf6a76e (last commit)
+      return res
+        .status(403)
+        .json({
+          success: false,
+          error: "You can only edit your own properties",
+        });
     }
 
     // Handle images
@@ -988,9 +1071,15 @@ export const updateProperty: RequestHandler = async (req, res) => {
     };
 
     const location = safeParse(req.body.location, property.location || {});
-    const specifications = safeParse(req.body.specifications, property.specifications || {});
+    const specifications = safeParse(
+      req.body.specifications,
+      property.specifications || {},
+    );
     const amenities = safeParse(req.body.amenities, property.amenities || []);
-    const contactInfo = safeParse(req.body.contactInfo, property.contactInfo || {});
+    const contactInfo = safeParse(
+      req.body.contactInfo,
+      property.contactInfo || {},
+    );
 
     // Normalize property type
     const TYPE_ALIASES: Record<string, string> = {
@@ -1010,77 +1099,67 @@ export const updateProperty: RequestHandler = async (req, res) => {
     };
 
     const normSlugLocal = (v: any): string => {
-      return String(v || "").trim().toLowerCase();
+      return String(v || "")
+        .trim()
+        .toLowerCase();
     };
 
-    let normalizedPropertyType = normSlugLocal(req.body.propertyType || property.propertyType);
+    let normalizedPropertyType = normSlugLocal(
+      req.body.propertyType || property.propertyType,
+    );
     if (TYPE_ALIASES[normalizedPropertyType]) {
       normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
     }
 
     // Handle mini-subcategory: look up ID from slug if provided
-<<<<<<< HEAD
     let miniSubcategoryIdUpdate: string | undefined =
       property.miniSubcategoryId;
     const miniSubcategorySlug = req.body.miniSubcategorySlug
       ? normSlugLocal(req.body.miniSubcategorySlug)
       : undefined;
-=======
-    let miniSubcategoryIdUpdate: string | undefined = property.miniSubcategoryId;
-    const miniSubcategorySlug = req.body.miniSubcategorySlug ? normSlugLocal(req.body.miniSubcategorySlug) : undefined;
->>>>>>> cf6a76e (last commit)
 
     if (miniSubcategorySlug) {
       try {
         // Get the subcategory ID first
-<<<<<<< HEAD
         const normalizedSubCategory = normSlugLocal(
           req.body.subCategory || property.subCategory,
         );
-        const subcategory = await db.collection("subcategories").findOne({
-          slug: normalizedSubCategory,
-        });
-
-        if (subcategory) {
-          // Now look up the mini-subcategory by slug and parent subcategoryId
-=======
-        const normalizedSubCategory = normSlugLocal(req.body.subCategory || property.subCategory);
-        const priceTypeValue = normSlugLocal(req.body.priceType || property.priceType);
+        const priceTypeValue = normSlugLocal(
+          req.body.priceType || property.priceType,
+        );
 
         // Prefer explicit category from body (if provided), else fallback to priceType tabs
         const explicitCategoryFromBody = normSlugLocal(req.body.category || "");
-        let categoryFilter: any = { slug: explicitCategoryFromBody || (priceTypeValue === "rent" ? "rent" : "buy") };
-        const parentCategory = await db.collection("categories").findOne(categoryFilter);
+        let categoryFilter: any = {
+          slug:
+            explicitCategoryFromBody ||
+            (priceTypeValue === "rent" ? "rent" : "buy"),
+        };
+        const parentCategory = await db
+          .collection("categories")
+          .findOne(categoryFilter);
 
         // Now look up subcategory under the correct parent category
         const subcategoryFilter: any = { slug: normalizedSubCategory };
-        if (parentCategory) subcategoryFilter.categoryId = parentCategory._id?.toString();
+        if (parentCategory)
+          subcategoryFilter.categoryId = parentCategory._id?.toString();
 
-        const subcategory = await db.collection("subcategories").findOne(subcategoryFilter);
+        const subcategory = await db
+          .collection("subcategories")
+          .findOne(subcategoryFilter);
 
         if (subcategory) {
->>>>>>> cf6a76e (last commit)
           const mini = await db.collection("mini_subcategories").findOne({
             slug: miniSubcategorySlug,
             subcategoryId: subcategory._id?.toString(),
           });
-<<<<<<< HEAD
-
-          if (mini) {
-            miniSubcategoryIdUpdate = mini._id?.toString();
-          }
+          if (mini) miniSubcategoryIdUpdate = mini._id?.toString();
         }
       } catch (err) {
         console.warn(
           "Failed to look up mini-subcategory during update:",
           err instanceof Error ? err.message : err,
         );
-=======
-          if (mini) miniSubcategoryIdUpdate = mini._id?.toString();
-        }
-      } catch (err) {
-        console.warn("Failed to look up mini-subcategory during update:", err instanceof Error ? err.message : err);
->>>>>>> cf6a76e (last commit)
       }
     }
 
@@ -1092,21 +1171,22 @@ export const updateProperty: RequestHandler = async (req, res) => {
       priceType: req.body.priceType || property.priceType,
       propertyType: normalizedPropertyType,
       subCategory: normSlugLocal(req.body.subCategory || property.subCategory),
-<<<<<<< HEAD
       ...(miniSubcategoryIdUpdate
         ? { miniSubcategoryId: miniSubcategoryIdUpdate }
         : {}),
-=======
-      ...(miniSubcategoryIdUpdate ? { miniSubcategoryId: miniSubcategoryIdUpdate } : {}),
->>>>>>> cf6a76e (last commit)
       location,
       specifications: {
         ...specifications,
-        bedrooms: Number(specifications.bedrooms) || property.specifications?.bedrooms,
-        bathrooms: Number(specifications.bathrooms) || property.specifications?.bathrooms,
+        bedrooms:
+          Number(specifications.bedrooms) || property.specifications?.bedrooms,
+        bathrooms:
+          Number(specifications.bathrooms) ||
+          property.specifications?.bathrooms,
         area: Number(specifications.area) || property.specifications?.area,
         floor: Number(specifications.floor) || property.specifications?.floor,
-        totalFloors: Number(specifications.totalFloors) || property.specifications?.totalFloors,
+        totalFloors:
+          Number(specifications.totalFloors) ||
+          property.specifications?.totalFloors,
       },
       images: finalImages,
       amenities: Array.isArray(amenities) ? amenities : [],
@@ -1115,14 +1195,19 @@ export const updateProperty: RequestHandler = async (req, res) => {
     };
 
     // If property was approved, reset it to pending for re-approval
-    if (property.approvalStatus === "approved" || property.status === "active") {
+    if (
+      property.approvalStatus === "approved" ||
+      property.status === "active"
+    ) {
       updateData.approvalStatus = "pending";
       updateData.status = "inactive";
       updateData.isApproved = false;
     }
 
     // Update the property
-    await db.collection("properties").updateOne({ _id: propertyId }, { $set: updateData });
+    await db
+      .collection("properties")
+      .updateOne({ _id: propertyId }, { $set: updateData });
 
     console.log("📝 PROPERTY UPDATED → reset to pending", {
       propertyId: id,
@@ -1141,6 +1226,8 @@ export const updateProperty: RequestHandler = async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error updating property:", error);
-    res.status(500).json({ success: false, error: "Failed to update property" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update property" });
   }
 };

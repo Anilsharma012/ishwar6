@@ -151,111 +151,11 @@ export const getCategories: RequestHandler = async (req, res) => {
 };
 
 // PUBLIC: Get category by slug with subcategories
+export const getCategoryBySlug: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const { slug } = req.params;
 
-<<<<<<< HEAD
-//   export const getCategoryBySlug: RequestHandler = async (req, res) => {
-//   try {
-//     const db = getDatabase();
-//     const { slug } = req.params;
-
-//     console.log("🔍 Looking for category with slug:", slug);
-
-//     // Simply query by slug, no active filter (to avoid missing categories)
-//     let category = await db.collection("categories").findOne({ slug });
-
-//     if (!category) {
-//       console.log("❌ Category not found with slug:", slug);
-
-//       // Last resort: try to create it on the fly if it's a known category
-//       const knownCategories: any = {
-//         "co-living": {
-//           name: "Co-living",
-//           slug: "co-living",
-//           description: "Modern shared living spaces for different groups",
-//           propertyTypes: ["pg"],
-//           sortOrder: 6,
-//           active: true,
-//           isActive: true,
-//           subcategories: [
-//             { name: "Boys", slug: "boys" },
-//             { name: "Girls", slug: "girls" },
-//             { name: "Working Men", slug: "working-men" },
-//             { name: "Working Woman", slug: "working-woman" },
-//           ],
-//         },
-//         agricultural: {
-//           name: "Agricultural",
-//           slug: "agricultural",
-//           description: "Agricultural properties - farmland, orchards and more",
-//           propertyTypes: ["agricultural"],
-//           sortOrder: 4,
-//           active: true,
-//           isActive: true,
-//           subcategories: [
-//             {
-//               name: "Agricultural Land",
-//               slug: "agricultural-land",
-//               description: "Farmland and agricultural plots",
-//             },
-//             {
-//               name: "Farmhouse with Land",
-//               slug: "farmhouse-with-land",
-//               description: "Farmhouse with land",
-//             },
-//             {
-//               name: "Orchard/Plantation",
-//               slug: "orchard-plantation",
-//               description: "Orchard and plantation land",
-//             },
-//             {
-//               name: "Dairy Farm",
-//               slug: "dairy-farm",
-//               description: "Dairy farming land",
-//             },
-//             {
-//               name: "Poultry Farm",
-//               slug: "poultry-farm",
-//               description: "Poultry farming land",
-//             },
-//             {
-//               name: "Fish/Prawn Farm",
-//               slug: "fish-farm-pond",
-//               description: "Fish and prawn farming ponds",
-//             },
-//             {
-//               name: "Polyhouse/Greenhouse",
-//               slug: "polyhouse-greenhouse",
-//               description: "Polyhouse and greenhouse structures",
-//             },
-//             {
-//               name: "Pasture/Grazing Land",
-//               slug: "pasture-grazing",
-//               description: "Pasture and grazing land",
-//             },
-//           ],
-//         },
-//       };
-
-//       if (knownCategories[slug]) {
-//         console.log("📝 Creating category on-the-fly:", slug);
-//         const newCategory = {
-//           ...knownCategories[slug],
-//           createdAt: new Date(),
-//           updatedAt: new Date(),
-//         };
-//         const result = await db.collection("categories").insertOne(newCategory);
-//         category = { ...newCategory, _id: result.insertedId };
-//       } else {
-//         return res.status(404).json({
-//           success: false,
-//           error: "Category not found",
-//         });
-//       }
-//     }
-
-//     // Get subcategories - try both embedded and separate collection approach
-//     let subcategories = [];
-=======
     if (!slug) {
       return res.status(400).json({
         success: false,
@@ -290,47 +190,15 @@ export const getCategories: RequestHandler = async (req, res) => {
       .find({ categoryId: category._id.toString() })
       .sort({ sortOrder: 1, createdAt: 1 })
       .toArray();
->>>>>>> cf6a76e (last commit)
 
-//     // First, try embedded subcategories in the category document
-//     if (
-//       Array.isArray(category.subcategories) &&
-//       category.subcategories.length > 0
-//     ) {
-//       console.log(
-//         "✅ Found embedded subcategories:",
-//         category.subcategories.length,
-//       );
-//       subcategories = category.subcategories;
-//     } else {
-//       // Fallback to separate subcategories collection
-//       console.log("🔄 Looking for subcategories in separate collection");
-//       subcategories = await db
-//         .collection("subcategories")
-//         .find({ categoryId: category._id.toString() })
-//         .sort({ sortOrder: 1, createdAt: 1 })
-//         .toArray();
-//     }
+    const response: ApiResponse<any> = {
+      success: true,
+      data: {
+        ...category,
+        subcategories,
+      },
+    };
 
-<<<<<<< HEAD
-//     const response: ApiResponse<any> = {
-//       success: true,
-//       data: {
-//         ...category,
-//         subcategories,
-//       },
-//     };
-
-//     res.json(response);
-//   } catch (error) {
-//     console.error("Error fetching category:", error);
-//     res.status(500).json({
-//       success: false,
-//       error: "Failed to fetch category",
-//     });
-//   }
-// };  
-=======
     res.json(response);
   } catch (error) {
     console.error("Error fetching category:", error);
@@ -339,8 +207,7 @@ export const getCategories: RequestHandler = async (req, res) => {
       error: "Failed to fetch category",
     });
   }
-};  
->>>>>>> cf6a76e (last commit)
+};
 
 // PUBLIC: Get subcategories by category slug
 export const getSubcategoriesByCategory: RequestHandler = async (req, res) => {

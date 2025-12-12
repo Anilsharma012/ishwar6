@@ -67,6 +67,7 @@ export const getCategoryBySlug: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const { slug } = req.params;
+    const withSub = req.query.withSub === "true";
 
     // Prefer active categories but fall back to any
     let category = await db.collection("categories").findOne({
@@ -85,9 +86,27 @@ export const getCategoryBySlug: RequestHandler = async (req, res) => {
       });
     }
 
+    // If withSub is requested, fetch and embed subcategories
+    let responseData: any = category;
+    if (withSub) {
+      const subcategories = await db
+        .collection("subcategories")
+        .find({
+          categoryId: category._id?.toString(),
+          $or: [{ active: true }, { isActive: true }],
+        })
+        .sort({ sortOrder: 1, createdAt: 1 })
+        .toArray();
+
+      responseData = {
+        ...category,
+        subcategories: subcategories || [],
+      };
+    }
+
     const response: ApiResponse<Category> = {
       success: true,
-      data: category as unknown as Category,
+      data: responseData as unknown as Category,
     };
     res.json(response);
   } catch (error) {

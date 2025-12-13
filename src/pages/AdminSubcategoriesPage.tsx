@@ -240,7 +240,12 @@ export default function AdminSubcategoriesPage(): JSX.Element {
           setTotal((t) => t + 1);
           toast({ title: "Created (mock)", description: `${form.name} created` });
         } else {
-          await apiClient.post(API.create(categoryId || ""), { name: form.name, slug: form.slug, status: form.status });
+          await apiClient.post(API.create(""), {
+            categoryId: categoryId || "",
+            name: form.name,
+            slug: form.slug,
+            isActive: form.status === "active"
+          });
           toast({ title: "Created", description: `${form.name} created` });
           // reload
           await load();

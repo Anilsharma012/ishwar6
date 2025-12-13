@@ -240,16 +240,16 @@ export default function PackageSelection({
             }
 
             console.log("🎉 Payment verified successfully!");
-            alert("✅ Payment successful! Your property is now live.");
 
             // Reset UI state
             setPayingId(null);
 
-            // Force redirect to seller dashboard (more reliable)
-            setTimeout(() => {
-              console.log("🚀 Redirecting to seller dashboard...");
-              window.location.href = "/seller-dashboard";
-            }, 500);
+            // Show success and redirect
+            alert("✅ Payment successful! Your property is now live.");
+
+            // Redirect to seller dashboard
+            console.log("🚀 Redirecting to seller dashboard...");
+            window.location.href = "/seller-dashboard";
           } catch (err) {
             console.error("❌ Verification error:", err);
             setPayingId(null);

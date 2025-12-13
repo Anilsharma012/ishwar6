@@ -316,9 +316,9 @@ export default function EnhancedSellerDashboard() {
       return;
     }
 
-    void fetchDashboardData();
+    void fetchDashboardData(true);
 
-    const handler = () => fetchDashboardData();
+    const handler = () => fetchDashboardData(false);
     window.addEventListener("properties:updated", handler as any);
 
     return () =>

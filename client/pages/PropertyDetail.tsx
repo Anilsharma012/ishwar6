@@ -1296,9 +1296,11 @@ export default function PropertyDetail() {
               <CardContent className="space-y-4">
                 <div>
                   <p className="font-medium">{property.contactInfo?.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {property.contactInfo?.email}
-                  </p>
+                  {property.shareContactInfo && (
+                    <p className="text-sm text-gray-600">
+                      {property.contactInfo?.email}
+                    </p>
+                  )}
                 </div>
 
                 {/* Desktop */}
@@ -1315,27 +1317,31 @@ export default function PropertyDetail() {
                     )}
                     {startingChat ? "Starting..." : "Message Owner"}
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
-                    onClick={() =>
-                      handleCall(property.contactInfo?.phone || "")
-                    }
-                  >
-                    <Phone className="h-4 w-4 mr-2" /> Call
-                  </Button>
-                  <Button
-                    className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
-                    onClick={() =>
-                      handleWhatsApp(
-                        property.contactInfo?.whatsappNumber ||
-                          property.contactInfo?.phone ||
-                          "",
-                      )
-                    }
-                  >
-                    WhatsApp
-                  </Button>
+                  {property.shareContactInfo && (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
+                        onClick={() =>
+                          handleCall(property.contactInfo?.phone || "")
+                        }
+                      >
+                        <Phone className="h-4 w-4 mr-2" /> Call
+                      </Button>
+                      <Button
+                        className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
+                        onClick={() =>
+                          handleWhatsApp(
+                            property.contactInfo?.whatsappNumber ||
+                              property.contactInfo?.phone ||
+                              "",
+                          )
+                        }
+                      >
+                        WhatsApp
+                      </Button>
+                    </>
+                  )}
                 </div>
 
                 {/* Mobile */}
@@ -1352,34 +1358,40 @@ export default function PropertyDetail() {
                     )}
                     {startingChat ? "Starting..." : "Message Owner"}
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
-                    onClick={() =>
-                      handleCall(property.contactInfo?.phone || "")
-                    }
-                  >
-                    <Phone className="h-4 w-4 mr-2" /> Call
-                  </Button>
-                  <Button
-                    className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
-                    onClick={() =>
-                      handleWhatsApp(
-                        property.contactInfo?.whatsappNumber ||
-                          property.contactInfo?.phone ||
-                          "",
-                      )
-                    }
-                  >
-                    WhatsApp
-                  </Button>
+                  {property.shareContactInfo && (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full border-[#C70000] text-[#C70000] hover:bg-[#C70000] hover:text-white flex justify-center items-center py-3"
+                        onClick={() =>
+                          handleCall(property.contactInfo?.phone || "")
+                        }
+                      >
+                        <Phone className="h-4 w-4 mr-2" /> Call
+                      </Button>
+                      <Button
+                        className="w-full bg-green-500 hover:bg-green-600 text-white flex justify-center items-center py-3"
+                        onClick={() =>
+                          handleWhatsApp(
+                            property.contactInfo?.whatsappNumber ||
+                              property.contactInfo?.phone ||
+                              "",
+                          )
+                        }
+                      >
+                        WhatsApp
+                      </Button>
+                    </>
+                  )}
                 </div>
 
-                <div className="pt-4 border-t">
-                  <p className="text-xs text-gray-500 text-center">
-                    Contact details are verified by our team
-                  </p>
-                </div>
+                {property.shareContactInfo && (
+                  <div className="pt-4 border-t">
+                    <p className="text-xs text-gray-500 text-center">
+                      Contact details are verified by our team
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -220,7 +220,11 @@ export default function AdminSubcategoriesPage(): JSX.Element {
           setItems((list) => list.map((i) => (i._id === editing._id ? { ...i, ...form } as Subcategory : i)));
           toast({ title: "Updated (mock)", description: `${form.name} updated` });
         } else {
-          await apiClient.put(API.update(editing._id), { name: form.name, slug: form.slug, status: form.status });
+          await apiClient.put(API.update(editing._id), {
+            name: form.name,
+            slug: form.slug,
+            isActive: form.status === "active"
+          });
           toast({ title: "Updated", description: `${form.name} updated` });
           // update locally
           setItems((list) => list.map((i) => (i._id === editing._id ? { ...i, ...form } as Subcategory : i)));

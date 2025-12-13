@@ -147,8 +147,13 @@ export default function AdminSubcategoriesPage(): JSX.Element {
       if (!res || !res.data?.data || !Array.isArray(res.data.data)) {
         throw new Error("Invalid response");
       }
-      setItems(res.data.data);
-      setTotal(res.data.pagination?.total ?? res.data.data.length ?? 0);
+      // Convert isActive boolean to status string
+      const convertedItems = res.data.data.map((item: any) => ({
+        ...item,
+        status: (item.isActive ?? true) ? "active" : "inactive",
+      })) as Subcategory[];
+      setItems(convertedItems);
+      setTotal(res.data.pagination?.total ?? convertedItems.length ?? 0);
     } catch (err: any) {
       // If 401/403
       if (err?.status === 401 || err?.status === 403) {

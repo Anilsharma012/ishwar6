@@ -719,6 +719,7 @@ export default function PostProperty() {
                 alternativePhone: property.contactInfo?.alternativePhone || "",
                 whatsappNumber: property.contactInfo?.whatsappNumber || "",
               },
+              shareContactInfo: property.shareContactInfo || false,
             });
           } else {
             setIsEditMode(false);

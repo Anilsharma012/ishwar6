@@ -190,9 +190,10 @@ function OLXStyleCategories() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="bg-white">
-      <div className="px-4 pb-4 mt-6 md:mt-8 lg:mt-10">
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+    <div className="bg-white py-6 md:py-8 lg:py-10">
+      <div className="px-4">
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 md:p-8">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-5 md:gap-6">
           {(categories || []).map((category, index) => {
             if (!category?.name) return null;
 
@@ -250,6 +251,7 @@ function OLXStyleCategories() {
               </div>
             );
           })}
+          </div>
         </div>
       </div>
     </div>

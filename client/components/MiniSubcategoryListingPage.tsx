@@ -70,9 +70,13 @@ export default function MiniSubcategoryListingPage({
   }, [subcategoryId]);
 
   const handleMiniClick = (miniSlug: string) => {
-    navigate(
-      `/listings?category=${categorySlug}&miniSubcategory=${miniSlug}`,
-    );
+    const params = new URLSearchParams();
+    params.append("category", categorySlug);
+    params.append("miniSubcategory", miniSlug);
+    if (priceType) {
+      params.append("priceType", priceType);
+    }
+    navigate(`/listings?${params.toString()}`);
   };
 
   if (loading) {

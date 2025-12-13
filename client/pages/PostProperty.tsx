@@ -2144,6 +2144,25 @@ export default function PostProperty() {
                   required
                 />
               </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                      Share Contact Information
+                    </label>
+                    <p className="text-xs text-gray-600">
+                      Allow your phone, email, and WhatsApp details to be visible to buyers
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.shareContactInfo || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("shareContactInfo", checked)
+                    }
+                  />
+                </div>
+              </div>
             </div>
           )}
 

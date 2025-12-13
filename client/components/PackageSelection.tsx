@@ -193,8 +193,12 @@ export default function PackageSelection({
           razorpay_signature: string;
         }) => {
           try {
+            console.log("💳 Razorpay payment successful, verifying...", response);
+
             // 3) Verify — again force headers
             const verifyUrl = createApiUrl("payments/razorpay/verify");
+            console.log("📤 Verifying at:", verifyUrl);
+
             const vRes = await fetch(verifyUrl, {
               method: "POST",
               credentials: "include",
@@ -206,20 +210,36 @@ export default function PackageSelection({
               }),
             });
 
+            console.log("✅ Verify response:", vRes.status, vRes.statusText);
             const vJson = await vRes.json().catch(() => ({}));
+            console.log("📦 Verify response data:", vJson);
+
             if (!vRes.ok || !vJson?.success) {
-              alert(vJson?.error || `Payment verification failed (HTTP ${vRes.status})`);
+              const errorMsg = vJson?.error || `Payment verification failed (HTTP ${vRes.status})`;
+              console.error("❌ Verification failed:", errorMsg);
+              alert(errorMsg);
               return;
             }
 
-            alert("✅ Payment successful! Your package is activated (Pending Approval).");
-            window.location.href = "/my-properties";
+            console.log("🎉 Payment verified successfully!");
+            alert("✅ Payment successful! Your property is now live.");
+
+            // Force redirect to seller dashboard (more reliable)
+            setTimeout(() => {
+              console.log("🚀 Redirecting to seller dashboard...");
+              window.location.href = "/seller-dashboard";
+            }, 500);
           } catch (err) {
-            console.error("Verification error:", err);
-            alert("Payment verification error");
+            console.error("❌ Verification error:", err);
+            alert(`Payment verification error: ${err instanceof Error ? err.message : "Unknown error"}`);
           }
         },
-        modal: { ondismiss: () => console.log("Razorpay closed by user") },
+        modal: {
+          ondismiss: () => {
+            console.log("⚠️ Razorpay modal closed by user");
+            setPayingId(null);
+          }
+        },
         prefill: { name: "Customer", email: "customer@example.com", contact: "9999999999" },
       });
 

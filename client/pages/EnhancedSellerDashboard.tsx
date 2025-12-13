@@ -390,7 +390,11 @@ export default function EnhancedSellerDashboard() {
   // --------------------------------------------------
   async function fetchDashboardData(isInitialLoad: boolean = false) {
     try {
-      if (isInitialLoad) setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
       setError("");
 
       const token = await getAuthToken();
@@ -438,7 +442,11 @@ export default function EnhancedSellerDashboard() {
       }
       setError("Failed to load dashboard data. Please try again.");
     } finally {
-      if (isInitialLoad) setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      } else {
+        setIsRefreshing(false);
+      }
     }
   }
 

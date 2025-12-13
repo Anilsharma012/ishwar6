@@ -176,12 +176,9 @@ export default function Agricultural() {
   ];
 
   const handleMiniClick = (mini: MiniSubcategory) => {
-    const query = new URLSearchParams();
-    query.append("category", "agricultural");
-    if (currentSubcategorySlug) query.append("subcategory", currentSubcategorySlug);
-    query.append("miniSubcategory", mini.slug);
-
-    navigate(`/listings?${query.toString()}`);
+    // Navigate directly to the agricultural listing with the subcategory (not mini-subcategory)
+    // since these are actually subcategories of the agricultural category
+    navigate(`/agricultural/${mini.slug}`);
   };
 
   if (loading) {

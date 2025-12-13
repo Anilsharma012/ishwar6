@@ -118,13 +118,13 @@ export default function Agricultural() {
       console.error("Error fetching agricultural data:", error);
       setUseFallback(true);
       const fallbackMinis = getFallbackMiniSubcategories();
-      // Fetch property counts for fallback mini-subcategories
+      // Fetch property counts for fallback mini-subcategories (which are actually subcategories)
       const minisWithCounts = await Promise.all(
         fallbackMinis.map(async (mini) => {
           try {
             const countParams = new URLSearchParams();
-            countParams.append("category", "agricultural");
-            countParams.append("miniSubcategory", mini.slug);
+            countParams.append("propertyType", "agricultural");
+            countParams.append("subCategory", mini.slug);
             countParams.append("limit", "1");
 
             const countResponse = await fetch(`/api/properties?${countParams.toString()}`);

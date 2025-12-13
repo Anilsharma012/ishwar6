@@ -600,12 +600,12 @@ export default function OLXStyleListings() {
                   </h3>
 
                   <div className="flex items-center text-[11px] md:text-xs text-gray-700 mb-2">
-                    <span className="font-bold mr-1">Area:</span>
                     <span className="truncate font-medium">
-                      {property.location?.city ||
-                        property.location?.address ||
+                      {property.location?.area ||
+                        property.location?.sector ||
+                        property.location?.colony ||
+                        property.location?.city ||
                         "Rohtak"}
-                      , {property.location?.state || "HR"}
                     </span>
                   </div>
 

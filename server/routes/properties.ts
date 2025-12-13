@@ -160,19 +160,30 @@ export const getProperties: RequestHandler = async (req, res) => {
     // but keep normalized propertyType if it was explicitly sent.
     switch (category) {
       case "buy":
-        // show sale listings in residential AND plot
-        filter.$or = [
-          { propertyType: "residential", priceType: "sale" },
-          { propertyType: "plot", priceType: "sale" },
-          { propertyType: "flat", priceType: "sale" }, // include flats when buying
-        ];
+        // If specific propertyType is provided, filter only that type
+        if (propertyType) {
+          filter.propertyType = propertyType;
+        } else {
+          // Otherwise show sale listings in residential AND plot AND flat
+          filter.$or = [
+            { propertyType: "residential", priceType: "sale" },
+            { propertyType: "plot", priceType: "sale" },
+            { propertyType: "flat", priceType: "sale" }, // include flats when buying
+          ];
+        }
         break;
       case "rent":
-        filter.$or = [
-          { propertyType: "residential", priceType: "rent" },
-          { propertyType: "flat", priceType: "rent" },
-          { propertyType: "commercial", priceType: "rent" }, // many want commercial rentals too
-        ];
+        // If specific propertyType is provided, filter only that type
+        if (propertyType) {
+          filter.propertyType = propertyType;
+        } else {
+          // Otherwise show rental listings in residential AND flat AND commercial
+          filter.$or = [
+            { propertyType: "residential", priceType: "rent" },
+            { propertyType: "flat", priceType: "rent" },
+            { propertyType: "commercial", priceType: "rent" }, // many want commercial rentals too
+          ];
+        }
         break;
       default:
         // If not in buy/rent tabs, and we have a normalized propertyType, use it

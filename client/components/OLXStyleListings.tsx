@@ -599,7 +599,8 @@ export default function OLXStyleListings() {
                     {property.title}
                   </h3>
 
-                  <div className="flex items-center text-[11px] md:text-xs text-gray-700 mb-2">
+                  <div className="flex items-center text-[11px] md:text-xs text-gray-700 mb-2 gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                     <span className="truncate font-medium">
                       {property.location?.area ||
                         property.location?.sector ||

@@ -84,11 +84,16 @@ export default function Commercial() {
               countParams.append("subCategory", mini.slug);
               countParams.append("limit", "1");
 
-              const countResponse = await fetch(`/api/properties?${countParams.toString()}`);
+              const countResponse = await fetch(
+                `/api/properties?${countParams.toString()}`,
+              );
               if (countResponse.ok) {
                 const countData = await countResponse.json();
                 if (countData?.success && countData?.data?.pagination) {
-                  return { ...mini, count: countData.data.pagination.total ?? 0 };
+                  return {
+                    ...mini,
+                    count: countData.data.pagination.total ?? 0,
+                  };
                 }
               }
               return mini;
@@ -96,7 +101,7 @@ export default function Commercial() {
               console.error(`Error fetching count for ${mini.slug}:`, error);
               return mini;
             }
-          })
+          }),
         );
         setMiniSubcategories(minisWithCounts);
       }
@@ -113,7 +118,9 @@ export default function Commercial() {
             countParams.append("subCategory", mini.slug);
             countParams.append("limit", "1");
 
-            const countResponse = await fetch(`/api/properties?${countParams.toString()}`);
+            const countResponse = await fetch(
+              `/api/properties?${countParams.toString()}`,
+            );
             if (countResponse.ok) {
               const countData = await countResponse.json();
               if (countData?.success && countData?.data?.pagination) {
@@ -125,7 +132,7 @@ export default function Commercial() {
             console.error(`Error fetching count for ${mini.slug}:`, error);
             return mini;
           }
-        })
+        }),
       );
       setMiniSubcategories(minisWithCounts);
     } finally {

@@ -224,6 +224,9 @@ export default function PackageSelection({
             console.log("🎉 Payment verified successfully!");
             alert("✅ Payment successful! Your property is now live.");
 
+            // Reset UI state
+            setPayingId(null);
+
             // Force redirect to seller dashboard (more reliable)
             setTimeout(() => {
               console.log("🚀 Redirecting to seller dashboard...");

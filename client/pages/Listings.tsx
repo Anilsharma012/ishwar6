@@ -85,6 +85,19 @@ export default function Listings() {
   const miniSubcategory = searchParams.get("miniSubcategory") || "";
   const subcategory = searchParams.get("subcategory") || "";
 
+  // Infer priceType from category or get from params
+  const inferPriceType = (): string => {
+    const paramPriceType = searchParams.get("priceType");
+    if (paramPriceType) return paramPriceType;
+
+    const catLower = String(category || "").toLowerCase();
+    if (catLower === "buy" || catLower === "sale") return "sale";
+    if (catLower === "rent" || catLower === "lease") return "rent";
+    return "";
+  };
+
+  const priceTypeForFilter = inferPriceType();
+
   const getInitialFilters = (): FilterState => {
     return {
       priceType: searchParams.get("priceType") || "",

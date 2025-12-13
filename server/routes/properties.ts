@@ -196,8 +196,9 @@ export const getProperties: RequestHandler = async (req, res) => {
     console.log("🔍 FILTER PROPERTIES → query", {
       category,
       propertyType,
+      priceType: norm(priceType),
       subCategory: norm(subCategory),
-      filter: JSON.stringify(filter, null, 2),
+      appliedFilter: JSON.stringify(filter, null, 2),
     });
 
     // --- 4) Sub-category and other filters ---

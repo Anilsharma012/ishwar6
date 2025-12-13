@@ -199,8 +199,7 @@ function OLXStyleCategories() {
             const isActive = activeCat?.slug === category.slug;
 
             const isSell =
-              norm(category.slug) === "sell" ||
-              norm(category.name) === "sell";
+              norm(category.slug) === "sell" || norm(category.name) === "sell";
 
             // Use uploaded icon from API, fallback to Lucide icons
             const hasUploadedIcon = category.icon && category.icon.trim();

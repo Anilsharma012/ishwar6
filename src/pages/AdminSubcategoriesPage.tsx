@@ -1,5 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  useNavigate,
+  useParams,
+  Link,
+  useSearchParams,
+} from "react-router-dom";
 import { apiClient } from "@/lib/apiClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,13 +22,36 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Save, X, Trash2, Edit, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Save,
+  X,
+  Trash2,
+  Edit,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { z } from "zod";
 
 // API endpoints config (easy to change)
@@ -59,15 +93,18 @@ const schema = z.object({
 // Mock fallback data generator
 function makeMock(categoryId: string) {
   const now = new Date().toISOString();
-  return Array.from({ length: 6 }).map((_, i) => ({
-    _id: `mock-${i + 1}`,
-    name: `Mock Sub ${i + 1}`,
-    slug: `mock-sub-${i + 1}`,
-    categoryId,
-    status: i % 2 === 0 ? "active" : "inactive",
-    updatedAt: now,
-    createdAt: now,
-  } as Subcategory));
+  return Array.from({ length: 6 }).map(
+    (_, i) =>
+      ({
+        _id: `mock-${i + 1}`,
+        name: `Mock Sub ${i + 1}`,
+        slug: `mock-sub-${i + 1}`,
+        categoryId,
+        status: i % 2 === 0 ? "active" : "inactive",
+        updatedAt: now,
+        createdAt: now,
+      }) as Subcategory,
+  );
 }
 
 export default function AdminSubcategoriesPage(): JSX.Element {
@@ -90,11 +127,18 @@ export default function AdminSubcategoriesPage(): JSX.Element {
   // Dialog / form state
   const [openEditor, setOpenEditor] = useState(false);
   const [editing, setEditing] = useState<Subcategory | null>(null);
-  const [form, setForm] = useState<{ name: string; slug: string; status: Status }>({ name: "", slug: "", status: "active" });
+  const [form, setForm] = useState<{
+    name: string;
+    slug: string;
+    status: Status;
+  }>({ name: "", slug: "", status: "active" });
   const [saving, setSaving] = useState(false);
 
   // Delete confirm
-  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [confirmText, setConfirmText] = useState("");
 
   // Search debounce
@@ -137,13 +181,17 @@ export default function AdminSubcategoriesPage(): JSX.Element {
     try {
       // Fetch category name (optional)
       try {
-        const cat = await apiClient.get<{ data: any }>(API.category(categoryId));
+        const cat = await apiClient.get<{ data: any }>(
+          API.category(categoryId),
+        );
         setCategoryName((cat && (cat.data?.name || cat.data?.title)) || null);
       } catch (e: any) {
         // ignore category name errors; treat later
       }
 
-      const res = await apiClient.get<ListResponse>(API.list(categoryId, search, page, limit));
+      const res = await apiClient.get<ListResponse>(
+        API.list(categoryId, search, page, limit),
+      );
       if (!res || !res.data?.data || !Array.isArray(res.data.data)) {
         throw new Error("Invalid response");
       }
@@ -158,7 +206,7 @@ export default function AdminSubcategoriesPage(): JSX.Element {
       // If 401/403
       if (err?.status === 401 || err?.status === 403) {
         setError("Session expired");
-        toast({ title: "Session expired", description: "Please login again.", });
+        toast({ title: "Session expired", description: "Please login again." });
         return;
       }
 
@@ -225,17 +273,28 @@ export default function AdminSubcategoriesPage(): JSX.Element {
     try {
       if (editing) {
         if (useMock) {
-          setItems((list) => list.map((i) => (i._id === editing._id ? { ...i, ...form } as Subcategory : i)));
-          toast({ title: "Updated (mock)", description: `${form.name} updated` });
+          setItems((list) =>
+            list.map((i) =>
+              i._id === editing._id ? ({ ...i, ...form } as Subcategory) : i,
+            ),
+          );
+          toast({
+            title: "Updated (mock)",
+            description: `${form.name} updated`,
+          });
         } else {
           await apiClient.put(API.update(editing._id), {
             name: form.name,
             slug: form.slug,
-            isActive: form.status === "active"
+            isActive: form.status === "active",
           });
           toast({ title: "Updated", description: `${form.name} updated` });
           // update locally
-          setItems((list) => list.map((i) => (i._id === editing._id ? { ...i, ...form } as Subcategory : i)));
+          setItems((list) =>
+            list.map((i) =>
+              i._id === editing._id ? ({ ...i, ...form } as Subcategory) : i,
+            ),
+          );
         }
       } else {
         if (useMock) {
@@ -250,13 +309,16 @@ export default function AdminSubcategoriesPage(): JSX.Element {
           };
           setItems((list) => [newItem, ...list]);
           setTotal((t) => t + 1);
-          toast({ title: "Created (mock)", description: `${form.name} created` });
+          toast({
+            title: "Created (mock)",
+            description: `${form.name} created`,
+          });
         } else {
           await apiClient.post(API.create(""), {
             categoryId: categoryId || "",
             name: form.name,
             slug: form.slug,
-            isActive: form.status === "active"
+            isActive: form.status === "active",
           });
           toast({ title: "Created", description: `${form.name} created` });
           // reload
@@ -266,7 +328,10 @@ export default function AdminSubcategoriesPage(): JSX.Element {
       setOpenEditor(false);
       setEditing(null);
     } catch (e: any) {
-      toast({ title: "Save failed", description: e?.message || "Failed to save" });
+      toast({
+        title: "Save failed",
+        description: e?.message || "Failed to save",
+      });
     } finally {
       setSaving(false);
     }
@@ -279,21 +344,35 @@ export default function AdminSubcategoriesPage(): JSX.Element {
     setItems((list) => list.map((i) => (i._id === it._id ? updated : i)));
     try {
       if (useMock) {
-        toast({ title: "Status updated (mock)", description: `${updated.name} is now ${updated.status}` });
+        toast({
+          title: "Status updated (mock)",
+          description: `${updated.name} is now ${updated.status}`,
+        });
       } else {
-        await apiClient.put(API.update(it._id), { isActive: newStatus === "active" });
-        toast({ title: "Status updated", description: `${updated.name} is now ${updated.status}` });
+        await apiClient.put(API.update(it._id), {
+          isActive: newStatus === "active",
+        });
+        toast({
+          title: "Status updated",
+          description: `${updated.name} is now ${updated.status}`,
+        });
       }
     } catch (e: any) {
       setItems(prev);
-      toast({ title: "Update failed", description: e?.message || "Could not update status" });
+      toast({
+        title: "Update failed",
+        description: e?.message || "Could not update status",
+      });
     }
   };
 
   const onDeleteConfirmed = async () => {
     if (!pendingDelete) return;
     if (confirmText !== "DELETE") {
-      toast({ title: "Type DELETE to confirm", description: "You must type DELETE to confirm deletion." });
+      toast({
+        title: "Type DELETE to confirm",
+        description: "You must type DELETE to confirm deletion.",
+      });
       return;
     }
     const id = pendingDelete.id;
@@ -309,7 +388,10 @@ export default function AdminSubcategoriesPage(): JSX.Element {
         toast({ title: "Deleted", description: "Subcategory removed" });
       }
     } catch (e: any) {
-      toast({ title: "Delete failed", description: e?.message || "Could not delete" });
+      toast({
+        title: "Delete failed",
+        description: e?.message || "Could not delete",
+      });
     } finally {
       setPendingDelete(null);
       setConfirmText("");
@@ -320,8 +402,15 @@ export default function AdminSubcategoriesPage(): JSX.Element {
     return (
       <div className="p-6">
         <h2 className="text-2xl font-semibold">Invalid category</h2>
-        <p className="text-gray-600 mt-2">Category id is missing from the URL.</p>
-        <Link to="/admin/categories" className="text-primary underline mt-4 inline-block">Back to Categories</Link>
+        <p className="text-gray-600 mt-2">
+          Category id is missing from the URL.
+        </p>
+        <Link
+          to="/admin/categories"
+          className="text-primary underline mt-4 inline-block"
+        >
+          Back to Categories
+        </Link>
       </div>
     );
   }
@@ -333,17 +422,26 @@ export default function AdminSubcategoriesPage(): JSX.Element {
         <div>
           <div className="text-sm text-gray-500 mb-2">
             <Link to="/">Home</Link> <span className="mx-1">›</span>{" "}
-            <Link to="/admin/categories">Categories</Link> <span className="mx-1">›</span>{" "}
+            <Link to="/admin/categories">Categories</Link>{" "}
+            <span className="mx-1">›</span>{" "}
             <span>{categoryName || `#${(categoryId || "").slice(0, 6)}`}</span>{" "}
             <span className="mx-1">›</span> <strong>Subcategories</strong>
           </div>
-          <h1 className="text-2xl font-bold">Subcategories – {categoryName || `#${(categoryId || "").slice(0, 6)}`}</h1>
+          <h1 className="text-2xl font-bold">
+            Subcategories –{" "}
+            {categoryName || `#${(categoryId || "").slice(0, 6)}`}
+          </h1>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input className="pl-8 w-64" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search subcategories..." />
+            <Input
+              className="pl-8 w-64"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search subcategories..."
+            />
           </div>
           <Button onClick={onOpenCreate}>
             <Plus className="h-4 w-4 mr-2" /> Add Subcategory
@@ -367,53 +465,110 @@ export default function AdminSubcategoriesPage(): JSX.Element {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading && (
+              {loading &&
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-6" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-6" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-28" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-40" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-6 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-8 w-24 ml-auto" />
+                    </TableCell>
                   </TableRow>
-                ))
-              )}
+                ))}
 
               {!loading && pageItems.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-gray-500 py-8">
-                    No subcategories found. <Button variant="ghost" onClick={onOpenCreate} className="ml-2">Add Subcategory</Button>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center text-gray-500 py-8"
+                  >
+                    No subcategories found.{" "}
+                    <Button
+                      variant="ghost"
+                      onClick={onOpenCreate}
+                      className="ml-2"
+                    >
+                      Add Subcategory
+                    </Button>
                   </TableCell>
                 </TableRow>
               )}
 
-              {!loading && pageItems.map((it, idx) => (
-                <TableRow key={it._id} className="[&>td]:align-middle">
-                  <TableCell>{pageStart + idx + 1}</TableCell>
-                  <TableCell className="font-medium">{it.name}</TableCell>
-                  <TableCell><code className="text-xs bg-gray-100 px-1 py-0.5 rounded">{it.slug}</code></TableCell>
-                  <TableCell>{categoryName || it.categoryId}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch checked={it.status === "active"} onCheckedChange={() => onToggleStatus(it)} />
-                      <Badge variant={it.status === "active" ? "default" : "secondary"}>{it.status === "active" ? "Active" : "Inactive"}</Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell><span className="text-sm text-gray-600">{it.updatedAt ? new Date(it.updatedAt).toLocaleString() : it.createdAt ? new Date(it.createdAt).toLocaleString() : "—"}</span></TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => onOpenEdit(it)} aria-label={`Edit ${it.name}`}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-red-600" onClick={() => setPendingDelete({ id: it._id, name: it.name })}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {!loading &&
+                pageItems.map((it, idx) => (
+                  <TableRow key={it._id} className="[&>td]:align-middle">
+                    <TableCell>{pageStart + idx + 1}</TableCell>
+                    <TableCell className="font-medium">{it.name}</TableCell>
+                    <TableCell>
+                      <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">
+                        {it.slug}
+                      </code>
+                    </TableCell>
+                    <TableCell>{categoryName || it.categoryId}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={it.status === "active"}
+                          onCheckedChange={() => onToggleStatus(it)}
+                        />
+                        <Badge
+                          variant={
+                            it.status === "active" ? "default" : "secondary"
+                          }
+                        >
+                          {it.status === "active" ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-gray-600">
+                        {it.updatedAt
+                          ? new Date(it.updatedAt).toLocaleString()
+                          : it.createdAt
+                            ? new Date(it.createdAt).toLocaleString()
+                            : "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onOpenEdit(it)}
+                          aria-label={`Edit ${it.name}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600"
+                          onClick={() =>
+                            setPendingDelete({ id: it._id, name: it.name })
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>
@@ -422,7 +577,19 @@ export default function AdminSubcategoriesPage(): JSX.Element {
         <div className="flex items-center justify-between p-3 border-t bg-gray-50">
           <div className="flex items-center gap-2 text-sm">
             <span>Rows per page</span>
-            <select value={limit} onChange={(e) => { const l = parseInt(e.target.value||"10",10); setSearchParams((p) => { const n = new URLSearchParams(p.toString()); n.set("limit", String(l)); n.set("page", "1"); return n; }); }} className="border rounded px-2 py-1">
+            <select
+              value={limit}
+              onChange={(e) => {
+                const l = parseInt(e.target.value || "10", 10);
+                setSearchParams((p) => {
+                  const n = new URLSearchParams(p.toString());
+                  n.set("limit", String(l));
+                  n.set("page", "1");
+                  return n;
+                });
+              }}
+              className="border rounded px-2 py-1"
+            >
               <option value={10}>10</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
@@ -430,18 +597,61 @@ export default function AdminSubcategoriesPage(): JSX.Element {
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            <span>Page {currentPage} of {totalPages}</span>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="icon" disabled={currentPage === 1} onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p.toString()); n.set("page", String(Math.max(1, currentPage - 1))); return n; })}>
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={currentPage === 1}
+                onClick={() =>
+                  setSearchParams((p) => {
+                    const n = new URLSearchParams(p.toString());
+                    n.set("page", String(Math.max(1, currentPage - 1)));
+                    return n;
+                  })
+                }
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               {Array.from({ length: Math.min(7, totalPages) }).map((_, i) => {
-                const n = Math.max(1, Math.min(totalPages, currentPage - 3 + i));
+                const n = Math.max(
+                  1,
+                  Math.min(totalPages, currentPage - 3 + i),
+                );
                 return (
-                  <Button key={n} variant={n === currentPage ? "default" : "outline"} size="sm" onClick={() => setSearchParams((p) => { const s = new URLSearchParams(p.toString()); s.set("page", String(n)); return s; })}>{n}</Button>
+                  <Button
+                    key={n}
+                    variant={n === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      setSearchParams((p) => {
+                        const s = new URLSearchParams(p.toString());
+                        s.set("page", String(n));
+                        return s;
+                      })
+                    }
+                  >
+                    {n}
+                  </Button>
                 );
               })}
-              <Button variant="outline" size="icon" disabled={currentPage === totalPages} onClick={() => setSearchParams((p) => { const n = new URLSearchParams(p.toString()); n.set("page", String(Math.min(totalPages, currentPage + 1))); return n; })}>
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setSearchParams((p) => {
+                    const n = new URLSearchParams(p.toString());
+                    n.set(
+                      "page",
+                      String(Math.min(totalPages, currentPage + 1)),
+                    );
+                    return n;
+                  })
+                }
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -450,35 +660,80 @@ export default function AdminSubcategoriesPage(): JSX.Element {
       </div>
 
       {/* Editor Dialog */}
-      <Dialog open={openEditor} onOpenChange={(o) => { setOpenEditor(o); if (!o) { setEditing(null); } }}>
+      <Dialog
+        open={openEditor}
+        onOpenChange={(o) => {
+          setOpenEditor(o);
+          if (!o) {
+            setEditing(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit Subcategory" : "Add Subcategory"}</DialogTitle>
+            <DialogTitle>
+              {editing ? "Edit Subcategory" : "Add Subcategory"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Name *</label>
-              <Input value={form.name} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, name: v, slug: f.slug && editing ? f.slug : generateSlug(v) })); }} autoFocus />
+              <Input
+                value={form.name}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    name: v,
+                    slug: f.slug && editing ? f.slug : generateSlug(v),
+                  }));
+                }}
+                autoFocus
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Slug *</label>
-              <Input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} />
+              <Input
+                value={form.slug}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, slug: e.target.value }))
+                }
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Status</label>
               <div className="flex items-center gap-2">
-                <Button variant={form.status === "active" ? "default" : "outline"} size="sm" onClick={() => setForm((f) => ({ ...f, status: "active" }))}>Active</Button>
-                <Button variant={form.status === "inactive" ? "default" : "outline"} size="sm" onClick={() => setForm((f) => ({ ...f, status: "inactive" }))}>Inactive</Button>
+                <Button
+                  variant={form.status === "active" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setForm((f) => ({ ...f, status: "active" }))}
+                >
+                  Active
+                </Button>
+                <Button
+                  variant={form.status === "inactive" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setForm((f) => ({ ...f, status: "inactive" }))}
+                >
+                  Inactive
+                </Button>
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => { setOpenEditor(false); setEditing(null); }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setOpenEditor(false);
+                  setEditing(null);
+                }}
+              >
                 <X className="h-4 w-4 mr-2" /> Cancel
               </Button>
               <Button onClick={save} disabled={saving}>
                 {saving ? (
                   <>
-                    <div className="animate-spin w-4 h-4 border border-white border-t-transparent rounded-full mr-2" /> Saving...
+                    <div className="animate-spin w-4 h-4 border border-white border-t-transparent rounded-full mr-2" />{" "}
+                    Saving...
                   </>
                 ) : (
                   <>
@@ -492,20 +747,34 @@ export default function AdminSubcategoriesPage(): JSX.Element {
       </Dialog>
 
       {/* Delete confirm */}
-      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
+      <AlertDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete subcategory?</AlertDialogTitle>
             <AlertDialogDescription>
-              Type <strong>DELETE</strong> to confirm deletion of <strong>{pendingDelete?.name}</strong>. This action cannot be undone.
+              Type <strong>DELETE</strong> to confirm deletion of{" "}
+              <strong>{pendingDelete?.name}</strong>. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="p-4">
-            <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type DELETE to confirm" />
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Type DELETE to confirm"
+            />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={onDeleteConfirmed}>Delete</AlertDialogAction>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={onDeleteConfirmed}
+            >
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

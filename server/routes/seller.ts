@@ -399,19 +399,17 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
 
     if (!ObjectId.isValid(notificationId)) {
       // allow non-ObjectId ids (e.g., conversation id could be string) -> store dismissal read flag
-      await db
-        .collection("dismissed_notifications")
-        .updateOne(
-          { userId: sellerObjId, refId: String(notificationId) },
-          {
-            $set: {
-              userId: sellerObjId,
-              refId: String(notificationId),
-              readAt: new Date(),
-            },
+      await db.collection("dismissed_notifications").updateOne(
+        { userId: sellerObjId, refId: String(notificationId) },
+        {
+          $set: {
+            userId: sellerObjId,
+            refId: String(notificationId),
+            readAt: new Date(),
           },
-          { upsert: true },
-        );
+        },
+        { upsert: true },
+      );
       return res.json({ success: true, message: "Marked as read" });
     }
 
@@ -460,19 +458,17 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
 
     if (!updated) {
       // fallback: create/merge dismissal with readAt
-      await db
-        .collection("dismissed_notifications")
-        .updateOne(
-          { userId: sellerObjId, refId: String(notificationId) },
-          {
-            $set: {
-              userId: sellerObjId,
-              refId: String(notificationId),
-              readAt: new Date(),
-            },
+      await db.collection("dismissed_notifications").updateOne(
+        { userId: sellerObjId, refId: String(notificationId) },
+        {
+          $set: {
+            userId: sellerObjId,
+            refId: String(notificationId),
+            readAt: new Date(),
           },
-          { upsert: true },
-        );
+        },
+        { upsert: true },
+      );
     }
 
     res.json({ success: true, message: "Marked as read" });
@@ -537,20 +533,18 @@ export const deleteSellerNotification: RequestHandler = async (req, res) => {
 
     // For audience-based admin announcements / conversation alerts, DO NOT delete shared docs.
     // Use per-user dismissal so it never shows up again for this user.
-    await db
-      .collection("dismissed_notifications")
-      .updateOne(
-        { userId: sellerObjId, refId: String(notificationId) },
-        {
-          $set: {
-            userId: sellerObjId,
-            refId: String(notificationId),
-            source: src || "unknown",
-            dismissedAt: new Date(),
-          },
+    await db.collection("dismissed_notifications").updateOne(
+      { userId: sellerObjId, refId: String(notificationId) },
+      {
+        $set: {
+          userId: sellerObjId,
+          refId: String(notificationId),
+          source: src || "unknown",
+          dismissedAt: new Date(),
         },
-        { upsert: true },
-      );
+      },
+      { upsert: true },
+    );
 
     return res.json({
       success: true,

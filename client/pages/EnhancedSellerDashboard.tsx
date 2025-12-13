@@ -722,7 +722,9 @@ export default function EnhancedSellerDashboard() {
               className={`w-full md:w-auto ${isRefreshing ? "opacity-70" : ""}`}
               disabled={isRefreshing}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+              />
               {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
 
@@ -1838,7 +1840,9 @@ export default function EnhancedSellerDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    Choose whether you want to share your contact information (name, phone, email) with buyers who view your property listings.
+                    Choose whether you want to share your contact information
+                    (name, phone, email) with buyers who view your property
+                    listings.
                   </p>
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="flex items-start justify-between">
@@ -1859,26 +1863,31 @@ export default function EnhancedSellerDashboard() {
                           try {
                             const token = await getAuthToken();
                             if (!token) {
-                              toast.error("Session expired. Please login again.");
+                              toast.error(
+                                "Session expired. Please login again.",
+                              );
                               return;
                             }
                             const res = await api.put(
                               "/seller/contact-preference",
                               { shareContactInfo: checked },
-                              token
+                              token,
                             );
                             if (res?.data?.success) {
                               toast.success(
                                 checked
                                   ? "Contact information sharing enabled"
-                                  : "Contact information sharing disabled"
+                                  : "Contact information sharing disabled",
                               );
                             } else {
                               toast.error("Failed to update preference");
                               setShareContactPreference(!checked);
                             }
                           } catch (err) {
-                            console.error("Failed to update contact preference:", err);
+                            console.error(
+                              "Failed to update contact preference:",
+                              err,
+                            );
                             toast.error("Failed to update preference");
                             setShareContactPreference(!checked);
                           }
@@ -1887,7 +1896,8 @@ export default function EnhancedSellerDashboard() {
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 pt-2">
-                    💡 Enabling this helps buyers contact you directly for inquiries about your properties.
+                    💡 Enabling this helps buyers contact you directly for
+                    inquiries about your properties.
                   </div>
                 </CardContent>
               </Card>

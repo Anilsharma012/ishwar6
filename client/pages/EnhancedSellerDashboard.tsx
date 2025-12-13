@@ -167,6 +167,7 @@ export default function EnhancedSellerDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Data state
   const [properties, setProperties] = useState<Property[]>([]);
@@ -182,6 +183,9 @@ export default function EnhancedSellerDashboard() {
 
   // Logout confirm modal state
   const [logoutOpen, setLogoutOpen] = useState(false);
+
+  // Contact sharing preference
+  const [shareContactPreference, setShareContactPreference] = useState(true);
 
   const openReplyModal = (m: Message) => {
     setReplyTarget(m);

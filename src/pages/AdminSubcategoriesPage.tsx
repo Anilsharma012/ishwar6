@@ -266,13 +266,14 @@ export default function AdminSubcategoriesPage(): JSX.Element {
 
   const onToggleStatus = async (it: Subcategory) => {
     const prev = items;
-    const updated = { ...it, status: it.status === "active" ? "inactive" : "active" };
+    const newStatus = it.status === "active" ? "inactive" : "active";
+    const updated = { ...it, status: newStatus };
     setItems((list) => list.map((i) => (i._id === it._id ? updated : i)));
     try {
       if (useMock) {
         toast({ title: "Status updated (mock)", description: `${updated.name} is now ${updated.status}` });
       } else {
-        await apiClient.put(API.update(it._id), { status: updated.status });
+        await apiClient.put(API.update(it._id), { isActive: newStatus === "active" });
         toast({ title: "Status updated", description: `${updated.name} is now ${updated.status}` });
       }
     } catch (e: any) {

@@ -195,20 +195,29 @@ export default function PackageSelection({
           try {
             console.log("💳 Razorpay payment successful, verifying...", response);
 
-            // 3) Verify — again force headers
+            // 3) Verify — again force headers (with timeout)
             const verifyUrl = createApiUrl("payments/razorpay/verify");
             console.log("📤 Verifying at:", verifyUrl);
 
-            const vRes = await fetch(verifyUrl, {
-              method: "POST",
-              credentials: "include",
-              headers: authHeaders(token!),
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+            let vRes: Response;
+            try {
+              vRes = await fetch(verifyUrl, {
+                method: "POST",
+                credentials: "include",
+                headers: authHeaders(token!),
+                body: JSON.stringify({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+                signal: controller.signal,
+              });
+            } finally {
+              clearTimeout(timeoutId);
+            }
 
             console.log("✅ Verify response:", vRes.status, vRes.statusText);
             const vJson = await vRes.json().catch(() => ({}));

@@ -354,7 +354,7 @@ export default function EnhancedSellerDashboard() {
           startPolling();
         });
 
-        const refresh = () => fetchDashboardData();
+        const refresh = () => fetchDashboardData(false);
         es.addEventListener("property:updated", refresh);
         es.addEventListener("notification:new", refresh);
         es.addEventListener("message:new", refresh);

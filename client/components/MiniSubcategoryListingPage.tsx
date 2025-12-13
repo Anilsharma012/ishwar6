@@ -28,6 +28,7 @@ export default function MiniSubcategoryListingPage({
   subcategoryId,
   subcategoryName,
   categorySlug,
+  priceType,
 }: MiniSubcategoryListingPageProps) {
   const navigate = useNavigate();
   const [miniSubcategories, setMiniSubcategories] = useState<

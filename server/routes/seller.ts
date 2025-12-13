@@ -1167,6 +1167,45 @@ export const changeSellerPassword: RequestHandler = async (req, res) => {
   }
 };
 
+// Update contact information sharing preference
+export const updateContactPreference: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const sellerId = (req as any).userId;
+    const { shareContactInfo } = req.body;
+
+    if (typeof shareContactInfo !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        error: "shareContactInfo must be a boolean",
+      });
+    }
+
+    // Update seller's contact preference
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(sellerId) },
+      {
+        $set: {
+          shareContactInfo,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    res.json({
+      success: true,
+      message: "Contact preference updated successfully",
+      data: { shareContactInfo },
+    });
+  } catch (error) {
+    console.error("Error updating contact preference:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update contact preference",
+    });
+  }
+};
+
 // Purchase package
 export const purchasePackage: RequestHandler = async (req, res) => {
   try {

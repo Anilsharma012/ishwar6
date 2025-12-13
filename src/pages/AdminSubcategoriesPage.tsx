@@ -23,11 +23,11 @@ import { z } from "zod";
 // API endpoints config (easy to change)
 const API = {
   list: (categoryId: string, q: string, page: number, limit: number) =>
-    `/api/categories/${categoryId}/subcategories?search=${encodeURIComponent(q)}&page=${page}&limit=${limit}`,
-  create: (categoryId: string) => `/api/categories/${categoryId}/subcategories`,
-  update: (id: string) => `/api/subcategories/${id}`,
-  remove: (id: string) => `/api/subcategories/${id}`,
-  category: (categoryId: string) => `/api/categories/${categoryId}`,
+    `/api/admin/subcategories/by-category/${categoryId}?search=${encodeURIComponent(q)}&page=${page}&limit=${limit}`,
+  create: (categoryId: string) => `/api/admin/subcategories`,
+  update: (id: string) => `/api/admin/subcategories/${id}`,
+  remove: (id: string) => `/api/admin/subcategories/${id}`,
+  category: (categoryId: string) => `/api/admin/categories/${categoryId}`,
 };
 
 type Status = "active" | "inactive";

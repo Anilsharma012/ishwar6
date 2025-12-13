@@ -48,6 +48,7 @@ import {
   User,
   LogOut,
   MapPin,
+  Phone,
   RefreshCw,
   Plus,
   Edit,

@@ -608,6 +608,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       ownerId: String(userId),
       ownerType: (req as any).userType || "seller",
       contactInfo,
+      shareContactInfo,
 
       // 🔒 moderation enforced
       status,

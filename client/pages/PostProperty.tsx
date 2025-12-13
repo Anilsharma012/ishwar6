@@ -949,7 +949,10 @@ export default function PostProperty() {
       );
       submitData.append("amenities", JSON.stringify(formData.amenities));
       submitData.append("contactInfo", JSON.stringify(formData.contactInfo));
-      submitData.append("shareContactInfo", (formData.shareContactInfo || false).toString());
+      submitData.append(
+        "shareContactInfo",
+        (formData.shareContactInfo || false).toString(),
+      );
       submitData.append("premium", withPackage.toString());
       submitData.append("contactVisible", (!withPackage).toString());
 
@@ -2154,7 +2157,8 @@ export default function PostProperty() {
                       Share Contact Information
                     </label>
                     <p className="text-xs text-gray-600">
-                      Allow your phone, email, and WhatsApp details to be visible to buyers
+                      Allow your phone, email, and WhatsApp details to be
+                      visible to buyers
                     </p>
                   </div>
                   <Switch

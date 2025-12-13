@@ -1044,12 +1044,10 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const propertyOwnerId = String(property.ownerId);
     const requestUserId = String(userId);
     if (propertyOwnerId !== requestUserId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: "You can only edit your own properties",
-        });
+      return res.status(403).json({
+        success: false,
+        error: "You can only edit your own properties",
+      });
     }
 
     // Handle images
@@ -1089,8 +1087,8 @@ export const updateProperty: RequestHandler = async (req, res) => {
       typeof req.body.shareContactInfo === "string"
         ? req.body.shareContactInfo === "true"
         : req.body.shareContactInfo !== undefined
-        ? !!req.body.shareContactInfo
-        : property.shareContactInfo || false;
+          ? !!req.body.shareContactInfo
+          : property.shareContactInfo || false;
 
     // Normalize property type
     const TYPE_ALIASES: Record<string, string> = {

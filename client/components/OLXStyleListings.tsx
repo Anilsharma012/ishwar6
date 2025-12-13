@@ -550,8 +550,7 @@ export default function OLXStyleListings() {
                       className="w-full h-full object-cover pointer-events-none select-none group-hover:opacity-90 transition-opacity"
                       draggable={false}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/placeholder.png";
+                        (e.target as HTMLImageElement).src = "/placeholder.png";
                       }}
                     />
                   ) : (
@@ -662,8 +661,8 @@ export default function OLXStyleListings() {
               {loadingMore
                 ? "Loading more..."
                 : hasMore
-                ? "View all properties"
-                : "No more properties"}
+                  ? "View all properties"
+                  : "No more properties"}
             </button>
           </div>
         )}

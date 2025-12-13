@@ -982,7 +982,9 @@ export default function EnhancedSellerDashboard() {
                   <div className="space-y-4">
                     {properties.slice(0, 3).map((property: any, idx) => (
                       <div
-                        key={property._id || property.id || property.title || idx}
+                        key={
+                          property._id || property.id || property.title || idx
+                        }
                         className="border border-gray-200 rounded-lg p-4"
                       >
                         <div className="flex items-start justify-between">
@@ -1092,7 +1094,9 @@ export default function EnhancedSellerDashboard() {
                                   variant="outline"
                                   onClick={() => {
                                     if (!id)
-                                      return toast.error("Notification id missing");
+                                      return toast.error(
+                                        "Notification id missing",
+                                      );
                                     markNotificationAsRead(id);
                                   }}
                                 >
@@ -1105,7 +1109,9 @@ export default function EnhancedSellerDashboard() {
                                 variant="outline"
                                 onClick={() => {
                                   if (!id)
-                                    return toast.error("Notification id missing");
+                                    return toast.error(
+                                      "Notification id missing",
+                                    );
                                   deleteNotification(id, n.source);
                                 }}
                               >
@@ -1201,7 +1207,9 @@ export default function EnhancedSellerDashboard() {
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   Posted{" "}
-                                  {new Date(property.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    property.createdAt,
+                                  ).toLocaleDateString()}
                                 </div>
                               </div>
                             </TableCell>
@@ -1365,13 +1373,18 @@ export default function EnhancedSellerDashboard() {
                             </p>
                             <div className="flex items-center space-x-4 text-xs text-gray-400">
                               <span>Property: {m.propertyTitle}</span>
-                              <span>{new Date(m.timestamp).toLocaleString()}</span>
+                              <span>
+                                {new Date(m.timestamp).toLocaleString()}
+                              </span>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             {m.buyerPhone && (
                               <>
-                                <a href={`tel:${m.buyerPhone}`} className="inline-flex">
+                                <a
+                                  href={`tel:${m.buyerPhone}`}
+                                  className="inline-flex"
+                                >
                                   <Button size="sm" variant="outline">
                                     Call
                                   </Button>
@@ -1520,7 +1533,8 @@ export default function EnhancedSellerDashboard() {
                     Need to purchase a package?
                   </h3>
                   <p className="text-sm text-blue-700 mb-3">
-                    Upgrade your properties with premium packages for better visibility and more leads.
+                    Upgrade your properties with premium packages for better
+                    visibility and more leads.
                   </p>
                   <Button
                     onClick={() => navigate("/advertise")}
@@ -1575,8 +1589,8 @@ export default function EnhancedSellerDashboard() {
                                 p.status === "completed"
                                   ? "bg-green-100 text-green-800"
                                   : p.status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-red-100 text-red-800"
                               }
                             >
                               {p.status}

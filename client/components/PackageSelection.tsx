@@ -234,6 +234,7 @@ export default function PackageSelection({
             }, 500);
           } catch (err) {
             console.error("❌ Verification error:", err);
+            setPayingId(null);
             alert(`Payment verification error: ${err instanceof Error ? err.message : "Unknown error"}`);
           }
         },

@@ -1085,6 +1085,12 @@ export const updateProperty: RequestHandler = async (req, res) => {
       req.body.contactInfo,
       property.contactInfo || {},
     );
+    const shareContactInfo =
+      typeof req.body.shareContactInfo === "string"
+        ? req.body.shareContactInfo === "true"
+        : req.body.shareContactInfo !== undefined
+        ? !!req.body.shareContactInfo
+        : property.shareContactInfo || false;
 
     // Normalize property type
     const TYPE_ALIASES: Record<string, string> = {

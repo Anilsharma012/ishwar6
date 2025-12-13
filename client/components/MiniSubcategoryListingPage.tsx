@@ -21,6 +21,7 @@ interface MiniSubcategoryListingPageProps {
   subcategoryId: string;
   subcategoryName: string;
   categorySlug: string;
+  priceType?: "sale" | "rent"; // Optional: Buy or Rent
 }
 
 export default function MiniSubcategoryListingPage({

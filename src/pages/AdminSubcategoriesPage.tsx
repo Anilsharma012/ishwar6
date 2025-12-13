@@ -43,8 +43,11 @@ type Subcategory = {
 };
 
 type ListResponse = {
-  data: Subcategory[];
-  pagination?: { page: number; limit: number; total: number };
+  data: {
+    data: Subcategory[];
+    pagination: { page: number; limit: number; total: number; pages: number };
+  };
+  success?: boolean;
 };
 
 const schema = z.object({

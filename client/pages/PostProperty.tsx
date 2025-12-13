@@ -326,6 +326,7 @@ export default function PostProperty() {
       phone: user?.phone || "",
       email: user?.email || "",
     },
+    shareContactInfo: false,
   });
 
   /* ===== Fetch categories on mount ===== */

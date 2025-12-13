@@ -718,10 +718,11 @@ export default function EnhancedSellerDashboard() {
               onClick={fetchDashboardData}
               variant="outline"
               size="sm"
-              className="w-full md:w-auto"
+              className={`w-full md:w-auto ${isRefreshing ? "opacity-70" : ""}`}
+              disabled={isRefreshing}
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
 
             <Button

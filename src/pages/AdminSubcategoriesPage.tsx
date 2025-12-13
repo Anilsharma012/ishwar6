@@ -144,11 +144,11 @@ export default function AdminSubcategoriesPage(): JSX.Element {
       }
 
       const res = await apiClient.get<ListResponse>(API.list(categoryId, search, page, limit));
-      if (!res || !Array.isArray(res.data)) {
+      if (!res || !res.data?.data || !Array.isArray(res.data.data)) {
         throw new Error("Invalid response");
       }
-      setItems(res.data);
-      setTotal(res.pagination?.total ?? res.data.length ?? 0);
+      setItems(res.data.data);
+      setTotal(res.data.pagination?.total ?? res.data.data.length ?? 0);
     } catch (err: any) {
       // If 401/403
       if (err?.status === 401 || err?.status === 403) {

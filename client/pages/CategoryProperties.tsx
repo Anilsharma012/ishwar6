@@ -264,6 +264,11 @@ export default function CategoryProperties() {
       // Handle category and subcategory from URL
       const currentCategory = getCurrentCategory();
 
+      // Send category to API to ensure consistent filter logic
+      if (currentCategory && currentCategory !== "all") {
+        params.append("category", currentCategory);
+      }
+
       // Set priceType based on main category (buy/rent/lease/pg)
       if (currentCategory === "buy" || currentCategory === "sale") {
         params.append("priceType", "sale");
@@ -303,9 +308,11 @@ export default function CategoryProperties() {
 
       if (propertyType) params.append("propertyType", propertyType);
 
-      // Add filter parameters
+      // Add filter parameters (skip priceType since it's already set above)
       Object.entries(filters).forEach(([key, value]) => {
-        if (value && key !== "sortBy") params.append(key, value);
+        if (value && key !== "sortBy" && key !== "priceType") {
+          params.append(key, value);
+        }
       });
 
       // Add sorting

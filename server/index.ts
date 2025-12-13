@@ -523,6 +523,7 @@ import {
   getSellerPayments,
   updateSellerProfile,
   changeSellerPassword,
+  updateContactPreference,
   purchasePackage,
   getSellerStats,
   deleteSellerProperty,

@@ -1696,7 +1696,14 @@ export default function PropertyDetail() {
                 </Card>
               </div>
 
-              
-        
+              {/* Sidebar - Contact Info */}
+              <div className="lg:col-span-1">
+                {/* Contact Information will go here */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

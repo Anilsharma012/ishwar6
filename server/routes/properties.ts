@@ -146,18 +146,20 @@ export const getProperties: RequestHandler = async (req, res) => {
     }
 
     // --- 2) Base moderation filter (public) ---
+    const approvalStatusConditions = [
+      { approvalStatus: "approved" },
+      { approvalStatus: { $exists: false } },
+      { approvalStatus: "pending" },
+    ];
+
     const filter: any = {
       status: "active",
-      $or: [
-        { approvalStatus: "approved" },
-        { approvalStatus: { $exists: false } },
-        { approvalStatus: "pending" },
-      ],
     };
 
     // --- 3) "Buy/Rent" top tabs logic (broad groupings) ---
     // If the page is one of the top tabs, prefer this grouping,
     // but keep normalized propertyType if it was explicitly sent.
+    let priceTypeTabs: any[] = [];
     switch (category) {
       case "buy":
         // If specific propertyType is provided, filter only that type
@@ -165,7 +167,7 @@ export const getProperties: RequestHandler = async (req, res) => {
           filter.propertyType = propertyType;
         } else {
           // Otherwise show sale listings in residential AND plot AND flat
-          filter.$or = [
+          priceTypeTabs = [
             { propertyType: "residential", priceType: "sale" },
             { propertyType: "plot", priceType: "sale" },
             { propertyType: "flat", priceType: "sale" }, // include flats when buying
@@ -178,7 +180,7 @@ export const getProperties: RequestHandler = async (req, res) => {
           filter.propertyType = propertyType;
         } else {
           // Otherwise show rental listings in residential AND flat AND commercial
-          filter.$or = [
+          priceTypeTabs = [
             { propertyType: "residential", priceType: "rent" },
             { propertyType: "flat", priceType: "rent" },
             { propertyType: "commercial", priceType: "rent" }, // many want commercial rentals too
@@ -191,6 +193,18 @@ export const getProperties: RequestHandler = async (req, res) => {
           filter.propertyType = propertyType;
         }
         break;
+    }
+
+    // Combine approval status with price type conditions
+    if (priceTypeTabs.length > 0) {
+      filter.$or = [
+        ...priceTypeTabs,
+        // Also include approval status conditions
+        ...approvalStatusConditions,
+      ];
+    } else {
+      // If not using price type tabs, just use approval status conditions
+      filter.$or = approvalStatusConditions;
     }
 
     console.log("🔍 FILTER PROPERTIES → query", {

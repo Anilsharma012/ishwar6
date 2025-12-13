@@ -445,6 +445,10 @@ export const createProperty: RequestHandler = async (req, res) => {
     const specifications = safeParse(req.body.specifications, {});
     const amenities = safeParse(req.body.amenities, []);
     const contactInfo = safeParse(req.body.contactInfo, {});
+    const shareContactInfo =
+      typeof req.body.shareContactInfo === "string"
+        ? req.body.shareContactInfo === "true"
+        : !!req.body.shareContactInfo;
 
     const providedPremium = req.body.premium === "true";
     const contactVisibleFlag =
@@ -604,6 +608,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       ownerId: String(userId),
       ownerType: (req as any).userType || "seller",
       contactInfo,
+      shareContactInfo,
 
       // 🔒 moderation enforced
       status,
@@ -1039,12 +1044,10 @@ export const updateProperty: RequestHandler = async (req, res) => {
     const propertyOwnerId = String(property.ownerId);
     const requestUserId = String(userId);
     if (propertyOwnerId !== requestUserId) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          error: "You can only edit your own properties",
-        });
+      return res.status(403).json({
+        success: false,
+        error: "You can only edit your own properties",
+      });
     }
 
     // Handle images
@@ -1080,6 +1083,12 @@ export const updateProperty: RequestHandler = async (req, res) => {
       req.body.contactInfo,
       property.contactInfo || {},
     );
+    const shareContactInfo =
+      typeof req.body.shareContactInfo === "string"
+        ? req.body.shareContactInfo === "true"
+        : req.body.shareContactInfo !== undefined
+          ? !!req.body.shareContactInfo
+          : property.shareContactInfo || false;
 
     // Normalize property type
     const TYPE_ALIASES: Record<string, string> = {
@@ -1191,6 +1200,7 @@ export const updateProperty: RequestHandler = async (req, res) => {
       images: finalImages,
       amenities: Array.isArray(amenities) ? amenities : [],
       contactInfo,
+      shareContactInfo,
       updatedAt: new Date(),
     };
 

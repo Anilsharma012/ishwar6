@@ -8,6 +8,7 @@ import PaymentForm from "../components/PaymentForm";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import { Switch } from "../components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -326,6 +327,7 @@ export default function PostProperty() {
       phone: user?.phone || "",
       email: user?.email || "",
     },
+    shareContactInfo: false,
   });
 
   /* ===== Fetch categories on mount ===== */
@@ -717,6 +719,7 @@ export default function PostProperty() {
                 alternativePhone: property.contactInfo?.alternativePhone || "",
                 whatsappNumber: property.contactInfo?.whatsappNumber || "",
               },
+              shareContactInfo: property.shareContactInfo || false,
             });
           } else {
             setIsEditMode(false);
@@ -946,6 +949,10 @@ export default function PostProperty() {
       );
       submitData.append("amenities", JSON.stringify(formData.amenities));
       submitData.append("contactInfo", JSON.stringify(formData.contactInfo));
+      submitData.append(
+        "shareContactInfo",
+        (formData.shareContactInfo || false).toString(),
+      );
       submitData.append("premium", withPackage.toString());
       submitData.append("contactVisible", (!withPackage).toString());
 
@@ -1412,7 +1419,7 @@ export default function PostProperty() {
               {/* Property Type (Dynamic) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Property Type *
+                  Category Type*
                 </label>
                 <Select
                   value={formData.propertyType}
@@ -2141,6 +2148,26 @@ export default function PostProperty() {
                   placeholder="Enter email address"
                   required
                 />
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-1">
+                      Share Contact Information
+                    </label>
+                    <p className="text-xs text-gray-600">
+                      Allow your phone, email, and WhatsApp details to be
+                      visible to buyers
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.shareContactInfo || false}
+                    onCheckedChange={(checked) =>
+                      handleInputChange("shareContactInfo", checked)
+                    }
+                  />
+                </div>
               </div>
             </div>
           )}

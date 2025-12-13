@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart, Clock, Send } from "lucide-react";
 import PropertyLoadingSkeleton from "./PropertyLoadingSkeleton";
 import EnquiryModal from "./EnquiryModal";
+import { MapPin } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -549,8 +550,7 @@ export default function OLXStyleListings() {
                       className="w-full h-full object-cover pointer-events-none select-none group-hover:opacity-90 transition-opacity"
                       draggable={false}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "/placeholder.png";
+                        (e.target as HTMLImageElement).src = "/placeholder.png";
                       }}
                     />
                   ) : (
@@ -599,13 +599,14 @@ export default function OLXStyleListings() {
                     {property.title}
                   </h3>
 
-                  <div className="flex items-center text-[11px] md:text-xs text-gray-700 mb-2">
-                    <span className="font-bold mr-1">Area:</span>
+                  <div className="flex items-center text-[11px] md:text-xs text-gray-700 mb-2 gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                     <span className="truncate font-medium">
-                      {property.location?.city ||
-                        property.location?.address ||
+                      {property.location?.area ||
+                        property.location?.sector ||
+                        property.location?.colony ||
+                        property.location?.city ||
                         "Rohtak"}
-                      , {property.location?.state || "HR"}
                     </span>
                   </div>
 
@@ -660,8 +661,8 @@ export default function OLXStyleListings() {
               {loadingMore
                 ? "Loading more..."
                 : hasMore
-                ? "View all properties"
-                : "No more properties"}
+                  ? "View all properties"
+                  : "No more properties"}
             </button>
           </div>
         )}

@@ -1202,6 +1202,7 @@ export const updateProperty: RequestHandler = async (req, res) => {
       images: finalImages,
       amenities: Array.isArray(amenities) ? amenities : [],
       contactInfo,
+      shareContactInfo,
       updatedAt: new Date(),
     };
 

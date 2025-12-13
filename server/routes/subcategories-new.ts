@@ -558,6 +558,7 @@ export const getSubcategoriesByCategory: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const { categoryId } = req.params;
+    const { search = "", page = "1", limit = "10" } = req.query;
 
     if (!ObjectId.isValid(categoryId)) {
       return res.status(400).json({
@@ -566,15 +567,49 @@ export const getSubcategoriesByCategory: RequestHandler = async (req, res) => {
       });
     }
 
-    const subcategories = await db
-      .collection("subcategories")
-      .find({ categoryId })
-      .sort({ sortOrder: 1, createdAt: 1 })
-      .toArray();
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 10;
+    const skip = (pageNum - 1) * limitNum;
 
-    const response: ApiResponse<Subcategory[]> = {
+    // Build filter
+    const filter: any = { categoryId };
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { slug: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const [subcategories, total] = await Promise.all([
+      db
+        .collection("subcategories")
+        .find(filter)
+        .sort({ sortOrder: 1, createdAt: 1 })
+        .skip(skip)
+        .limit(limitNum)
+        .toArray(),
+      db.collection("subcategories").countDocuments(filter),
+    ]);
+
+    const response: ApiResponse<{
+      data: Subcategory[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        pages: number;
+      };
+    }> = {
       success: true,
-      data: subcategories as Subcategory[],
+      data: {
+        data: subcategories as Subcategory[],
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
+      },
     };
 
     res.json(response);

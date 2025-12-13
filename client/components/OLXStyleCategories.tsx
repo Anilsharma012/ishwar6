@@ -10,6 +10,7 @@ import {
   Truck,
   Sofa,
   Heart,
+  MapPin,
 } from "lucide-react";
 import { withApiErrorBoundary } from "./ApiErrorBoundary";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,7 @@ const categoryIcons: Record<string, any> = {
   "Commercial Vehicles & Spares": Truck,
   Furniture: Sofa,
   Pets: Heart,
+  Maps: MapPin,
 };
 
 /* ---------- Types ---------- */

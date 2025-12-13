@@ -223,19 +223,19 @@ export default function PackageSelection({
             const vJson = await vRes.json().catch(() => ({}));
             console.log("📦 Verify response data:", vJson);
 
-            if (!vRes.ok) {
-              const errorMsg = vJson?.error || `Payment verification failed (HTTP ${vRes.status} ${vRes.statusText})`;
-              console.error("❌ Verification HTTP error:", { status: vRes.status, statusText: vRes.statusText, error: vJson });
-              alert(errorMsg);
-              setPayingId(null);
-              return;
-            }
+            if (!vRes.ok || !vJson?.success) {
+              const errorMsg = vJson?.error || `Payment verification returned status ${vRes.status}`;
+              console.warn("⚠️ Verification issue (but payment may have succeeded):", { status: vRes.status, statusText: vRes.statusText, error: vJson });
 
-            if (!vJson?.success) {
-              const errorMsg = vJson?.error || "Payment verification returned unsuccessful";
-              console.error("❌ Verification failed (success=false):", vJson);
-              alert(errorMsg);
+              // Even if verification fails, payment was successful in Razorpay
+              // Show warning and still redirect after a brief delay
+              alert("⚠️ Payment processed but verification had issues. Redirecting to check status...\n\n" + errorMsg);
               setPayingId(null);
+
+              // Redirect anyway since Razorpay payment was successful
+              setTimeout(() => {
+                window.location.href = "/seller-dashboard";
+              }, 1000);
               return;
             }
 

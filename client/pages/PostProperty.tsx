@@ -948,6 +948,7 @@ export default function PostProperty() {
       );
       submitData.append("amenities", JSON.stringify(formData.amenities));
       submitData.append("contactInfo", JSON.stringify(formData.contactInfo));
+      submitData.append("shareContactInfo", (formData.shareContactInfo || false).toString());
       submitData.append("premium", withPackage.toString());
       submitData.append("contactVisible", (!withPackage).toString());
 

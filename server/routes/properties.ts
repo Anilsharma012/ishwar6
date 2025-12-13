@@ -145,7 +145,7 @@ export const getProperties: RequestHandler = async (req, res) => {
       propertyType = TYPE_ALIASES[propertyType];
     }
 
-    // --- 2) Base moderation filter (public) ---
+    // --- 2) Base moderation filter (public) - always check approval status ---
     const filter: any = {
       status: "active",
       $or: [
@@ -163,26 +163,44 @@ export const getProperties: RequestHandler = async (req, res) => {
         // If specific propertyType is provided, filter only that type
         if (propertyType) {
           filter.propertyType = propertyType;
+          // Also enforce that buy listings must have priceType="sale"
+          filter.priceType = "sale";
         } else {
           // Otherwise show sale listings in residential AND plot AND flat
-          filter.$or = [
-            { propertyType: "residential", priceType: "sale" },
-            { propertyType: "plot", priceType: "sale" },
-            { propertyType: "flat", priceType: "sale" }, // include flats when buying
+          filter.$and = [
+            {
+              $or: [
+                { propertyType: "residential", priceType: "sale" },
+                { propertyType: "plot", priceType: "sale" },
+                { propertyType: "flat", priceType: "sale" },
+              ],
+            },
+            { $or: filter.$or }, // Keep the approval status check
           ];
+          // Clear the top-level $or since we moved it to $and
+          delete filter.$or;
         }
         break;
       case "rent":
         // If specific propertyType is provided, filter only that type
         if (propertyType) {
           filter.propertyType = propertyType;
+          // Also enforce that rent listings must have priceType="rent"
+          filter.priceType = "rent";
         } else {
           // Otherwise show rental listings in residential AND flat AND commercial
-          filter.$or = [
-            { propertyType: "residential", priceType: "rent" },
-            { propertyType: "flat", priceType: "rent" },
-            { propertyType: "commercial", priceType: "rent" }, // many want commercial rentals too
+          filter.$and = [
+            {
+              $or: [
+                { propertyType: "residential", priceType: "rent" },
+                { propertyType: "flat", priceType: "rent" },
+                { propertyType: "commercial", priceType: "rent" },
+              ],
+            },
+            { $or: filter.$or }, // Keep the approval status check
           ];
+          // Clear the top-level $or since we moved it to $and
+          delete filter.$or;
         }
         break;
       default:

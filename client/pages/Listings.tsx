@@ -85,6 +85,19 @@ export default function Listings() {
   const miniSubcategory = searchParams.get("miniSubcategory") || "";
   const subcategory = searchParams.get("subcategory") || "";
 
+  // Infer priceType from category or get from params
+  const inferPriceType = (): string => {
+    const paramPriceType = searchParams.get("priceType");
+    if (paramPriceType) return paramPriceType;
+
+    const catLower = String(category || "").toLowerCase();
+    if (catLower === "buy" || catLower === "sale") return "sale";
+    if (catLower === "rent" || catLower === "lease") return "rent";
+    return "";
+  };
+
+  const priceTypeForFilter = inferPriceType();
+
   const getInitialFilters = (): FilterState => {
     return {
       priceType: searchParams.get("priceType") || "",
@@ -110,45 +123,6 @@ export default function Listings() {
     try {
       setLoading(true);
 
-      let url = "/api/properties";
-
-      if (category) {
-        url += `&category=${encodeURIComponent(category)}`;
-      }
-      if (subcategory) {
-        url += `&subcategory=${encodeURIComponent(subcategory)}`;
-      }
-      if (miniSubcategory) {
-        url += `&miniSubcategory=${encodeURIComponent(miniSubcategory)}`;
-      }
-
-      if (filters.minPrice) {
-        url += `&minPrice=${filters.minPrice}`;
-      }
-      if (filters.maxPrice) {
-        url += `&maxPrice=${filters.maxPrice}`;
-      }
-      if (filters.bedrooms) {
-        url += `&bedrooms=${filters.bedrooms}`;
-      }
-      if (filters.bathrooms) {
-        url += `&bathrooms=${filters.bathrooms}`;
-      }
-      if (filters.minArea) {
-        url += `&minArea=${filters.minArea}`;
-      }
-      if (filters.maxArea) {
-        url += `&maxArea=${filters.maxArea}`;
-      }
-      if (filters.sector) {
-        url += `&sector=${encodeURIComponent(filters.sector)}`;
-      }
-      if (filters.mohalla) {
-        url += `&mohalla=${encodeURIComponent(filters.mohalla)}`;
-      }
-
-      url += `&sort=${filters.sortBy}`;
-
       const params = new URLSearchParams();
 
       if (category) {
@@ -159,6 +133,12 @@ export default function Listings() {
       }
       if (miniSubcategory) {
         params.append("miniSubcategory", miniSubcategory);
+      }
+
+      // Always include priceType if it can be inferred
+      const priceType = inferPriceType();
+      if (priceType) {
+        params.append("priceType", priceType);
       }
 
       if (filters.minPrice) {
@@ -188,7 +168,7 @@ export default function Listings() {
 
       params.append("sortBy", filters.sortBy);
 
-      url = `/api/properties?${params.toString()}`;
+      const url = `/api/properties?${params.toString()}`;
 
       const response = await fetch(url);
       if (response.ok) {

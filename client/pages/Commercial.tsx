@@ -71,15 +71,63 @@ export default function Commercial() {
         }
       }
 
-      // If we couldn't fetch mini-subcategories, use fallback
+      // If we couldn't fetch mini-subcategories, use fallback with property counts
       if (miniSubcategories.length === 0 && !useFallback) {
         setUseFallback(true);
-        setMiniSubcategories(getFallbackMiniSubcategories());
+        const fallbackMinis = getFallbackMiniSubcategories();
+        // Fetch property counts for fallback subcategories
+        const minisWithCounts = await Promise.all(
+          fallbackMinis.map(async (mini) => {
+            try {
+              const countParams = new URLSearchParams();
+              countParams.append("propertyType", "commercial");
+              countParams.append("subCategory", mini.slug);
+              countParams.append("limit", "1");
+
+              const countResponse = await fetch(`/api/properties?${countParams.toString()}`);
+              if (countResponse.ok) {
+                const countData = await countResponse.json();
+                if (countData?.success && countData?.data?.pagination) {
+                  return { ...mini, count: countData.data.pagination.total ?? 0 };
+                }
+              }
+              return mini;
+            } catch (error) {
+              console.error(`Error fetching count for ${mini.slug}:`, error);
+              return mini;
+            }
+          })
+        );
+        setMiniSubcategories(minisWithCounts);
       }
     } catch (error) {
       console.error("Error fetching commercial data:", error);
       setUseFallback(true);
-      setMiniSubcategories(getFallbackMiniSubcategories());
+      const fallbackMinis = getFallbackMiniSubcategories();
+      // Fetch property counts for fallback subcategories
+      const minisWithCounts = await Promise.all(
+        fallbackMinis.map(async (mini) => {
+          try {
+            const countParams = new URLSearchParams();
+            countParams.append("propertyType", "commercial");
+            countParams.append("subCategory", mini.slug);
+            countParams.append("limit", "1");
+
+            const countResponse = await fetch(`/api/properties?${countParams.toString()}`);
+            if (countResponse.ok) {
+              const countData = await countResponse.json();
+              if (countData?.success && countData?.data?.pagination) {
+                return { ...mini, count: countData.data.pagination.total ?? 0 };
+              }
+            }
+            return mini;
+          } catch (error) {
+            console.error(`Error fetching count for ${mini.slug}:`, error);
+            return mini;
+          }
+        })
+      );
+      setMiniSubcategories(minisWithCounts);
     } finally {
       setLoading(false);
     }

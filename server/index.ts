@@ -523,6 +523,7 @@ import {
   getSellerPayments,
   updateSellerProfile,
   changeSellerPassword,
+  updateContactPreference,
   purchasePackage,
   getSellerStats,
   deleteSellerProperty,
@@ -2467,6 +2468,11 @@ export function createServer() {
     "/api/seller/change-password",
     authenticateToken,
     changeSellerPassword,
+  );
+  app.put(
+    "/api/seller/contact-preference",
+    authenticateToken,
+    updateContactPreference,
   );
   app.post("/api/seller/purchase-package", authenticateToken, purchasePackage);
   app.get("/api/seller/stats", authenticateToken, getSellerStats);

@@ -22,7 +22,11 @@ type Role = "admin" | "seller" | "user" | "customer" | "agent" | null;
 
 const parseJSON = <T,>(raw: string | null): T | null => {
   if (!raw) return null;
-  try { return JSON.parse(raw) as T; } catch { return null; }
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
 };
 
 const getAuth = () => {
@@ -41,9 +45,7 @@ const getAuth = () => {
     const userObj = parseJSON<{ userType?: string; role?: string }>(rawUser);
 
     let role: Role =
-      (userObj?.userType as Role) ||
-      (userObj?.role as Role) ||
-      "user";
+      (userObj?.userType as Role) || (userObj?.role as Role) || "user";
 
     if (role) role = role.toLowerCase() as Role;
 
@@ -118,7 +120,7 @@ export default function PackageSelection({
   /* ---- FORCE auth headers: Authorization + x-auth-token + x-admin-token ---- */
   const authHeaders = (t: string) => ({
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${t}`,
+    Authorization: `Bearer ${t}`,
     "x-auth-token": t,
     "x-admin-token": t,
   });
@@ -165,7 +167,9 @@ export default function PackageSelection({
       const createJson = await createRes.json().catch(() => ({}));
       if (!createRes.ok || !createJson?.success) {
         console.warn("Create order failed:", createJson);
-        alert(createJson?.error || `Order create failed (HTTP ${createRes.status})`);
+        alert(
+          createJson?.error || `Order create failed (HTTP ${createRes.status})`,
+        );
         return;
       }
 
@@ -193,34 +197,97 @@ export default function PackageSelection({
           razorpay_signature: string;
         }) => {
           try {
-            // 3) Verify — again force headers
-            const verifyUrl = createApiUrl("payments/razorpay/verify");
-            const vRes = await fetch(verifyUrl, {
-              method: "POST",
-              credentials: "include",
-              headers: authHeaders(token!),
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
+            console.log(
+              "💳 Razorpay payment successful, verifying...",
+              response,
+            );
 
+            // 3) Verify — again force headers (with timeout)
+            const verifyUrl = createApiUrl("payments/razorpay/verify");
+            console.log("📤 Verifying at:", verifyUrl);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+            let vRes: Response;
+            try {
+              vRes = await fetch(verifyUrl, {
+                method: "POST",
+                credentials: "include",
+                headers: authHeaders(token!),
+                body: JSON.stringify({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+                signal: controller.signal,
+              });
+            } finally {
+              clearTimeout(timeoutId);
+            }
+
+            console.log("✅ Verify response:", vRes.status, vRes.statusText);
             const vJson = await vRes.json().catch(() => ({}));
+            console.log("📦 Verify response data:", vJson);
+
             if (!vRes.ok || !vJson?.success) {
-              alert(vJson?.error || `Payment verification failed (HTTP ${vRes.status})`);
+              const errorMsg =
+                vJson?.error ||
+                `Payment verification returned status ${vRes.status}`;
+              console.warn(
+                "⚠️ Verification issue (but payment may have succeeded):",
+                {
+                  status: vRes.status,
+                  statusText: vRes.statusText,
+                  error: vJson,
+                },
+              );
+
+              // Even if verification fails, payment was successful in Razorpay
+              // Show warning and still redirect after a brief delay
+              alert(
+                "⚠️ Payment processed but verification had issues. Redirecting to check status...\n\n" +
+                  errorMsg,
+              );
+              setPayingId(null);
+
+              // Redirect anyway since Razorpay payment was successful
+              setTimeout(() => {
+                window.location.href = "/seller-dashboard";
+              }, 1000);
               return;
             }
 
-            alert("✅ Payment successful! Your package is activated (Pending Approval).");
-            window.location.href = "/my-properties";
+            console.log("🎉 Payment verified successfully!");
+
+            // Reset UI state
+            setPayingId(null);
+
+            // Show success and redirect
+            alert("✅ Payment successful! Your property is now live.");
+
+            // Redirect to seller dashboard
+            console.log("🚀 Redirecting to seller dashboard...");
+            window.location.href = "/seller-dashboard";
           } catch (err) {
-            console.error("Verification error:", err);
-            alert("Payment verification error");
+            console.error("❌ Verification error:", err);
+            setPayingId(null);
+            alert(
+              `Payment verification error: ${err instanceof Error ? err.message : "Unknown error"}`,
+            );
           }
         },
-        modal: { ondismiss: () => console.log("Razorpay closed by user") },
-        prefill: { name: "Customer", email: "customer@example.com", contact: "9999999999" },
+        modal: {
+          ondismiss: () => {
+            console.log("⚠️ Razorpay modal closed by user");
+            setPayingId(null);
+          },
+        },
+        prefill: {
+          name: "Customer",
+          email: "customer@example.com",
+          contact: "9999999999",
+        },
       });
 
       rzp.open();
@@ -234,19 +301,27 @@ export default function PackageSelection({
 
   const getPackageIcon = (type: string) => {
     switch (type) {
-      case "basic": return <Eye className="h-6 w-6" />;
-      case "featured": return <Star className="h-6 w-6" />;
-      case "premium": return <Crown className="h-6 w-6" />;
-      default: return <Zap className="h-6 w-6" />;
+      case "basic":
+        return <Eye className="h-6 w-6" />;
+      case "featured":
+        return <Star className="h-6 w-6" />;
+      case "premium":
+        return <Crown className="h-6 w-6" />;
+      default:
+        return <Zap className="h-6 w-6" />;
     }
   };
 
   const getCardColors = (type: string) => {
     switch (type) {
-      case "basic": return "border-gray-300 bg-white";
-      case "featured": return "border-orange-300 bg-orange-50";
-      case "premium": return "border-purple-300 bg-purple-50";
-      default: return "border-gray-300 bg-white";
+      case "basic":
+        return "border-gray-300 bg-white";
+      case "featured":
+        return "border-orange-300 bg-orange-50";
+      case "premium":
+        return "border-purple-300 bg-purple-50";
+      default:
+        return "border-gray-300 bg-white";
     }
   };
 
@@ -264,9 +339,12 @@ export default function PackageSelection({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Advertisement Package</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          Choose Your Advertisement Package
+        </h2>
         <p className="text-gray-600">
-          Pay securely with Razorpay. Your listing goes into <b>Pending Approval</b> after payment.
+          Pay securely with Razorpay. Your listing goes into{" "}
+          <b>Pending Approval</b> after payment.
         </p>
       </div>
 
@@ -284,18 +362,21 @@ export default function PackageSelection({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {packages.map((pkg) => {
-            const disabled = payingId === pkg._id || (!hasToken && pkg.price !== 0);
+            const disabled =
+              payingId === pkg._id || (!hasToken && pkg.price !== 0);
             const label = !hasToken
               ? "Login to Pay"
               : payingId === pkg._id
-              ? "Processing..."
-              : "Pay with Razorpay";
+                ? "Processing..."
+                : "Pay with Razorpay";
 
             return (
               <div
                 key={pkg._id}
                 className={`rounded-lg border-2 p-6 transition-all hover:shadow-lg ${
-                  selectedPackage === pkg._id ? "border-[#C70000] bg-red-50" : getCardColors(pkg.type)
+                  selectedPackage === pkg._id
+                    ? "border-[#C70000] bg-red-50"
+                    : getCardColors(pkg.type)
                 } ${pkg.type === "featured" ? "transform scale-105" : ""}`}
               >
                 <div className="text-center mb-6">
@@ -304,13 +385,15 @@ export default function PackageSelection({
                       pkg.type === "basic"
                         ? "bg-gray-100 text-gray-600"
                         : pkg.type === "featured"
-                        ? "bg-orange-100 text-orange-600"
-                        : "bg-purple-100 text-purple-600"
+                          ? "bg-orange-100 text-orange-600"
+                          : "bg-purple-100 text-purple-600"
                     }`}
                   >
                     {getPackageIcon(pkg.type)}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {pkg.name}
+                  </h3>
                   {pkg.type === "featured" && (
                     <div className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                       <TrendingUp className="h-3 w-3 mr-1" />
@@ -330,7 +413,9 @@ export default function PackageSelection({
                 </div>
 
                 {pkg.description && (
-                  <p className="text-gray-600 text-center mb-6">{pkg.description}</p>
+                  <p className="text-gray-600 text-center mb-6">
+                    {pkg.description}
+                  </p>
                 )}
 
                 {Array.isArray(pkg.features) && pkg.features.length > 0 && (
@@ -347,7 +432,11 @@ export default function PackageSelection({
                 {pkg.price === 0 ? (
                   <Button
                     className="w-full bg-gray-600 hover:bg-gray-700 text-white"
-                    onClick={() => alert("Free package selected. (Admin can auto-activate without payment.)")}
+                    onClick={() =>
+                      alert(
+                        "Free package selected. (Admin can auto-activate without payment.)",
+                      )
+                    }
                   >
                     Activate Free Package
                   </Button>
@@ -361,7 +450,9 @@ export default function PackageSelection({
                       }
                       // Role allowed (admin included); server will enforce final rules
                       if (!roleAllowed) {
-                        console.warn("Non-standard role; proceeding to server check.");
+                        console.warn(
+                          "Non-standard role; proceeding to server check.",
+                        );
                       }
                       payWithRazorpay(pkg);
                     }}
@@ -377,7 +468,9 @@ export default function PackageSelection({
       )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-800 mb-1">Payment Status Timeline</h3>
+        <h3 className="text-sm font-medium text-blue-800 mb-1">
+          Payment Status Timeline
+        </h3>
         <ul className="text-sm text-blue-700 list-disc pl-5 space-y-1">
           <li>Pay now with Razorpay</li>
           <li>After payment: Property status = “Pending Approval”</li>

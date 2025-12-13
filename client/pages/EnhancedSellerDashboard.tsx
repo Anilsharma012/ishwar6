@@ -48,6 +48,7 @@ import {
   User,
   LogOut,
   MapPin,
+  Phone,
   RefreshCw,
   Plus,
   Edit,
@@ -167,6 +168,7 @@ export default function EnhancedSellerDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Data state
   const [properties, setProperties] = useState<Property[]>([]);
@@ -182,6 +184,9 @@ export default function EnhancedSellerDashboard() {
 
   // Logout confirm modal state
   const [logoutOpen, setLogoutOpen] = useState(false);
+
+  // Contact sharing preference
+  const [shareContactPreference, setShareContactPreference] = useState(true);
 
   const openReplyModal = (m: Message) => {
     setReplyTarget(m);
@@ -386,7 +391,11 @@ export default function EnhancedSellerDashboard() {
   // --------------------------------------------------
   async function fetchDashboardData(isInitialLoad: boolean = false) {
     try {
-      if (isInitialLoad) setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
       setError("");
 
       const token = await getAuthToken();
@@ -434,7 +443,11 @@ export default function EnhancedSellerDashboard() {
       }
       setError("Failed to load dashboard data. Please try again.");
     } finally {
-      if (isInitialLoad) setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      } else {
+        setIsRefreshing(false);
+      }
     }
   }
 
@@ -706,10 +719,13 @@ export default function EnhancedSellerDashboard() {
               onClick={fetchDashboardData}
               variant="outline"
               size="sm"
-              className="w-full md:w-auto"
+              className={`w-full md:w-auto ${isRefreshing ? "opacity-70" : ""}`}
+              disabled={isRefreshing}
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </Button>
 
             <Button
@@ -1812,6 +1828,77 @@ export default function EnhancedSellerDashboard() {
                   >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Phone className="h-5 w-5" />
+                    <span>Contact Information</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Choose whether you want to share your contact information
+                    (name, phone, email) with buyers who view your property
+                    listings.
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 pr-4">
+                        <h4 className="font-medium text-blue-900 mb-1">
+                          Share Contact Information
+                        </h4>
+                        <p className="text-sm text-blue-700">
+                          {shareContactPreference
+                            ? "Buyers can see your contact details when viewing your listings"
+                            : "Your contact details are hidden from property listings"}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={shareContactPreference}
+                        onCheckedChange={async (checked) => {
+                          setShareContactPreference(checked);
+                          try {
+                            const token = await getAuthToken();
+                            if (!token) {
+                              toast.error(
+                                "Session expired. Please login again.",
+                              );
+                              return;
+                            }
+                            const res = await api.put(
+                              "/seller/contact-preference",
+                              { shareContactInfo: checked },
+                              token,
+                            );
+                            if (res?.data?.success) {
+                              toast.success(
+                                checked
+                                  ? "Contact information sharing enabled"
+                                  : "Contact information sharing disabled",
+                              );
+                            } else {
+                              toast.error("Failed to update preference");
+                              setShareContactPreference(!checked);
+                            }
+                          } catch (err) {
+                            console.error(
+                              "Failed to update contact preference:",
+                              err,
+                            );
+                            toast.error("Failed to update preference");
+                            setShareContactPreference(!checked);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 pt-2">
+                    💡 Enabling this helps buyers contact you directly for
+                    inquiries about your properties.
+                  </div>
                 </CardContent>
               </Card>
             </div>

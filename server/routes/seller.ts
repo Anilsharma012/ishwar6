@@ -399,19 +399,17 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
 
     if (!ObjectId.isValid(notificationId)) {
       // allow non-ObjectId ids (e.g., conversation id could be string) -> store dismissal read flag
-      await db
-        .collection("dismissed_notifications")
-        .updateOne(
-          { userId: sellerObjId, refId: String(notificationId) },
-          {
-            $set: {
-              userId: sellerObjId,
-              refId: String(notificationId),
-              readAt: new Date(),
-            },
+      await db.collection("dismissed_notifications").updateOne(
+        { userId: sellerObjId, refId: String(notificationId) },
+        {
+          $set: {
+            userId: sellerObjId,
+            refId: String(notificationId),
+            readAt: new Date(),
           },
-          { upsert: true },
-        );
+        },
+        { upsert: true },
+      );
       return res.json({ success: true, message: "Marked as read" });
     }
 
@@ -460,19 +458,17 @@ export const markNotificationAsRead: RequestHandler = async (req, res) => {
 
     if (!updated) {
       // fallback: create/merge dismissal with readAt
-      await db
-        .collection("dismissed_notifications")
-        .updateOne(
-          { userId: sellerObjId, refId: String(notificationId) },
-          {
-            $set: {
-              userId: sellerObjId,
-              refId: String(notificationId),
-              readAt: new Date(),
-            },
+      await db.collection("dismissed_notifications").updateOne(
+        { userId: sellerObjId, refId: String(notificationId) },
+        {
+          $set: {
+            userId: sellerObjId,
+            refId: String(notificationId),
+            readAt: new Date(),
           },
-          { upsert: true },
-        );
+        },
+        { upsert: true },
+      );
     }
 
     res.json({ success: true, message: "Marked as read" });
@@ -537,20 +533,18 @@ export const deleteSellerNotification: RequestHandler = async (req, res) => {
 
     // For audience-based admin announcements / conversation alerts, DO NOT delete shared docs.
     // Use per-user dismissal so it never shows up again for this user.
-    await db
-      .collection("dismissed_notifications")
-      .updateOne(
-        { userId: sellerObjId, refId: String(notificationId) },
-        {
-          $set: {
-            userId: sellerObjId,
-            refId: String(notificationId),
-            source: src || "unknown",
-            dismissedAt: new Date(),
-          },
+    await db.collection("dismissed_notifications").updateOne(
+      { userId: sellerObjId, refId: String(notificationId) },
+      {
+        $set: {
+          userId: sellerObjId,
+          refId: String(notificationId),
+          source: src || "unknown",
+          dismissedAt: new Date(),
         },
-        { upsert: true },
-      );
+      },
+      { upsert: true },
+    );
 
     return res.json({
       success: true,
@@ -1163,6 +1157,45 @@ export const changeSellerPassword: RequestHandler = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to change password",
+    });
+  }
+};
+
+// Update contact information sharing preference
+export const updateContactPreference: RequestHandler = async (req, res) => {
+  try {
+    const db = getDatabase();
+    const sellerId = (req as any).userId;
+    const { shareContactInfo } = req.body;
+
+    if (typeof shareContactInfo !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        error: "shareContactInfo must be a boolean",
+      });
+    }
+
+    // Update seller's contact preference
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(sellerId) },
+      {
+        $set: {
+          shareContactInfo,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    res.json({
+      success: true,
+      message: "Contact preference updated successfully",
+      data: { shareContactInfo },
+    });
+  } catch (error) {
+    console.error("Error updating contact preference:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update contact preference",
     });
   }
 };

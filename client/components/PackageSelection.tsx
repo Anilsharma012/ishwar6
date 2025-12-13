@@ -214,10 +214,19 @@ export default function PackageSelection({
             const vJson = await vRes.json().catch(() => ({}));
             console.log("📦 Verify response data:", vJson);
 
-            if (!vRes.ok || !vJson?.success) {
-              const errorMsg = vJson?.error || `Payment verification failed (HTTP ${vRes.status})`;
-              console.error("❌ Verification failed:", errorMsg);
+            if (!vRes.ok) {
+              const errorMsg = vJson?.error || `Payment verification failed (HTTP ${vRes.status} ${vRes.statusText})`;
+              console.error("❌ Verification HTTP error:", { status: vRes.status, statusText: vRes.statusText, error: vJson });
               alert(errorMsg);
+              setPayingId(null);
+              return;
+            }
+
+            if (!vJson?.success) {
+              const errorMsg = vJson?.error || "Payment verification returned unsuccessful";
+              console.error("❌ Verification failed (success=false):", vJson);
+              alert(errorMsg);
+              setPayingId(null);
               return;
             }
 

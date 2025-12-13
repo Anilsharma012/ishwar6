@@ -56,7 +56,7 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-white">
       <OLXStyleHeader />
-      <main className="pb-16 bg-gradient-to-b from-red-50 to-white">
+      <main className="pb-16 bg-white">
         {/* Big banner above hero */}
         {/* <TopBanner /> */}
 
@@ -86,7 +86,7 @@ export default function Index() {
           <OLXStyleListings />
         </div>
 
-        <div className="bg-red-50 py-8">
+        <div className="bg-white py-8">
           <PackagesShowcase />
         </div>
       </main>

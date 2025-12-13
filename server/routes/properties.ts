@@ -445,6 +445,10 @@ export const createProperty: RequestHandler = async (req, res) => {
     const specifications = safeParse(req.body.specifications, {});
     const amenities = safeParse(req.body.amenities, []);
     const contactInfo = safeParse(req.body.contactInfo, {});
+    const shareContactInfo =
+      typeof req.body.shareContactInfo === "string"
+        ? req.body.shareContactInfo === "true"
+        : !!req.body.shareContactInfo;
 
     const providedPremium = req.body.premium === "true";
     const contactVisibleFlag =

@@ -89,6 +89,7 @@ export default function Buy() {
 
             // Build query params
             const params = new URLSearchParams();
+            params.append("category", "buy");
             params.append("priceType", "sale");
             params.append("limit", "1");
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart, Clock, Send } from "lucide-react";
 import PropertyLoadingSkeleton from "./PropertyLoadingSkeleton";
 import EnquiryModal from "./EnquiryModal";
+import { MapPin } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
